@@ -1,0 +1,19 @@
+{
+  "name": "hallway",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/architsch/hallway.git"
+  },
+  "author": "youngjin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/architsch/hallway/issues"
+  },
+  "homepage": "https://github.com/architsch/hallway#readme"
+}
