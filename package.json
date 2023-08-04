@@ -1,19 +1,29 @@
 {
-  "name": "hallway",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/architsch/hallway.git"
-  },
-  "author": "youngjin",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/architsch/hallway/issues"
-  },
-  "homepage": "https://github.com/architsch/hallway#readme"
+    "name": "hallway",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "webpack serve --open",
+        "build": "webpack"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/architsch/hallway.git"
+    },
+    "author": "youngjin",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/architsch/hallway/issues"
+    },
+    "homepage": "https://github.com/architsch/hallway#readme",
+    "devDependencies": {
+        "@types/three": "^0.155.0",
+        "three": "^0.155.0",
+        "ts-loader": "^9.4.4",
+        "typescript": "^5.1.6",
+        "webpack": "^5.88.2",
+        "webpack-cli": "^5.1.4",
+        "webpack-dev-server": "^4.15.1"
+    }
 }
