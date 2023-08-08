@@ -1,18 +1,42 @@
 export default class ScreenManager
 {
-    private gameScreen: HTMLElement;
-    private gameCanvas: HTMLCanvasElement;
-    private canvasWidth: number;
-    private canvasHeight: number;
-    private canvasAspectRatio: number;
+    gameScreen: HTMLElement;
+    gameCanvas: HTMLCanvasElement;
+    canvasWidth: number = 800;
+    canvasHeight: number = 400;
+    canvasAspectRatio: number = this.canvasWidth / this.canvasHeight;
 
     constructor()
     {
         this.gameScreen = document.getElementById("gameScreen") as HTMLElement;
-        this.gameCanvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
-        this.canvasWidth = this.gameCanvas.width;
-        this.canvasHeight = this.gameCanvas.height;
-        this.canvasAspectRatio = this.canvasWidth / this.canvasHeight;
+        this.gameScreen.style.position = "fixed";
+        this.gameScreen.style.display = "block";
+        this.gameScreen.style.margin = "0 0 0 0";
+        this.gameScreen.style.padding = "0 0 0 0";
+        this.gameScreen.style.width = "100%";
+        this.gameScreen.style.height = "100%";
+        this.gameScreen.style.left = "0";
+        this.gameScreen.style.right = "0";
+        this.gameScreen.style.top = "0";
+        this.gameScreen.style.bottom = "0";
+        this.gameScreen.style.backgroundColor = "#606040";
+
+        this.gameCanvas = document.createElement("canvas") as HTMLCanvasElement;
+        this.gameScreen.appendChild(this.gameCanvas);
+
+        this.gameCanvas.width = this.canvasWidth;
+        this.gameCanvas.height = this.canvasHeight;
+        this.gameCanvas.style.position = "absolute";
+        this.gameCanvas.style.display = "block";
+        this.gameCanvas.style.margin = "auto";
+        this.gameCanvas.style.padding = "0 0 0 0"
+        this.gameCanvas.style.left = "0";
+        this.gameCanvas.style.right = "0";
+        this.gameCanvas.style.top = "0";
+        this.gameCanvas.style.bottom = "0";
+        this.gameCanvas.style.imageRendering = "pixelated";
+        this.gameCanvas.style.backgroundColor = "#a0a0e0";
+        this.gameCanvas.style.border = "1px solid magenta";
 
         this.adjustCanvasToScreenSize = this.adjustCanvasToScreenSize.bind(this);
         window.addEventListener("resize", this.adjustCanvasToScreenSize);
