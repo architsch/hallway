@@ -17,9 +17,4 @@ export default class AssetManager
         this.geometryManager = new GeometryManager();
         this.meshManager = new MeshManager(this.materialManager, this.geometryManager);
     }
-
-    getMesh(id: string): THREE.Mesh
-    {
-        return this.meshManager.getMesh(id);
-    }
 }

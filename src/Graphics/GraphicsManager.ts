@@ -33,9 +33,4 @@ export default class GraphicsManager
         
         this.renderer.render(this.sceneManager.getMainScene(), this.cameraManager.getMainCamera());
     }
-
-    addObject(obj: THREE.Object3D)
-    {
-        this.sceneManager.addObject(obj);
-    }
 }

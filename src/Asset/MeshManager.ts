@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import MaterialManager from "./MaterialManager";
 import GeometryManager from "./GeometryManager";
+import { GlobalFunctions } from "../GlobalFunctions";
 
 export default class MeshManager
 {
@@ -15,10 +16,9 @@ export default class MeshManager
             geometryManager.getGeometry("box"), materialManager.getMaterial("green"));
         this.meshById["box_blue"] = new THREE.Mesh(
             geometryManager.getGeometry("box"), materialManager.getMaterial("blue"));
-    }
-
-    getMesh(id: string): THREE.Mesh
-    {
-        return this.meshById[id];
+        
+        GlobalFunctions.register("MeshManager::getMesh", (id: string) => {
+            return this.meshById[id];
+        });
     }
 }
