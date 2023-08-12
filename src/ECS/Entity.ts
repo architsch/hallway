@@ -1,4 +1,4 @@
-import PoolableObject from "../../Util/Pooling/PoolableObject";
+import PoolableObject from "../Util/Pooling/PoolableObject";
 
 export default interface Entity extends PoolableObject
 {

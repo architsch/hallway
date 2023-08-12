@@ -1,28 +1,22 @@
-import ComponentPools from "./Component/ComponentPools";
+import ComponentPools from "./ComponentPools";
 import Pool from "../Util/Pooling/Pool";
-import Entity from "./Entity/Entity";
-import { EntityTypes } from "./Entity/EntityTypes";
-import System from "./System/System";
-import MeshSyncSystem from "./System/MeshSyncSystem";
-import { Component } from "./Component/Components";
-import TransformUpdateSystem from "./System/TransformUpdateSystem";
+import Entity from "./Entity";
+import { EntityTypes } from "./EntityTypes";
+import { Component } from "./Components";
+import { SystemGateway } from "./SystemGateway";
 
 export default class ECSManager
 {
     private entityPool: Pool<Entity>;
-    private systems: Array<System>;
 
     constructor()
     {
         this.entityPool = new Pool<Entity>(256, () => { return {id: undefined, componentIds: {}}; });
-        this.systems = new Array<System>();
-        this.systems.push(new TransformUpdateSystem());
-        this.systems.push(new MeshSyncSystem());
     }
 
     update(t: number, dt: number)
     {
-        for (const system of this.systems)
+        for (const system of SystemGateway)
             system.update(this, t, dt);
     }
 
@@ -62,7 +56,7 @@ export default class ECSManager
         Object.assign(component, componentValues);
         entity.componentIds[componentType] = component.id;
 
-        for (const system of this.systems)
+        for (const system of SystemGateway)
             system.onEntityModified(this, entity);
     }
 
@@ -72,7 +66,7 @@ export default class ECSManager
         ComponentPools[componentType].return(entity.componentIds[componentType]);
         delete entity.componentIds[componentType];
 
-        for (const system of this.systems)
+        for (const system of SystemGateway)
             system.onEntityModified(this, entity);
     }
 }

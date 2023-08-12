@@ -1,12 +1,14 @@
-import ECSManager from "../ECSManager";
-import Entity from "../Entity/Entity";
+import ECSManager from "./ECSManager";
+import Entity from "./Entity";
 
-export default abstract class System
+export default class System
 {
     entities: Set<Entity> = new Set<Entity>();
     requiredComponentTypes: Set<string> = new Set<string>();
 
-    abstract update(ecs: ECSManager, t: number, dt: number): void;
+    update: (ecs: ECSManager, t: number, dt: number) => void;
+    onEntityRegistered: (ecs: ECSManager, entity: Entity) => void;
+    onEntityUnregistered: (ecs: ECSManager, entity: Entity) => void;
 
     onEntityModified(ecs: ECSManager, entity: Entity)
     {
@@ -34,7 +36,4 @@ export default abstract class System
             }
         }
     }
-
-    protected abstract onEntityRegistered(ecs: ECSManager, entity: Entity): void;
-    protected abstract onEntityUnregistered(ecs: ECSManager, entity: Entity): void;
 }

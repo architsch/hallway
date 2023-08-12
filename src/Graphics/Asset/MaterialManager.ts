@@ -3,10 +3,14 @@ import TextureManager from "./TextureManager";
 
 export default class MaterialManager
 {
+    private textureManager: TextureManager;
+
     private materialById: {[id: string]: THREE.Material};
     
-    constructor(textureManager: TextureManager)
+    constructor()
     {
+        this.textureManager = new TextureManager();
+        
         this.materialById = {};
         this.materialById["red"] = new THREE.MeshPhongMaterial({color: new THREE.Color(0xff0000)});
         this.materialById["green"] = new THREE.MeshPhongMaterial({color: new THREE.Color(0x00ff00)});

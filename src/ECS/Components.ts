@@ -1,4 +1,4 @@
-import PoolableObject from "../../Util/Pooling/PoolableObject";
+import PoolableObject from "../Util/Pooling/PoolableObject";
 
 export interface Component extends PoolableObject
 {
@@ -19,8 +19,8 @@ export interface TransformComponent extends Component
     syncedWithMesh: boolean;
 }
 
-export interface MeshComponent extends Component
+export interface MeshInstanceComponent extends Component
 {
     meshId: string;
-    mesh: THREE.Mesh;
+    instanceIndex: number;
 }

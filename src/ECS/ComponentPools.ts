@@ -1,5 +1,5 @@
-import Pool from "../../Util/Pooling/Pool";
-import { Component, MeshComponent, TransformComponent } from "./Components";
+import Pool from "../Util/Pooling/Pool";
+import { Component, MeshInstanceComponent, TransformComponent } from "./Components";
 
 const ComponentPools: {[componentType: string]: Pool<Component>} = {
     "Transform": new Pool<TransformComponent>(256, () => { return {
@@ -10,11 +10,11 @@ const ComponentPools: {[componentType: string]: Pool<Component>} = {
         scaleX: 1, scaleY: 1, scaleZ: 1,
         syncedWithMesh: false,
     }}),
-    "Mesh": new Pool<MeshComponent>(256, () => { return {
+    "MeshInstance": new Pool<MeshInstanceComponent>(256, () => { return {
         id: undefined,
         entityId: undefined,
         meshId: undefined,
-        mesh: undefined,
+        instanceIndex: undefined,
     }}),
 };
 export default ComponentPools;

@@ -10,7 +10,7 @@ export const EntityTypes: {[type: string]: Array<{componentType: string, compone
             },
         },
         {
-            componentType: "Mesh",
+            componentType: "MeshInstance",
             componentValues: {
                 meshId: "box_red"
             },

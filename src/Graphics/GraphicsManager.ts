@@ -3,6 +3,7 @@ import CameraManager from "./CameraManager";
 import ScreenManager from "./ScreenManager";
 import SceneManager from "./SceneManager";
 import LightManager from "./LightManager";
+import MeshManager from "./Asset/MeshManager";
 
 export default class GraphicsManager
 {
@@ -10,6 +11,7 @@ export default class GraphicsManager
     private cameraManager: CameraManager;
     private sceneManager: SceneManager;
     private lightManager: LightManager;
+    private meshManager: MeshManager;
 
     private renderer: THREE.WebGLRenderer;
 
@@ -19,6 +21,7 @@ export default class GraphicsManager
         this.cameraManager = new CameraManager(this.screenManager.canvasAspectRatio);
         this.sceneManager = new SceneManager();
         this.lightManager = new LightManager(this.sceneManager.getMainScene());
+        this.meshManager = new MeshManager(this.sceneManager.getMainScene());
 
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.screenManager.gameCanvas,

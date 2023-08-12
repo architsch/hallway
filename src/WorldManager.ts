@@ -1,4 +1,3 @@
-import AssetManager from "./Asset/AssetManager";
 import ECSManager from "./ECS/ECSManager";
 import GraphicsManager from "./Graphics/GraphicsManager";
 import InputManager from "./Input/InputManager";
@@ -8,7 +7,6 @@ export default class WorldManager
 {
     private ecsManager: ECSManager;
     private inputManager: InputManager;
-    private assetManager: AssetManager;
     private physicsManager: PhysicsManager;
     private graphicsManager: GraphicsManager;
 
@@ -16,7 +14,6 @@ export default class WorldManager
     {
         this.ecsManager = new ECSManager();
         this.inputManager = new InputManager();
-        this.assetManager = new AssetManager();
         this.physicsManager = new PhysicsManager();
         this.graphicsManager = new GraphicsManager();
 
