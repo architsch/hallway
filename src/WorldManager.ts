@@ -16,15 +16,21 @@ export default class WorldManager
         this.inputManager = new InputManager();
         this.physicsManager = new PhysicsManager();
         this.graphicsManager = new GraphicsManager();
+    }
 
-        this.ecsManager.addEntity("Default");
-        this.ecsManager.addEntity("Default");
-        this.ecsManager.addEntity("Default");
-        this.ecsManager.addEntity("Default");
-        this.ecsManager.addEntity("Default");
-        this.ecsManager.addEntity("Default");
-        this.ecsManager.addEntity("Default");
-        this.ecsManager.addEntity("Default");
+    async init()
+    {
+        await this.graphicsManager.init();
+        //console.log("INIT");
+
+        this.ecsManager.addEntity("default");
+        /*this.ecsManager.addEntity("default");
+        this.ecsManager.addEntity("default");
+        this.ecsManager.addEntity("default");
+        this.ecsManager.addEntity("default");
+        this.ecsManager.addEntity("default");
+        this.ecsManager.addEntity("default");
+        this.ecsManager.addEntity("default");*/
     }
 
     update(t: number, dt: number)

@@ -1,10 +1,10 @@
-import * as THREE from "three";
-import GlobalObservables from "../Util/Observable/GlobalObservables";
-import ObservableSet from "../Util/Observable/ObservableSet";
+import GlobalObservables from "../../Util/Observable/GlobalObservables";
+import ObservableSet from "../../Util/Observable/ObservableSet";
+import GLCamera from "./GLCamera";
 
 export default class CameraManager
 {
-    private mainCamera: THREE.PerspectiveCamera;
+    private mainCamera: GLCamera;
     private mainCameraSpeed: number = 3;
     private left: boolean = false;
     private right: boolean = false;
@@ -13,8 +13,9 @@ export default class CameraManager
 
     constructor(aspectRatio: number)
     {
-        this.mainCamera = new THREE.PerspectiveCamera(45, aspectRatio, 1, 100);
-        this.mainCamera.position.set(0, 0, 10);
+        this.mainCamera = new GLCamera(45, aspectRatio, 1, 100);
+        this.mainCamera.setPosition(0, 0, 10);
+        this.mainCamera.setTarget(0, 0, 9);
 
         const pressedKeys = GlobalObservables.get("pressedKeys") as ObservableSet<string>;
         pressedKeys.subscribe_add("cameraControl", (key: string) => {
@@ -45,7 +46,7 @@ export default class CameraManager
 
     update(t: number, dt: number)
     {
-        const v = this.mainCamera.position;
+        const v = this.mainCamera.getPosition();
         let xControl = 0;
         let zControl = 0;
 
@@ -59,11 +60,13 @@ export default class CameraManager
         else if (!this.up && this.down)
             zControl = 1;
 
-        v.setX(v.x + xControl * this.mainCameraSpeed * dt);
-        v.setZ(v.z + zControl * this.mainCameraSpeed * dt);
+        this.mainCamera.setPosition(
+            v[0] + xControl * this.mainCameraSpeed * dt,
+            0,
+            v[2] + zControl * this.mainCameraSpeed * dt);
     }
 
-    getMainCamera(): THREE.Camera
+    getMainCamera(): GLCamera
     {
         return this.mainCamera;
     }

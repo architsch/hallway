@@ -1,5 +1,5 @@
 export const EntityTypes: {[type: string]: Array<{componentType: string, componentValues: any}>} = {
-    "Default": [
+    "default": [
         {
             componentType: "Transform",
             componentValues: {
@@ -12,7 +12,9 @@ export const EntityTypes: {[type: string]: Array<{componentType: string, compone
         {
             componentType: "MeshInstance",
             componentValues: {
-                meshId: "box_red"
+                meshId: "default",
+                uvScale: [0.0625, 0.0625],
+                uvShift: [0, 0],
             },
         }
     ],

@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import { TransformComponent } from "../ECS/Components";
 import ECSManager from "../ECS/ECSManager";
 import Entity from "../ECS/Entity";
@@ -19,14 +20,13 @@ export default class KinematicsManager
             system.entities.forEach((entity: Entity) => {
                 const transformComponent = ecs.getComponent(entity.id, "Transform") as TransformComponent;
 
-                transformComponent.x = 3 * Math.cos(entity.id * 0.25*Math.PI + t);
-                transformComponent.y = 3 * Math.sin(entity.id * 0.25*Math.PI + t);
-                transformComponent.z = 0;
-    
-                transformComponent.rotX = Math.sin(entity.id * 0.2*Math.PI + t);
-                transformComponent.rotY = Math.sin(entity.id * 0.23*Math.PI + 1.25*t);
-                transformComponent.rotZ = Math.sin(entity.id * 0.26*Math.PI + 1.5*t);
-    
+                vec3.set(transformComponent.position,
+                    3 * Math.cos(entity.id * 0.25*Math.PI + t),
+                    3 * Math.sin(entity.id * 0.25*Math.PI + t),
+                    0);
+                
+                transformComponent.angleZ = entity.id * 0.2*Math.PI + t;
+                
                 transformComponent.syncedWithMesh = false;
             });
         };
