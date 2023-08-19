@@ -1,7 +1,7 @@
 import CameraManager from "./Camera/CameraManager";
 import ScreenManager from "./ScreenManager";
 import MeshManager from "./Mesh/MeshManager";
-import GLRenderer from "./GLRenderer";
+import Renderer from "./Renderer";
 
 export default class GraphicsManager
 {
@@ -9,7 +9,7 @@ export default class GraphicsManager
     private cameraManager: CameraManager;
     private meshManager: MeshManager;
 
-    private renderer: GLRenderer;
+    private renderer: Renderer;
 
     constructor()
     {
@@ -20,7 +20,7 @@ export default class GraphicsManager
         this.cameraManager = new CameraManager(this.screenManager.canvasAspectRatio);
         this.meshManager = new MeshManager(gl);
 
-        this.renderer = new GLRenderer(gl);
+        this.renderer = new Renderer(gl);
     }
 
     async init()

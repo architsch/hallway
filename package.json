@@ -19,9 +19,7 @@
     "homepage": "https://github.com/architsch/hallway#readme",
     "devDependencies": {
         "@types/gl-matrix": "^3.2.0",
-        "@types/three": "^0.155.0",
         "gl-matrix": "^3.4.3",
-        "three": "^0.155.0",
         "ts-loader": "^9.4.4",
         "typescript": "^5.1.6",
         "webpack": "^5.88.2",

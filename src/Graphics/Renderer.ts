@@ -1,7 +1,7 @@
 import GLCamera from "./Camera/GLCamera";
-import GLMesh from "./Mesh/GLMesh";
+import Mesh from "./Mesh/Mesh";
 
-export default class GLRenderer
+export default class Renderer
 {
     private gl: WebGL2RenderingContext;
 
@@ -12,7 +12,7 @@ export default class GLRenderer
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     }
 
-    render(meshById: {[id: string]: GLMesh}, camera: GLCamera)
+    render(meshById: {[id: string]: Mesh}, camera: GLCamera)
     {
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
 
