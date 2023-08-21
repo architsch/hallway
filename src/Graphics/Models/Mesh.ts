@@ -15,6 +15,14 @@ export default class Mesh
 
     private constructor() {}
 
+    static get(meshConfigId: string): Mesh | null
+    {
+        if (meshCache[meshConfigId] != undefined)
+            return meshCache[meshConfigId];
+        else
+            return null;
+    }
+
     static async load(gl: WebGL2RenderingContext, meshConfigId: string): Promise<Mesh>
     {
         if (meshCache[meshConfigId] != undefined)

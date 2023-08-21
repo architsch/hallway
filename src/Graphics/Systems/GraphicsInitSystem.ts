@@ -1,12 +1,21 @@
-export default class ScreenManager
-{
-    gameScreen: HTMLElement;
-    gameCanvas: HTMLCanvasElement;
-    canvasWidth: number = 800;
-    canvasHeight: number = 400;
-    canvasAspectRatio: number = this.canvasWidth / this.canvasHeight;
+import ECSManager from "../../ECS/ECSManager";
+import Entity from "../../ECS/Entity";
+import System from "../../ECS/System";
 
-    constructor()
+export default class GraphicsInitSystem extends System
+{
+    private gameScreen: HTMLElement;
+    private gameCanvas: HTMLCanvasElement;
+    private canvasWidth: number = 800;
+    private canvasHeight: number = 400;
+    private canvasAspectRatio: number = this.canvasWidth / this.canvasHeight;
+
+    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    {
+        return [];
+    }
+
+    start(ecs: ECSManager)
     {
         this.gameScreen = document.getElementById("gameScreen") as HTMLElement;
         this.gameScreen.style.position = "fixed";
@@ -42,9 +51,27 @@ export default class ScreenManager
         window.addEventListener("resize", this.adjustCanvasToScreenSize);
 
         this.adjustCanvasToScreenSize();
+
+        const gl = this.gameCanvas.getContext("webgl2");
+        const entity = ecs.addEntity("empty");
+        ecs.addComponent(entity.id, "Graphics", {
+            gl: ["any", gl],
+        });
+    }
+    
+    update(ecs: ECSManager, t: number, dt: number)
+    {
     }
 
-    adjustCanvasToScreenSize()
+    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    {
+    }
+
+    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    {
+    }
+
+    private adjustCanvasToScreenSize()
     {
         const screenWidth = this.gameScreen.clientWidth;
         const screenHeight = this.gameScreen.clientHeight;

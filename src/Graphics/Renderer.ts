@@ -1,5 +1,5 @@
 import GLCamera from "./Camera/GLCamera";
-import Mesh from "./Mesh/Mesh";
+import Mesh from "./Models/Mesh";
 
 export default class Renderer
 {

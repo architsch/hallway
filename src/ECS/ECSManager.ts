@@ -1,22 +1,31 @@
 import ComponentPools from "./ComponentPools";
 import Pool from "../Util/Pooling/Pool";
 import Entity from "./Entity";
-import { EntityTypes } from "./EntityTypes";
 import { Component } from "./Components";
-import { SystemGateway } from "./SystemGateway";
+import System from "./System";
+import { globalConfig } from "../Config/GlobalConfig";
+import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
 
 export default class ECSManager
 {
     private entityPool: Pool<Entity>;
+    private systems: Array<System>;
 
     constructor()
     {
         this.entityPool = new Pool<Entity>(256, () => { return {id: undefined, componentIds: {}}; });
+        
+        this.systems = [
+            // TODO: Add systems
+        ];
+
+        for (const system of this.systems)
+            system.start(this);
     }
 
     update(t: number, dt: number)
     {
-        for (const system of SystemGateway)
+        for (const system of this.systems)
             system.update(this, t, dt);
     }
 
@@ -25,11 +34,11 @@ export default class ECSManager
         return this.entityPool.get(id);
     }
 
-    addEntity(type: string): Entity
+    addEntity(configId: string): Entity
     {
         const entity = this.entityPool.rent();
-        const entityType = EntityTypes[type];
-        for (const {componentType, componentValues} of entityType)
+        const entityConfig = globalConfig.entityConfigById[configId];
+        for (const [componentType, componentValues] of Object.entries(entityConfig))
             this.addComponent(entity.id, componentType, componentValues);
         return entity;
     }
@@ -48,15 +57,31 @@ export default class ECSManager
         return ComponentPools[componentType].get(entity.componentIds[componentType]);
     }
 
-    addComponent(entityId: number, componentType: string, componentValues: any)
+    addComponent(entityId: number, componentType: string, componentValues: {[key: string]: [type: string, value: any]})
     {
         const entity = this.entityPool.get(entityId);
         const component = ComponentPools[componentType].rent();
         component.entityId = entityId;
-        Object.assign(component, componentValues);
+
+        for (const [key, typeAndValue] of Object.entries(componentValues))
+        {
+            const type = typeAndValue[0];
+            const value = typeAndValue[1];
+            switch (type)
+            {
+                case "number": case "string": case "boolean": case "any": (component as any)[key] = value; break;
+                case "vec2": vec2.copy((component as any)[key], value); break;
+                case "vec3": vec3.copy((component as any)[key], value); break;
+                case "vec4": vec4.copy((component as any)[key], value); break;
+                case "mat2": mat2.copy((component as any)[key], value); break;
+                case "mat3": mat3.copy((component as any)[key], value); break;
+                case "mat4": mat4.copy((component as any)[key], value); break;
+                default: throw new Error(`Unhandled component field type :: ${type} (in component "${componentType}")`);
+            }
+        }
         entity.componentIds[componentType] = component.id;
 
-        for (const system of SystemGateway)
+        for (const system of this.systems)
             system.onEntityModified(this, entity);
     }
 
@@ -66,7 +91,7 @@ export default class ECSManager
         ComponentPools[componentType].return(entity.componentIds[componentType]);
         delete entity.componentIds[componentType];
 
-        for (const system of SystemGateway)
+        for (const system of this.systems)
             system.onEntityModified(this, entity);
     }
 }

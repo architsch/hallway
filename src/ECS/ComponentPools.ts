@@ -14,7 +14,7 @@ const ComponentPools: {[componentType: string]: Pool<Component>} = {
     "MeshInstance": new Pool<MeshInstanceComponent>(256, () => { return {
         id: undefined,
         entityId: undefined,
-        meshId: undefined,
+        meshConfigId: undefined,
         uvScale: [1, 1],
         uvShift: [0, 0],
         instanceIndex: undefined,

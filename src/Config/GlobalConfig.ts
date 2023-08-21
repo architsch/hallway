@@ -1,3 +1,4 @@
+import { vec2 } from "gl-matrix";
 import { GlobalConfig } from "./ConfigTypes";
 
 export const globalConfig: GlobalConfig = {
@@ -48,30 +49,24 @@ export const globalConfig: GlobalConfig = {
                     0.0, 0.0, 1.0,
                 ]},
                 {name: "uv", numFloats: 2, data: [
-                    -0.5, -0.5,
-                    -0.5, +0.5,
-                    +0.5, -0.5,
-                    +0.5, +0.5,
-                    +0.5, -0.5,
-                    -0.5, +0.5,
+                    0, 0,
+                    0, 1,
+                    1, 0,
+                    1, 1,
+                    1, 0,
+                    0, 1,
                 ]},
             ],
         }
     },
     entityConfigById: {
+        "empty": {
+        },
         "default": {
-            componentValueOverrides: {
-                "Transform": {
-                    x: 0, y: 0, z: 0,
-                    eulerX: 0, eulerY: 0, eulerZ: 0,
-                    scaleX: 1, scaleY: 1, scaleZ: 1,
-                    syncedWithMesh: false,
-                },
-                "MeshInstance": {
-                    meshId: "spriteQuad",
-                    uvScale: [0.0625, 0.0625],
-                    uvShift: [0, 0],
-                }
+            "MeshInstance": {
+                meshId: ["string", "spriteQuad"],
+                uvScale: ["vec2", vec2.fromValues(0.0625, 0.0625)],
+                uvShift: ["vec2", vec2.fromValues(0, 0)],
             }
         }
     },

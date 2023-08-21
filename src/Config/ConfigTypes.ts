@@ -7,10 +7,8 @@ export interface MeshConfig
     vertexAttribs: {name: string, numFloats: number, data: number[]}[];
 }
 
-export interface EntityConfig
-{
-    componentValueOverrides: {[componentType: string]: {[key: string]: any}};
-}
+export type EntityConfig =
+    {[componentType: string]: {[key: string]: [type: string, value: any]}};
 
 export interface GlobalConfig
 {

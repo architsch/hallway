@@ -1,38 +1,62 @@
 import ECSManager from "./ECSManager";
 import Entity from "./Entity";
 
-export default class System
+export default abstract class System
 {
-    entities: Set<Entity> = new Set<Entity>();
-    requiredComponentTypes: Set<string> = new Set<string>();
+    protected entityGroups: {[groupId: string]: Set<Entity>};
+    protected requiredComponentTypesByEntityGroup: {[groupId: string]: Set<string>};
 
-    update: (ecs: ECSManager, t: number, dt: number) => void;
-    onEntityRegistered: (ecs: ECSManager, entity: Entity) => void;
-    onEntityUnregistered: (ecs: ECSManager, entity: Entity) => void;
+    constructor()
+    {
+        this.requiredComponentTypesByEntityGroup = {};
+        const kvps = this.getCriteria();
+        for (const [groupId, requiredComponentTypes] of kvps)
+        {
+            const set = new Set<string>();
+            this.requiredComponentTypesByEntityGroup[groupId] = set;
+            for (const componentType of requiredComponentTypes)
+                set.add(componentType);
+        }
+
+        this.entityGroups = {};
+        for (const groupId of Object.keys(this.requiredComponentTypesByEntityGroup))
+            this.entityGroups[groupId] = new Set<Entity>();
+    }
+
+    protected abstract getCriteria(): [groupId: string, requiredComponentTypes: string[]][];
+    abstract start(ecs: ECSManager): void;
+    abstract update(ecs: ECSManager, t: number, dt: number): void;
+    abstract onEntityRegistered(ecs: ECSManager, entity: Entity): void;
+    abstract onEntityUnregistered(ecs: ECSManager, entity: Entity): void;
 
     onEntityModified(ecs: ECSManager, entity: Entity)
     {
-        let matchCount = 0;
-        for (const componentType of Object.keys(entity.componentIds))
+        for (const [groupId, requiredComponentTypes] of Object.entries(this.requiredComponentTypesByEntityGroup))
         {
-            if (this.requiredComponentTypes.has(componentType))
-                matchCount++;
-        }
+            const entityGroup = this.entityGroups[groupId];
 
-        if (matchCount >= this.requiredComponentTypes.size)
-        {
-            if (!this.entities.has(entity))
+            let matchCount = 0;
+            for (const componentType of Object.keys(entity.componentIds))
             {
-                this.entities.add(entity);
-                this.onEntityRegistered(ecs, entity);
+                if (requiredComponentTypes.has(componentType))
+                    matchCount++;
             }
-        }
-        else
-        {
-            if (this.entities.has(entity))
+
+            if (matchCount == requiredComponentTypes.size)
             {
-                this.entities.delete(entity);
-                this.onEntityUnregistered(ecs, entity);
+                if (!entityGroup.has(entity))
+                {
+                    entityGroup.add(entity);
+                    this.onEntityRegistered(ecs, entity);
+                }
+            }
+            else
+            {
+                if (entityGroup.has(entity))
+                {
+                    entityGroup.delete(entity);
+                    this.onEntityUnregistered(ecs, entity);
+                }
             }
         }
     }
