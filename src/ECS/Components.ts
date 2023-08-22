@@ -32,7 +32,7 @@ export interface CameraComponent extends Component
     far: number;
 
     position: vec3;
-    target: vec3;
+    forward: vec3;
     up: vec3;
 
     viewMat: mat4;

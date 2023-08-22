@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import { CameraComponent } from "../../ECS/Components";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
@@ -6,6 +6,8 @@ import System from "../../ECS/System";
 
 export default class CameraMatrixSyncSystem extends System
 {
+    private cameraTarget: vec3 = vec3.create();
+
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
@@ -41,10 +43,11 @@ export default class CameraMatrixSyncSystem extends System
             
             if (!cameraComponent.viewMatrixSynced)
             {
+                vec3.add(this.cameraTarget, cameraComponent.position, cameraComponent.forward);
                 mat4.lookAt(
                     cameraComponent.viewMat,
                     cameraComponent.position,
-                    cameraComponent.target,
+                    this.cameraTarget,
                     cameraComponent.up);
                 
                 recalculateViewProjMat = true;

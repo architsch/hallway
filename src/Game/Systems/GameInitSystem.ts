@@ -11,7 +11,10 @@ export default class GameInitSystem extends System
 
     start(ecs: ECSManager)
     {
-        // TODO: Create a Camera entity and set its initial position.
+        ecs.addEntity("mainCamera");
+
+        for (let i = 0; i < 8; ++i)
+            ecs.addEntity("default");
     }
     
     update(ecs: ECSManager, t: number, dt: number)

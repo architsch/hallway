@@ -31,20 +31,18 @@ export default class CameraControlSystem extends System
             
             switch (keyInputComponent.key)
             {
-                case "UpArrow": forceZ -= 1; break;
-                case "DownArrow": forceZ += 1; break;
-                case "LeftArrow": forceX -= 1; break;
-                case "RightArrow": forceX += 1; break;
+                case "ArrowUp": forceZ -= 1; break;
+                case "ArrowDown": forceZ += 1; break;
+                case "ArrowLeft": forceX -= 1; break;
+                case "ArrowRight": forceX += 1; break;
             }
         });
 
         cameraEntities.forEach((entity: Entity) => {
             const cameraComponent = ecs.getComponent(entity.id, "Camera") as CameraComponent;
-
-            const cameraSpeed = 2;
+            const cameraSpeed = 0.25;
             const p = cameraComponent.position;
             vec3.set(cameraComponent.position, p[0] + forceX*cameraSpeed, p[1], p[2] + forceZ*cameraSpeed);
-
             cameraComponent.viewMatrixSynced = false;
         });
     }

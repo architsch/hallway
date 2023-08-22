@@ -5,6 +5,14 @@ import { Component } from "./Components";
 import System from "./System";
 import { globalConfig } from "../Config/GlobalConfig";
 import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
+import GameInitSystem from "../Game/Systems/GameInitSystem";
+import GraphicsInitSystem from "../Graphics/Systems/GraphicsInitSystem";
+import KeyInputSystem from "../Input/Systems/KeyInputSystem";
+import CameraControlSystem from "../Graphics/Systems/CameraControlSystem";
+import CameraMatrixSyncSystem from "../Graphics/Systems/CameraMatrixSyncSystem";
+import KinematicsSystem from "../Physics/Systems/KinematicsSystem";
+import TransformMatrixSyncSystem from "../Physics/Systems/TransformMatrixSyncSystem";
+import MeshRenderSystem from "../Graphics/Systems/MeshRenderSystem";
 
 export default class ECSManager
 {
@@ -16,7 +24,21 @@ export default class ECSManager
         this.entityPool = new Pool<Entity>(256, () => { return {id: undefined, componentIds: {}}; });
         
         this.systems = [
-            // TODO: Add systems
+            // Input/Control
+            new KeyInputSystem(),
+            new CameraControlSystem(),
+            new CameraMatrixSyncSystem(),
+
+            // Physics
+            new KinematicsSystem(),
+            new TransformMatrixSyncSystem(),
+
+            // Graphics
+            new GraphicsInitSystem(),
+            new MeshRenderSystem(),
+
+            // Game
+            new GameInitSystem(),
         ];
 
         for (const system of this.systems)

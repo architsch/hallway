@@ -38,7 +38,7 @@ export default class Texture
                 textureLoaded = true;
             };
             image.onerror = (event: Event | string) => {
-                throw new Error(`Texture failed to load :: URL = ${url}`);
+                throw new Error(`Texture failed to load :: URL = ${url}, Event = ${event.toString()}`);
             };
             image.src = url;
         }

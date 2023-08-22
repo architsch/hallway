@@ -11,18 +11,19 @@ export default class Shader
         this.program = gl.createProgram();
         let infoLog: string;
 
-        const vertSource = `
-            #version 300 es
-            ${meshConfig.vertexAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};\n`)}
-            ${meshConfig.uniforms.map(uniform => `uniform ${uniform.type} ${uniform.name};\n`)}
+        const vertSource = `#version 300 es
+            ${meshConfig.vertexAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
+            ${meshConfig.uniforms.map(uniform => `uniform ${uniform.type} ${uniform.name};`).join("\n")}
             ${meshConfig.vertShaderBody}
         `;
+        console.log(vertSource);
 
-        const fragSource = `
-            #version 300 es
-            ${meshConfig.textures.map(texture => `uniform sampler2D u_texture${texture.unit};\n`)}
-            ${meshConfig.vertShaderBody}
+        const fragSource = `#version 300 es
+            precision mediump float;
+            ${meshConfig.textures.map(texture => `uniform sampler2D u_texture${texture.unit};`).join("\n")}        
+            ${meshConfig.fragShaderBody}
         `;
+        console.log(fragSource);
 
         const vertShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertShader, vertSource);

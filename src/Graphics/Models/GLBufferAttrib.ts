@@ -14,6 +14,9 @@ export default class GLBufferAttrib
         this.size = size;
         this.stride = stride;
         this.offset = offset;
+
+        if (index < 0)
+            throw new Error(`Invalid attrib index (index = ${index})`);
     }
 
     use()

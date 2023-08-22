@@ -17,23 +17,25 @@ export default class KeyInputSystem extends System
 
         window.addEventListener("keydown", (event: KeyboardEvent) =>
         {
-            if (this.entityIdByPressedKey[event.key] != undefined)
-                throw new Error(`Key is already pressed :: ${event.key}`);
-
             event.preventDefault();
-            const entity = ecs.addEntity("empty");
-            ecs.addComponent(entity.id, "KeyInput", {key: ["string", event.key]});
-            this.entityIdByPressedKey[event.key] = entity.id;
+
+            if (this.entityIdByPressedKey[event.key] == undefined)
+            {
+                const entity = ecs.addEntity("empty");
+                ecs.addComponent(entity.id, "KeyInput", {key: ["string", event.key]});
+                this.entityIdByPressedKey[event.key] = entity.id;
+            }
         });
 
         window.addEventListener("keyup", (event: KeyboardEvent) =>
         {
-            if (this.entityIdByPressedKey[event.key] == undefined)
-                throw new Error(`Key is already unpressed :: ${event.key}`);
-
             event.preventDefault();
-            ecs.removeEntity(this.entityIdByPressedKey[event.key]);
-            delete this.entityIdByPressedKey[event.key];
+
+            if (this.entityIdByPressedKey[event.key] != undefined)
+            {
+                ecs.removeEntity(this.entityIdByPressedKey[event.key]);
+                delete this.entityIdByPressedKey[event.key];
+            }
         });
 
         const onFocusDisturbed = (_: any) =>
