@@ -1,5 +1,6 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
 import PoolableObject from "../Util/Pooling/PoolableObject";
+import Mesh from "../Graphics/Models/Mesh";
 
 export interface Component extends PoolableObject
 {
@@ -17,9 +18,16 @@ export interface TransformComponent extends Component
     matrixSynced: boolean;
 }
 
+export interface MeshComponent extends Component
+{
+    meshConfigId: string;
+    mesh: Mesh;
+}
+
 export interface MeshInstanceComponent extends Component
 {
     meshConfigId: string;
+    instanceIndex: number;
     uvScale: vec2;
     uvShift: vec2;
 }

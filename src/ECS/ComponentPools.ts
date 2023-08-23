@@ -1,6 +1,6 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
 import Pool from "../Util/Pooling/Pool";
-import { CameraComponent, Component, GraphicsComponent, KeyInputComponent, MeshInstanceComponent, TransformComponent } from "./Components";
+import { CameraComponent, Component, GraphicsComponent, KeyInputComponent, MeshComponent, MeshInstanceComponent, TransformComponent } from "./Components";
 
 const ComponentPools: {[componentType: string]: Pool<Component>} = {
     "Transform": new Pool<TransformComponent>(256, () => { return {
@@ -13,10 +13,17 @@ const ComponentPools: {[componentType: string]: Pool<Component>} = {
         worldMat: mat4.create(),
         matrixSynced: false,
     }}),
+    "Mesh": new Pool<MeshComponent>(16, () => { return {
+        id: undefined,
+        entityId: undefined,
+        meshConfigId: undefined,
+        mesh: undefined,
+    }}),
     "MeshInstance": new Pool<MeshInstanceComponent>(256, () => { return {
         id: undefined,
         entityId: undefined,
         meshConfigId: undefined,
+        instanceIndex: -1,
         uvScale: [1, 1],
         uvShift: [0, 0],
     }}),

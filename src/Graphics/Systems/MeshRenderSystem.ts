@@ -9,6 +9,8 @@ export default class MeshRenderSystem extends System
     private gl: WebGL2RenderingContext | null = null;
     private cameraComponent: CameraComponent | null = null;
 
+    private meshInstanceDataTemp: Float32Array = new Float32Array(20);
+
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
@@ -42,13 +44,18 @@ export default class MeshRenderSystem extends System
             if (mesh != null)
             {
                 mesh.updateUniform("u_cameraViewProj", this.cameraComponent.viewProjMat);
-                mesh.updateUniform("u_uvScale", meshInstanceComponent.uvScale);
-                mesh.updateUniform("u_uvShift", meshInstanceComponent.uvShift);
-                mesh.updateUniform("u_model", transformComponent.worldMat);
+
+                for (let i = 0; i < 16; ++i)
+                    this.meshInstanceDataTemp[i] = transformComponent.worldMat[i];
+                this.meshInstanceDataTemp[16] = meshInstanceComponent.uvScale[0];
+                this.meshInstanceDataTemp[17] = meshInstanceComponent.uvScale[1];
+                this.meshInstanceDataTemp[18] = meshInstanceComponent.uvShift[0];
+                this.meshInstanceDataTemp[19] = meshInstanceComponent.uvShift[1];
+                mesh.updateInstanceData(meshInstanceComponent.instanceIndex, this.meshInstanceDataTemp);
 
                 mesh.use();
                 
-                this.gl.drawArrays(this.gl.TRIANGLES, 0, mesh.getNumVertices());
+                this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, mesh.getNumVertices(), mesh.getNumInstances());
             }
         });
     }

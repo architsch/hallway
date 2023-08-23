@@ -13,6 +13,7 @@ export default class Shader
 
         const vertSource = `#version 300 es
             ${meshConfig.vertexAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
+            ${meshConfig.instanceAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
             ${meshConfig.uniforms.map(uniform => `uniform ${uniform.type} ${uniform.name};`).join("\n")}
             ${meshConfig.vertShaderBody}
         `;

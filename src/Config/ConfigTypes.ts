@@ -4,7 +4,10 @@ export interface MeshConfig
     fragShaderBody: string;
     textures: {url: string, unit: number}[];
     uniforms: {name: string, type: string}[];
+    numVertices: number;
     vertexAttribs: {name: string, numFloats: number, data: number[]}[];
+    numInstances: number;
+    instanceAttribs: {name: string, numFloats: number, data: number[]}[];
 }
 
 export type EntityConfig =

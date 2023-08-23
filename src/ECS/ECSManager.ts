@@ -13,6 +13,7 @@ import CameraMatrixSyncSystem from "../Graphics/Systems/CameraMatrixSyncSystem";
 import KinematicsSystem from "../Physics/Systems/KinematicsSystem";
 import TransformMatrixSyncSystem from "../Physics/Systems/TransformMatrixSyncSystem";
 import MeshRenderSystem from "../Graphics/Systems/MeshRenderSystem";
+import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexingSystem";
 
 export default class ECSManager
 {
@@ -35,6 +36,7 @@ export default class ECSManager
 
             // Graphics
             new GraphicsInitSystem(),
+            new MeshInstanceIndexingSystem(),
             new MeshRenderSystem(),
 
             // Game

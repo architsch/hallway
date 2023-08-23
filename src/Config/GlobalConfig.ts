@@ -10,9 +10,10 @@ export const globalConfig: GlobalConfig = {
 
                 void main()
                 {
-                    v_normal_worldspace = normalize(mat3(transpose(inverse(u_model))) * normal);
-                    v_uv = uv * u_uvScale + u_uvShift;
-                    gl_Position = u_cameraViewProj * u_model * vec4(position, 1.0);
+                    mat4 model = mat4(model_col0, model_col1, model_col2, model_col3);
+                    v_normal_worldspace = normalize(mat3(transpose(inverse(model))) * normal);
+                    v_uv = uv * uvScale + uvShift;
+                    gl_Position = u_cameraViewProj * model * vec4(position, 1.0);
                 }
             `,
             fragShaderBody: `
@@ -37,10 +38,8 @@ export const globalConfig: GlobalConfig = {
             ],
             uniforms: [
                 {name: "u_cameraViewProj", type: "mat4"},
-                {name: "u_model", type: "mat4"},
-                {name: "u_uvScale", type: "vec2"},
-                {name: "u_uvShift", type: "vec2"},
             ],
+            numVertices: 6,
             vertexAttribs: [
                 {name: "position", numFloats: 3, data: [
                     -0.5, -0.5, 0.0,
@@ -66,6 +65,15 @@ export const globalConfig: GlobalConfig = {
                     1, 0,
                     0, 1,
                 ]},
+            ],
+            numInstances: 256,
+            instanceAttribs: [
+                {name: "model_col0", numFloats: 4, data: undefined},
+                {name: "model_col1", numFloats: 4, data: undefined},
+                {name: "model_col2", numFloats: 4, data: undefined},
+                {name: "model_col3", numFloats: 4, data: undefined},
+                {name: "uvScale", numFloats: 2, data: undefined},
+                {name: "uvShift", numFloats: 2, data: undefined},
             ],
         }
     },

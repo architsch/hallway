@@ -10,7 +10,10 @@ const loadStartedMesheConfigIds = new Set<string>();
 export default class Mesh
 {
     private shader: Shader;
-    private vertexBuffers: GLBuffer[];
+    private numVertices: number;
+    private vertexBuffer: GLBuffer;
+    private numInstances: number;
+    private instanceBuffer: GLBuffer;
     private uniforms: {[name: string]: Uniform<any>};
     private textures: Texture[];
 
@@ -42,13 +45,16 @@ export default class Mesh
             throw new Error(`MeshConfig not found (meshConfigId = ${meshConfigId})`);
 
         const meshObject = new Mesh();
+        meshObject.numVertices = meshConfig.numVertices;
+        meshObject.numInstances = meshConfig.numInstances;
 
         meshObject.shader = new Shader(gl, meshConfig);
         const program = meshObject.shader.getProgram();
         
-        meshObject.vertexBuffers = [];
-        for (const vertexAttrib of meshConfig.vertexAttribs)
-            meshObject.vertexBuffers.push(new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.STATIC_DRAW, vertexAttrib));
+        meshObject.vertexBuffer = new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.STATIC_DRAW,
+            meshConfig.numVertices, meshConfig.vertexAttribs, false);
+        meshObject.instanceBuffer = new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW,
+            meshConfig.numInstances, meshConfig.instanceAttribs, true);
 
         meshObject.uniforms = {};
         for (const uniform of meshConfig.uniforms)
@@ -84,8 +90,8 @@ export default class Mesh
     {
         this.shader.use();
         
-        for (const vertexBuffer of this.vertexBuffers)
-            vertexBuffer.use();
+        this.vertexBuffer.use();
+        this.instanceBuffer.use();
 
         for (const texture of this.textures)
             texture.use();
@@ -98,8 +104,18 @@ export default class Mesh
         this.uniforms[name].updateValue(value);
     }
 
+    updateInstanceData(instanceIndex: number, data: Float32Array)
+    {
+        this.instanceBuffer.setDataAtStrideIndex(instanceIndex, data);
+    }
+
     getNumVertices(): number
     {
-        return this.vertexBuffers[0].getNumStrides();
+        return this.numVertices;
+    }
+
+    getNumInstances(): number
+    {
+        return this.numInstances;
     }
 }
