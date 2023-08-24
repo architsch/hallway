@@ -2,43 +2,8 @@ import { mat4, vec2, vec3 } from "gl-matrix";
 import { GlobalConfig } from "./ConfigTypes";
 
 export const globalConfig: GlobalConfig = {
-    meshConfigById: {
-        "spriteQuad": {
-            vertShaderBody: `
-                out vec3 v_normal_worldspace;
-                out vec2 v_uv;
-
-                void main()
-                {
-                    mat4 model = mat4(model_col0, model_col1, model_col2, model_col3);
-                    v_normal_worldspace = normalize(mat3(transpose(inverse(model))) * normal);
-                    v_uv = uv * uvScale + uvShift;
-                    gl_Position = u_cameraViewProj * model * vec4(position, 1.0);
-                }
-            `,
-            fragShaderBody: `
-                in vec3 v_normal_worldspace;
-                in vec2 v_uv;
-                out vec4 FragColor;
-
-                void main()
-                {
-                    float exposure = abs(dot(v_normal_worldspace, vec3(0.0, 0.0, 1.0)));
-                    vec4 fragColor = texture(u_texture0, v_uv);
-
-                    if (fragColor.a < 0.5)
-                        discard;
-                    
-                    fragColor = vec4(fragColor.xyz * exposure, 1.0);
-                    FragColor = fragColor;
-                }
-            `,
-            textures: [
-                {url: "spriteAtlas.png", unit: 0},
-            ],
-            uniforms: [
-                {name: "u_cameraViewProj", type: "mat4"},
-            ],
+    geometryConfigById: {
+        "quad": {
             numVertices: 6,
             vertexAttribs: [
                 {name: "position", numFloats: 3, data: [
@@ -48,14 +13,6 @@ export const globalConfig: GlobalConfig = {
                     +0.5, +0.5, 0.0,
                     +0.5, -0.5, 0.0,
                     -0.5, +0.5, 0.0,
-                ]},
-                {name: "normal", numFloats: 3, data: [
-                    0.0, 0.0, 1.0,
-                    0.0, 0.0, 1.0,
-                    0.0, 0.0, 1.0,
-                    0.0, 0.0, 1.0,
-                    0.0, 0.0, 1.0,
-                    0.0, 0.0, 1.0,
                 ]},
                 {name: "uv", numFloats: 2, data: [
                     0, 0,
@@ -75,7 +32,45 @@ export const globalConfig: GlobalConfig = {
                 {name: "uvScale", numFloats: 2, data: undefined},
                 {name: "uvShift", numFloats: 2, data: undefined},
             ],
-        }
+        },
+    },
+    materialConfigById: {
+        "sprite": {
+            vertShaderBody: `
+                out vec2 v_uv;
+
+                void main()
+                {
+                    mat4 model = mat4(model_col0, model_col1, model_col2, model_col3);
+                    v_uv = uv * uvScale + uvShift;
+                    gl_Position = u_cameraViewProj * model * vec4(position, 1.0);
+                }
+            `,
+            fragShaderBody: `
+                in vec2 v_uv;
+                out vec4 FragColor;
+
+                void main()
+                {
+                    vec4 fragColor = texture(u_texture0, v_uv);
+                    if (fragColor.a < 0.5)
+                        discard;
+                    FragColor = vec4(fragColor.xyz, 1.0);
+                }
+            `,
+            textures: [
+                {url: "spriteAtlas.png", unit: 0},
+            ],
+            uniforms: [
+                {name: "u_cameraViewProj", type: "mat4"},
+            ],
+        },
+    },
+    meshConfigById: {
+        "spriteQuad": {
+            geometryConfigId: "quad",
+            materialConfigId: "sprite",
+        },
     },
     entityConfigById: {
         "empty": {

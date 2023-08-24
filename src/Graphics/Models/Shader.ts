@@ -1,28 +1,28 @@
-import { MeshConfig } from "../../Config/ConfigTypes";
+import { GeometryConfig, MaterialConfig } from "../../Config/ConfigTypes";
 
 export default class Shader
 {
     private gl: WebGL2RenderingContext;
     private program: WebGLProgram;
 
-    constructor(gl: WebGL2RenderingContext, meshConfig: MeshConfig)
+    constructor(gl: WebGL2RenderingContext, geometryConfig: GeometryConfig, materialConfig: MaterialConfig)
     {
         this.gl = gl;
         this.program = gl.createProgram();
         let infoLog: string;
 
         const vertSource = `#version 300 es
-            ${meshConfig.vertexAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
-            ${meshConfig.instanceAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
-            ${meshConfig.uniforms.map(uniform => `uniform ${uniform.type} ${uniform.name};`).join("\n")}
-            ${meshConfig.vertShaderBody}
+            ${geometryConfig.vertexAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
+            ${geometryConfig.instanceAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
+            ${materialConfig.uniforms.map(uniform => `uniform ${uniform.type} ${uniform.name};`).join("\n")}
+            ${materialConfig.vertShaderBody}
         `;
         console.log(vertSource);
 
         const fragSource = `#version 300 es
             precision mediump float;
-            ${meshConfig.textures.map(texture => `uniform sampler2D u_texture${texture.unit};`).join("\n")}        
-            ${meshConfig.fragShaderBody}
+            ${materialConfig.textures.map(texture => `uniform sampler2D u_texture${texture.unit};`).join("\n")}        
+            ${materialConfig.fragShaderBody}
         `;
         console.log(fragSource);
 

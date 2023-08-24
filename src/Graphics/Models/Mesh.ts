@@ -1,121 +1,59 @@
-import GLBuffer from "./GLBuffer";
-import Shader from "./Shader";
-import Texture from "./Texture";
-import { Uniform, UniformFloat, UniformMat2, UniformMat3, UniformMat4, UniformVec2, UniformVec3, UniformVec4 } from "./Uniform";
 import { globalConfig } from "../../Config/GlobalConfig";
+import Geometry from "./Geometry";
+import Material from "./Material";
+import AsyncLoadableObject from "../../Util/Async/AsyncLoadableObject";
 
-const meshCache: {[meshConfigId: string]: Mesh} = {};
-const loadStartedMesheConfigIds = new Set<string>();
-
-export default class Mesh
+export default class Mesh extends AsyncLoadableObject
 {
-    private shader: Shader;
-    private numVertices: number;
-    private vertexBuffer: GLBuffer;
-    private numInstances: number;
-    private instanceBuffer: GLBuffer;
-    private uniforms: {[name: string]: Uniform<any>};
-    private textures: Texture[];
+    private geometry: Geometry;
+    private material: Material;
 
-    private constructor() {}
-
-    static get(gl: WebGL2RenderingContext, meshConfigId: string): Mesh | null
+    protected static override async loadRoutine(id: string, options: {gl: WebGL2RenderingContext}): Promise<any>
     {
-        if (meshCache[meshConfigId] != undefined) // Mesh has already been loaded.
-        {
-            return meshCache[meshConfigId];
-        }
-        else if (!loadStartedMesheConfigIds.has(meshConfigId)) // Must start loading the mesh.
-        {
-            Mesh.load(gl, meshConfigId);
-            return null;
-        }
-        else // Mesh is currently being loaded.
-        {
-            return null;
-        }
-    }
-
-    protected static async load(gl: WebGL2RenderingContext, meshConfigId: string)
-    {
-        loadStartedMesheConfigIds.add(meshConfigId);
-
-        const meshConfig = globalConfig.meshConfigById[meshConfigId];
+        const meshConfig = globalConfig.meshConfigById[id];
         if (meshConfig == undefined)
-            throw new Error(`MeshConfig not found (meshConfigId = ${meshConfigId})`);
-
-        const meshObject = new Mesh();
-        meshObject.numVertices = meshConfig.numVertices;
-        meshObject.numInstances = meshConfig.numInstances;
-
-        meshObject.shader = new Shader(gl, meshConfig);
-        const program = meshObject.shader.getProgram();
+            throw new Error(`MeshConfig not found (meshConfigId = ${id})`);
         
-        meshObject.vertexBuffer = new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.STATIC_DRAW,
-            meshConfig.numVertices, meshConfig.vertexAttribs, false);
-        meshObject.instanceBuffer = new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW,
-            meshConfig.numInstances, meshConfig.instanceAttribs, true);
+        const gl = options.gl;
 
-        meshObject.uniforms = {};
-        for (const uniform of meshConfig.uniforms)
+        const obj = new Mesh();
+        do
         {
-            if (meshObject.uniforms[uniform.name] != undefined)
-                throw new Error(`Duplicate uniform name found :: ${uniform.name}`);
-            
-            let uniformObject: Uniform<any>;
-            switch (uniform.type)
-            {
-                case "float": uniformObject = new UniformFloat(gl, program, uniform.name); break;
-                case "vec2": uniformObject = new UniformVec2(gl, program, uniform.name); break;
-                case "vec3": uniformObject = new UniformVec3(gl, program, uniform.name); break;
-                case "vec4": uniformObject = new UniformVec4(gl, program, uniform.name); break;
-                case "mat2": uniformObject = new UniformMat2(gl, program, uniform.name); break;
-                case "mat3": uniformObject = new UniformMat3(gl, program, uniform.name); break;
-                case "mat4": uniformObject = new UniformMat4(gl, program, uniform.name); break;
-                default: throw new Error(`Unhandled uniform type :: ${uniform.type} (name: ${uniform.name})`); break;
-            }
-            meshObject.uniforms[uniform.name] = uniformObject;
-        }
+            obj.material = Material.get(meshConfig.materialConfigId, {gl, geometryConfigId: meshConfig.geometryConfigId});
+            await new Promise(resolve => setTimeout(resolve, 100));
+        } while (obj.material == undefined);
+        do
+        {
+            obj.geometry = Geometry.get(meshConfig.geometryConfigId, {gl, program: obj.material.getProgram()});
+            await new Promise(resolve => setTimeout(resolve, 100));
+        } while (obj.geometry == undefined);
 
-        meshObject.textures = [];
-        for (const texture of meshConfig.textures)
-        {
-            const textureObject = await Texture.load(gl, program, texture.url, texture.unit);
-            meshObject.textures.push(textureObject);
-        }
-        meshCache[meshConfigId] = meshObject;
+        return obj;
     }
 
     use()
     {
-        this.shader.use();
-        
-        this.vertexBuffer.use();
-        this.instanceBuffer.use();
-
-        for (const texture of this.textures)
-            texture.use();
+        this.geometry.use();
+        this.material.use();
     }
 
     updateUniform(name: string, value: any)
     {
-        if (this.uniforms[name] == undefined)
-            throw new Error(`Uniform name "${name}" doesn't exist.`);
-        this.uniforms[name].updateValue(value);
+        this.material.updateUniform(name, value);
     }
 
     updateInstanceData(instanceIndex: number, data: Float32Array)
     {
-        this.instanceBuffer.setDataAtStrideIndex(instanceIndex, data);
+        this.geometry.updateInstanceData(instanceIndex, data);
     }
 
     getNumVertices(): number
     {
-        return this.numVertices;
+        return this.geometry.getNumVertices();
     }
 
     getNumInstances(): number
     {
-        return this.numInstances;
+        return this.geometry.getNumInstances();
     }
 }

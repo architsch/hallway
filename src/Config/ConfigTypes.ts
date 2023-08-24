@@ -1,13 +1,23 @@
-export interface MeshConfig
+export interface GeometryConfig
+{
+    numVertices: number;
+    vertexAttribs: {name: string, numFloats: number, data: number[]}[];
+    numInstances: number;
+    instanceAttribs: {name: string, numFloats: number, data: number[]}[];
+}
+
+export interface MaterialConfig
 {
     vertShaderBody: string;
     fragShaderBody: string;
     textures: {url: string, unit: number}[];
     uniforms: {name: string, type: string}[];
-    numVertices: number;
-    vertexAttribs: {name: string, numFloats: number, data: number[]}[];
-    numInstances: number;
-    instanceAttribs: {name: string, numFloats: number, data: number[]}[];
+}
+
+export interface MeshConfig
+{
+    geometryConfigId: string;
+    materialConfigId: string;
 }
 
 export type EntityConfig =
@@ -15,6 +25,8 @@ export type EntityConfig =
 
 export interface GlobalConfig
 {
+    geometryConfigById: {[id: string]: GeometryConfig};
+    materialConfigById: {[id: string]: MaterialConfig};
     meshConfigById: {[id: string]: MeshConfig};
     entityConfigById: {[id: string]: EntityConfig};
 }

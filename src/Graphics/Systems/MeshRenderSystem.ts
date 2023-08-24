@@ -40,7 +40,7 @@ export default class MeshRenderSystem extends System
             const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
             const transformComponent = ecs.getComponent(entity.id, "Transform") as TransformComponent;
 
-            const mesh = Mesh.get(this.gl, meshInstanceComponent.meshConfigId);
+            const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl: this.gl});
             if (mesh != null)
             {
                 mesh.updateUniform("u_cameraViewProj", this.cameraComponent.viewProjMat);

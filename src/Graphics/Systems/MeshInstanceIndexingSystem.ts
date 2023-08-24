@@ -31,9 +31,10 @@ export default class MeshInstanceIndexingSystem extends System
         if (freeInstanceIndices == undefined)
         {
             const meshConfig = globalConfig.meshConfigById[meshInstanceComponent.meshConfigId];
-            freeInstanceIndices = new Array<number>(meshConfig.numInstances);
-            for (let i = 0; i < meshConfig.numInstances; ++i)
-                freeInstanceIndices[i] = meshConfig.numInstances - 1 - i;
+            const geometryConfig = globalConfig.geometryConfigById[meshConfig.geometryConfigId];
+            freeInstanceIndices = new Array<number>(geometryConfig.numInstances);
+            for (let i = 0; i < geometryConfig.numInstances; ++i)
+                freeInstanceIndices[i] = geometryConfig.numInstances - 1 - i;
             this.freeInstanceIndicesByMeshConfigId[meshInstanceComponent.meshConfigId] = freeInstanceIndices;
         }
         if (freeInstanceIndices.length == 0)
