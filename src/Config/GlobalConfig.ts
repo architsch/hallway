@@ -2,11 +2,16 @@ import { mat4, vec2, vec3 } from "gl-matrix";
 import { GlobalConfig } from "./ConfigTypes";
 
 export const globalConfig: GlobalConfig = {
+    textureConfigById: {
+        "spriteAtlas": {
+            url: "spriteAtlas.png",
+        }
+    },
     geometryConfigById: {
         "quad": {
             numVertices: 6,
             vertexAttribs: [
-                {name: "position", numFloats: 3, data: [
+                {name: "position", type: "vec3", data: [
                     -0.5, -0.5, 0.0,
                     -0.5, +0.5, 0.0,
                     +0.5, -0.5, 0.0,
@@ -14,7 +19,7 @@ export const globalConfig: GlobalConfig = {
                     +0.5, -0.5, 0.0,
                     -0.5, +0.5, 0.0,
                 ]},
-                {name: "uv", numFloats: 2, data: [
+                {name: "uv", type: "vec2", data: [
                     0, 0,
                     0, 1,
                     1, 0,
@@ -25,12 +30,9 @@ export const globalConfig: GlobalConfig = {
             ],
             numInstances: 256,
             instanceAttribs: [
-                {name: "model_col0", numFloats: 4, data: undefined},
-                {name: "model_col1", numFloats: 4, data: undefined},
-                {name: "model_col2", numFloats: 4, data: undefined},
-                {name: "model_col3", numFloats: 4, data: undefined},
-                {name: "uvScale", numFloats: 2, data: undefined},
-                {name: "uvShift", numFloats: 2, data: undefined},
+                {name: "model", type: "mat4", data: undefined},
+                {name: "uvScale", type: "vec2", data: undefined},
+                {name: "uvShift", type: "vec2", data: undefined},
             ],
         },
     },
@@ -41,7 +43,6 @@ export const globalConfig: GlobalConfig = {
 
                 void main()
                 {
-                    mat4 model = mat4(model_col0, model_col1, model_col2, model_col3);
                     v_uv = uv * uvScale + uvShift;
                     gl_Position = u_cameraViewProj * model * vec4(position, 1.0);
                 }
@@ -58,8 +59,8 @@ export const globalConfig: GlobalConfig = {
                     FragColor = vec4(fragColor.xyz, 1.0);
                 }
             `,
-            textures: [
-                {url: "spriteAtlas.png", unit: 0},
+            textureBindings: [
+                {textureConfigId: "spriteAtlas", unit: 0},
             ],
             uniforms: [
                 {name: "u_cameraViewProj", type: "mat4"},

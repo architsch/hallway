@@ -10,7 +10,7 @@ export default class Geometry extends AsyncLoadableObject
     private instanceBuffer: GLBuffer;
 
     protected static override async loadRoutine(id: string,
-        options: {gl: WebGL2RenderingContext, program: WebGLProgram}): Promise<any>
+        options: {gl: WebGL2RenderingContext, program: WebGLProgram}): Promise<Geometry>
     {
         const geometryConfig = globalConfig.geometryConfigById[id];
         if (geometryConfig == undefined)
@@ -28,7 +28,7 @@ export default class Geometry extends AsyncLoadableObject
             geometryConfig.numVertices, geometryConfig.vertexAttribs, false);
         obj.instanceBuffer = new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW,
             geometryConfig.numInstances, geometryConfig.instanceAttribs, true);
-        
+        console.log(`Geometry loaded :: ${id}`);
         return obj;
     }
 

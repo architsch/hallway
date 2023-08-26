@@ -12,8 +12,8 @@ export default class Shader
         let infoLog: string;
 
         const vertSource = `#version 300 es
-            ${geometryConfig.vertexAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
-            ${geometryConfig.instanceAttribs.map(attrib => `in ${this.getAttribTypeName(attrib.numFloats)} ${attrib.name};`).join("\n")}
+            ${geometryConfig.vertexAttribs.map(attrib => `in ${attrib.type} ${attrib.name};`).join("\n")}
+            ${geometryConfig.instanceAttribs.map(attrib => `in ${attrib.type} ${attrib.name};`).join("\n")}
             ${materialConfig.uniforms.map(uniform => `uniform ${uniform.type} ${uniform.name};`).join("\n")}
             ${materialConfig.vertShaderBody}
         `;
@@ -21,7 +21,7 @@ export default class Shader
 
         const fragSource = `#version 300 es
             precision mediump float;
-            ${materialConfig.textures.map(texture => `uniform sampler2D u_texture${texture.unit};`).join("\n")}        
+            ${materialConfig.textureBindings.map(texture => `uniform sampler2D u_texture${texture.unit};`).join("\n")}        
             ${materialConfig.fragShaderBody}
         `;
         console.log(fragSource);
@@ -59,17 +59,5 @@ export default class Shader
     getProgram(): WebGLProgram
     {
         return this.program;
-    }
-
-    private getAttribTypeName(numFloats: number): string
-    {
-        switch (numFloats)
-        {
-            case 1: return "float";
-            case 2: return "vec2";
-            case 3: return "vec3";
-            case 4: return "vec4";
-            default: throw new Error(`There is no attribute type with ${numFloats} floating-point elements.`);
-        }
     }
 }

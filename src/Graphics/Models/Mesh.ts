@@ -8,7 +8,7 @@ export default class Mesh extends AsyncLoadableObject
     private geometry: Geometry;
     private material: Material;
 
-    protected static override async loadRoutine(id: string, options: {gl: WebGL2RenderingContext}): Promise<any>
+    protected static override async loadRoutine(id: string, options: {gl: WebGL2RenderingContext}): Promise<Mesh>
     {
         const meshConfig = globalConfig.meshConfigById[id];
         if (meshConfig == undefined)
@@ -28,6 +28,7 @@ export default class Mesh extends AsyncLoadableObject
             await new Promise(resolve => setTimeout(resolve, 100));
         } while (obj.geometry == undefined);
 
+        console.log(`Mesh loaded :: ${id}`);
         return obj;
     }
 

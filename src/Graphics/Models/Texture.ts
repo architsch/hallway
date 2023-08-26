@@ -1,63 +1,46 @@
-const textureCache: {[url: string]: WebGLTexture} = {};
+import { globalConfig } from "../../Config/GlobalConfig";
+import AsyncLoadableObject from "../../Util/Async/AsyncLoadableObject";
 
-export default class Texture
+export default class Texture extends AsyncLoadableObject
 {
-    private gl: WebGL2RenderingContext;
-    private texture: WebGLTexture;
-    private unit: number;
-    private uniformLoc: WebGLUniformLocation;
+    private webGLTexture: WebGLTexture;
 
-    private constructor() {}
-
-    static async load(gl: WebGL2RenderingContext, program: WebGLProgram, url: string, unit: number): Promise<Texture>
+    protected static override async loadRoutine(id: string,
+        options: {gl: WebGL2RenderingContext}): Promise<Texture>
     {
-        const textureObject = new Texture();
+        const textureConfig = globalConfig.textureConfigById[id];
+        if (textureConfig == undefined)
+            throw new Error(`Texture config not found (id = ${id})`);
+        const obj = new Texture();
+        
         let textureLoaded = false;
+        const gl = options.gl;
+        const url = textureConfig.url;
 
-        textureObject.gl = gl;
-        textureObject.unit = unit;
-        textureObject.uniformLoc = gl.getUniformLocation(program, `u_texture${unit}`);
-
-        if (textureCache[url] != undefined)
-        {
-            textureObject.texture = textureCache[url];
+        const image = new Image();
+        image.onload = () => {
+            obj.webGLTexture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, obj.webGLTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, image.width, image.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
             textureLoaded = true;
-        }
-        else
-        {
-            const image = new Image();
-            image.onload = () => {
-                textureObject.texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, textureObject.texture);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, image.width, image.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                textureCache[url] = textureObject.texture;
-                textureLoaded = true;
-            };
-            image.onerror = (event: Event | string) => {
-                throw new Error(`Texture failed to load :: URL = ${url}, Event = ${event.toString()}`);
-            };
-            image.src = url;
-        }
+        };
+        image.onerror = (event: Event | string) => {
+            throw new Error(`Texture failed to load :: URL = ${url}, Event = ${event.toString()}`);
+        };
+        image.src = url;
 
         while (!textureLoaded)
             await new Promise(resolve => setTimeout(resolve, 100));
-        
-        return textureObject;
+        console.log(`Texture loaded :: ${id}`);
+        return obj;
     }
 
-    getTexture(): WebGLTexture
+    getWebGLTexture(): WebGLTexture
     {
-        return this.texture;
-    }
-
-    use()
-    {
-        this.gl.activeTexture(this.gl.TEXTURE0 + this.unit);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
-        this.gl.uniform1i(this.uniformLoc, this.unit);
+        return this.webGLTexture;
     }
 }

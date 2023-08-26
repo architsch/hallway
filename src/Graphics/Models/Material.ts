@@ -1,17 +1,17 @@
 import { globalConfig } from "../../Config/GlobalConfig";
 import AsyncLoadableObject from "../../Util/Async/AsyncLoadableObject";
 import Shader from "./Shader";
-import Texture from "./Texture";
+import TextureBinding from "./TextureBinding";
 import { Uniform, UniformFloat, UniformMat2, UniformMat3, UniformMat4, UniformVec2, UniformVec3, UniformVec4 } from "./Uniform";
 
 export default class Material extends AsyncLoadableObject
 {
     private shader: Shader;
     private uniforms: {[name: string]: Uniform<any>};
-    private textures: Texture[];
+    private textureBindings: TextureBinding[];
 
     protected static override async loadRoutine(id: string,
-        options: {gl: WebGL2RenderingContext, geometryConfigId: string}): Promise<any>
+        options: {gl: WebGL2RenderingContext, geometryConfigId: string}): Promise<Material>
     {
         const materialConfig = globalConfig.materialConfigById[id];
         if (materialConfig == undefined)
@@ -49,13 +49,18 @@ export default class Material extends AsyncLoadableObject
             obj.uniforms[uniform.name] = uniformObject;
         }
 
-        obj.textures = [];
-        for (const texture of materialConfig.textures)
+        obj.textureBindings = new Array<TextureBinding>(materialConfig.textureBindings.length);
+        for (let i = 0; i < materialConfig.textureBindings.length; ++i)
         {
-            const textureObject = await Texture.load(gl, program, texture.url, texture.unit);
-            obj.textures.push(textureObject);
+            const textureBinding = materialConfig.textureBindings[i];
+            const textureBindingId = `${id}_textureBinding_${i}`;
+            do
+            {
+                obj.textureBindings[i] = TextureBinding.get(textureBindingId, {gl, program, textureConfigId: textureBinding.textureConfigId, unit: textureBinding.unit});
+                await new Promise(resolve => setTimeout(resolve, 100));
+            } while (obj.textureBindings[i] == undefined);
         }
-
+        console.log(`Material loaded :: ${id}`);
         return obj;
     }
 
@@ -63,7 +68,7 @@ export default class Material extends AsyncLoadableObject
     {
         this.shader.use();
 
-        for (const texture of this.textures)
+        for (const texture of this.textureBindings)
             texture.use();
     }
 
