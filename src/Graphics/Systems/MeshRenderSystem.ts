@@ -10,6 +10,7 @@ export default class MeshRenderSystem extends System
     private cameraComponent: CameraComponent | null = null;
 
     private meshInstanceDataTemp: Float32Array = new Float32Array(20);
+    private meshesToRender: Set<Mesh> = new Set<Mesh>();
 
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
@@ -34,6 +35,7 @@ export default class MeshRenderSystem extends System
 
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT | this.gl.STENCIL_BUFFER_BIT);
 
+        this.meshesToRender.clear();
         const meshInstanceEntities = this.entityGroups["MeshInstance"];
 
         meshInstanceEntities.forEach((entity: Entity) => {
@@ -43,20 +45,27 @@ export default class MeshRenderSystem extends System
             const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl: this.gl});
             if (mesh != null)
             {
-                mesh.updateUniform("u_cameraViewProj", this.cameraComponent.viewProjMat);
+                if (!this.meshesToRender.has(mesh))
+                    this.meshesToRender.add(mesh);
 
-                for (let i = 0; i < 16; ++i)
-                    this.meshInstanceDataTemp[i] = transformComponent.worldMat[i];
-                this.meshInstanceDataTemp[16] = meshInstanceComponent.uvScale[0];
-                this.meshInstanceDataTemp[17] = meshInstanceComponent.uvScale[1];
-                this.meshInstanceDataTemp[18] = meshInstanceComponent.uvShift[0];
-                this.meshInstanceDataTemp[19] = meshInstanceComponent.uvShift[1];
-                mesh.updateInstanceData(meshInstanceComponent.instanceIndex, this.meshInstanceDataTemp);
-
-                mesh.use();
-                
-                this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, mesh.getNumVertices(), mesh.getNumInstances());
+                if (!transformComponent.meshInstanceSynced)
+                {
+                    for (let i = 0; i < 16; ++i)
+                        this.meshInstanceDataTemp[i] = transformComponent.worldMat[i];
+                    this.meshInstanceDataTemp[16] = meshInstanceComponent.uvScale[0];
+                    this.meshInstanceDataTemp[17] = meshInstanceComponent.uvScale[1];
+                    this.meshInstanceDataTemp[18] = meshInstanceComponent.uvShift[0];
+                    this.meshInstanceDataTemp[19] = meshInstanceComponent.uvShift[1];
+                    mesh.updateInstanceData(meshInstanceComponent.instanceIndex, this.meshInstanceDataTemp);
+                    transformComponent.meshInstanceSynced = true;
+                }
             }
+        });
+
+        this.meshesToRender.forEach((mesh: Mesh) => {
+            mesh.updateUniform("u_cameraViewProj", this.cameraComponent.viewProjMat);
+            mesh.use();
+            this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, mesh.getNumVertices(), mesh.getNumInstances());
         });
     }
 
@@ -69,6 +78,7 @@ export default class MeshRenderSystem extends System
 
             this.gl.clearColor(0.2, 0.4, 0.2, 1.0);
             this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+            this.gl.enable(this.gl.DEPTH_TEST);
         }
 
         if (this.cameraComponent == null && entity.componentIds["Camera"] != undefined)

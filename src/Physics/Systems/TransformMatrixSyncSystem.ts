@@ -38,6 +38,7 @@ export default class TransformMatrixSyncSystem extends System
                 mat4.copy(transformComponent.worldMat, transformComponent.localMat);
 
                 transformComponent.matrixSynced = true;
+                transformComponent.meshInstanceSynced = false;
             }
         });
     }

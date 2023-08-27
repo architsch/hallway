@@ -24,21 +24,31 @@ export default class KinematicsSystem extends System
         kinematicBodyEntities.forEach((entity: Entity) => {
             const transformComponent = ecs.getComponent(entity.id, "Transform") as TransformComponent;
             
-            vec3.set(transformComponent.position,
-                3 * Math.cos(entity.id * 0.25*Math.PI + t),
-                3 * Math.sin(entity.id * 0.25*Math.PI + t),
-                0);
-            vec3.set(transformComponent.rotation,
-                entity.id * 0.1*Math.PI + 0.5*t,
-                entity.id * 0.15*Math.PI + 0.5*t,
-                entity.id * 0.2*Math.PI + 0.5*t);
-            
-            transformComponent.matrixSynced = false;
+            if (entity.id % 2 == 1)
+            {
+                vec3.set(transformComponent.position,
+                    3 * Math.cos(entity.id * 0.25*Math.PI + 0.2*t),
+                    3 * Math.sin(entity.id * 0.25*Math.PI + 0.2*t),
+                    0);
+                
+                transformComponent.matrixSynced = false;
+            }
         });
     }
 
     onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
+        const transformComponent = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+            
+        if (entity.id % 2 == 0)
+        {
+            vec3.set(transformComponent.position,
+                3 * Math.cos(entity.id * 0.25*Math.PI),
+                3 * Math.sin(entity.id * 0.25*Math.PI),
+                2);
+            
+            transformComponent.matrixSynced = false;
+        }
     }
 
     onEntityUnregistered(ecs: ECSManager, entity: Entity)

@@ -12,6 +12,7 @@ const ComponentPools: {[componentType: string]: Pool<Component>} = {
         localMat: mat4.create(),
         worldMat: mat4.create(),
         matrixSynced: false,
+        meshInstanceSynced: false,
     }}),
     "Mesh": new Pool<MeshComponent>(16, () => { return {
         id: undefined,

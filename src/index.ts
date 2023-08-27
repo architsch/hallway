@@ -18,13 +18,12 @@ function update(timeInMillis: number)
     gameDeltaTime = Math.min(gameDeltaTime + (appTime - appTimePrev), maxGameDeltaTime);
     appTimePrev = appTime;
 
-    if (gameDeltaTime < minGameDeltaTime)
-        return;
-    gameTime += gameDeltaTime;
-
-    ecs.update(gameTime, gameDeltaTime);
-    
-    gameDeltaTime = 0;
+    if (gameDeltaTime >= minGameDeltaTime)
+    {
+        gameTime += gameDeltaTime;
+        ecs.update(gameTime, gameDeltaTime);
+        gameDeltaTime = 0;
+    }
     requestAnimationFrame(update);
 }
 

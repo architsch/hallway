@@ -16,6 +16,7 @@ export interface TransformComponent extends Component
     localMat: mat4;
     worldMat: mat4;
     matrixSynced: boolean;
+    meshInstanceSynced: boolean;
 }
 
 export interface MeshComponent extends Component
