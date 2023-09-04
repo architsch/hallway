@@ -3,20 +3,20 @@ import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
 export abstract class Uniform<T>
 {
     protected gl: WebGL2RenderingContext;
-    protected name: string;
+    protected configId: string;
     protected loc: WebGLUniformLocation;
 
-    constructor(gl: WebGL2RenderingContext, program: WebGLProgram, name: string)
+    constructor(gl: WebGL2RenderingContext, program: WebGLProgram, configId: string)
     {
         this.gl = gl;
-        this.name = name;
+        this.configId = configId;
         gl.useProgram(program);
-        this.loc = gl.getUniformLocation(program, name);
+        this.loc = gl.getUniformLocation(program, configId);
     }
 
-    getName(): string
+    getConfigId(): string
     {
-        return this.name;
+        return this.configId;
     }
 
     getLoc(): WebGLUniformLocation

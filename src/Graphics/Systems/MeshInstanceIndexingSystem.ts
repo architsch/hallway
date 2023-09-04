@@ -1,8 +1,8 @@
 import { globalConfig } from "../../Config/GlobalConfig";
-import { MeshInstanceComponent } from "../../ECS/Components";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
+import { MeshInstanceComponent } from "../Models/Components";
 
 export default class MeshInstanceIndexingSystem extends System
 {

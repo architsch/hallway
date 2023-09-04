@@ -45,4 +45,16 @@ export default class GLBufferAttrib
             ++ind;
         }
     }
+
+    unuse()
+    {
+        let ind = this.index;
+        for (let suboffset = 0; suboffset < this.size; suboffset += this.subsize)
+        {
+            this.gl.disableVertexAttribArray(ind);
+            if (this.instanced)
+                this.gl.vertexAttribDivisor(ind, 0);
+            ++ind;
+        }
+    }
 }

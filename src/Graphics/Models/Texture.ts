@@ -8,6 +8,8 @@ export default class Texture extends AsyncLoadableObject
     protected static override async loadRoutine(id: string,
         options: {gl: WebGL2RenderingContext}): Promise<Texture>
     {
+        console.log(`Started loading Texture (id = ${id})...`);
+
         const textureConfig = globalConfig.textureConfigById[id];
         if (textureConfig == undefined)
             throw new Error(`Texture config not found (id = ${id})`);

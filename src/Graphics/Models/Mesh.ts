@@ -2,6 +2,7 @@ import { globalConfig } from "../../Config/GlobalConfig";
 import Geometry from "./Geometry";
 import Material from "./Material";
 import AsyncLoadableObject from "../../Util/Async/AsyncLoadableObject";
+import { Uniform } from "./Uniform";
 
 export default class Mesh extends AsyncLoadableObject
 {
@@ -10,6 +11,8 @@ export default class Mesh extends AsyncLoadableObject
 
     protected static override async loadRoutine(id: string, options: {gl: WebGL2RenderingContext}): Promise<Mesh>
     {
+        console.log(`Started loading Mesh (id = ${id})...`);
+
         const meshConfig = globalConfig.meshConfigById[id];
         if (meshConfig == undefined)
             throw new Error(`MeshConfig not found (meshConfigId = ${id})`);
@@ -38,9 +41,20 @@ export default class Mesh extends AsyncLoadableObject
         this.material.use();
     }
 
+    unuse()
+    {
+        this.geometry.unuse();
+        this.material.unuse();
+    }
+
     updateUniform(name: string, value: any)
     {
         this.material.updateUniform(name, value);
+    }
+
+    getUniforms(): {[configId: string]: Uniform<any>}
+    {
+        return this.material.getUniforms();
     }
 
     updateInstanceData(instanceIndex: number, data: Float32Array)

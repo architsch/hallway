@@ -69,6 +69,14 @@ export default class GLBuffer
             attrib.use();
     }
 
+    unuse()
+    {
+        this.gl.bindBuffer(this.target, null);
+
+        for (const attrib of this.attribs)
+            attrib.unuse();
+    }
+
     setDataAtStrideIndex(strideIndex: number, data: Float32Array)
     {
         if (data.length != this.floatStride)

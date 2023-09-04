@@ -1,3 +1,11 @@
+import ECSManager from "../ECS/ECSManager";
+
+export interface UniformConfig
+{
+    type: string;
+    getCurrentValue: (ecs: ECSManager) => any;
+}
+
 export interface TextureConfig
 {
     url: string;
@@ -16,7 +24,7 @@ export interface MaterialConfig
     vertShaderBody: string;
     fragShaderBody: string;
     textureBindings: {textureConfigId: string, unit: number}[];
-    uniforms: {name: string, type: string}[];
+    uniforms: {configId: string, usedByVertShader: boolean, usedByFragShader: boolean}[];
 }
 
 export interface MeshConfig
@@ -30,6 +38,7 @@ export type EntityConfig =
 
 export interface GlobalConfig
 {
+    uniformConfigById: {[id: string]: UniformConfig};
     textureConfigById: {[id: string]: TextureConfig};
     geometryConfigById: {[id: string]: GeometryConfig};
     materialConfigById: {[id: string]: MaterialConfig};

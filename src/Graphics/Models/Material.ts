@@ -7,12 +7,14 @@ import { Uniform, UniformFloat, UniformMat2, UniformMat3, UniformMat4, UniformVe
 export default class Material extends AsyncLoadableObject
 {
     private shader: Shader;
-    private uniforms: {[name: string]: Uniform<any>};
+    private uniforms: {[configId: string]: Uniform<any>};
     private textureBindings: TextureBinding[];
 
     protected static override async loadRoutine(id: string,
         options: {gl: WebGL2RenderingContext, geometryConfigId: string}): Promise<Material>
     {
+        console.log(`Started loading Material (id = ${id})...`);
+
         const materialConfig = globalConfig.materialConfigById[id];
         if (materialConfig == undefined)
             throw new Error(`MaterialConfig not found (materialConfigId = ${id})`);
@@ -31,22 +33,26 @@ export default class Material extends AsyncLoadableObject
         obj.uniforms = {};
         for (const uniform of materialConfig.uniforms)
         {
-            if (obj.uniforms[uniform.name] != undefined)
-                throw new Error(`Duplicate uniform name found :: ${uniform.name}`);
+            if (obj.uniforms[uniform.configId] != undefined)
+                throw new Error(`Duplicate uniform configId found :: ${uniform.configId}`);
+
+            const uniformConfig = globalConfig.uniformConfigById[uniform.configId];
+            if (uniformConfig == undefined)
+                throw new Error(`Uniform config not found (id = ${uniform.configId})`);
             
             let uniformObject: Uniform<any>;
-            switch (uniform.type)
+            switch (uniformConfig.type)
             {
-                case "float": uniformObject = new UniformFloat(gl, program, uniform.name); break;
-                case "vec2": uniformObject = new UniformVec2(gl, program, uniform.name); break;
-                case "vec3": uniformObject = new UniformVec3(gl, program, uniform.name); break;
-                case "vec4": uniformObject = new UniformVec4(gl, program, uniform.name); break;
-                case "mat2": uniformObject = new UniformMat2(gl, program, uniform.name); break;
-                case "mat3": uniformObject = new UniformMat3(gl, program, uniform.name); break;
-                case "mat4": uniformObject = new UniformMat4(gl, program, uniform.name); break;
-                default: throw new Error(`Unhandled uniform type :: ${uniform.type} (name: ${uniform.name})`); break;
+                case "float": uniformObject = new UniformFloat(gl, program, uniform.configId); break;
+                case "vec2": uniformObject = new UniformVec2(gl, program, uniform.configId); break;
+                case "vec3": uniformObject = new UniformVec3(gl, program, uniform.configId); break;
+                case "vec4": uniformObject = new UniformVec4(gl, program, uniform.configId); break;
+                case "mat2": uniformObject = new UniformMat2(gl, program, uniform.configId); break;
+                case "mat3": uniformObject = new UniformMat3(gl, program, uniform.configId); break;
+                case "mat4": uniformObject = new UniformMat4(gl, program, uniform.configId); break;
+                default: throw new Error(`Unhandled uniform type :: ${uniformConfig.type} (configId: ${uniform.configId})`); break;
             }
-            obj.uniforms[uniform.name] = uniformObject;
+            obj.uniforms[uniform.configId] = uniformObject;
         }
 
         obj.textureBindings = new Array<TextureBinding>(materialConfig.textureBindings.length);
@@ -67,16 +73,27 @@ export default class Material extends AsyncLoadableObject
     use()
     {
         this.shader.use();
-
         for (const texture of this.textureBindings)
             texture.use();
     }
 
-    updateUniform(name: string, value: any)
+    unuse()
     {
-        if (this.uniforms[name] == undefined)
-            throw new Error(`Uniform name "${name}" doesn't exist.`);
-        this.uniforms[name].updateValue(value);
+        this.shader.unuse();
+        for (const texture of this.textureBindings)
+            texture.unuse();
+    }
+
+    updateUniform(configId: string, value: any)
+    {
+        if (this.uniforms[configId] == undefined)
+            throw new Error(`Uniform with configId "${configId}" doesn't exist.`);
+        this.uniforms[configId].updateValue(value);
+    }
+
+    getUniforms(): {[configId: string]: Uniform<any>}
+    {
+        return this.uniforms;
     }
 
     getProgram(): WebGLProgram

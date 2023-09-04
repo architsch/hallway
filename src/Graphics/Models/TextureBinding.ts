@@ -33,4 +33,10 @@ export default class TextureBinding extends AsyncLoadableObject
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture.getWebGLTexture());
         this.gl.uniform1i(this.uniformLoc, this.unit);
     }
+
+    unuse()
+    {
+        this.gl.activeTexture(this.gl.TEXTURE0 + this.unit);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+    }
 }

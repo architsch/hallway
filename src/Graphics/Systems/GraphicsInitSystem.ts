@@ -53,6 +53,10 @@ export default class GraphicsInitSystem extends System
         this.adjustCanvasToScreenSize();
 
         const gl = this.gameCanvas.getContext("webgl2");
+        gl.clearColor(0.2, 0.4, 0.2, 1.0);
+        gl.viewport(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+        gl.enable(gl.DEPTH_TEST);
+
         const entity = ecs.addEntity("empty");
         ecs.addComponent(entity.id, "Graphics", {
             gl: ["any", gl],

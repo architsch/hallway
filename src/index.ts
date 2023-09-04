@@ -1,5 +1,10 @@
 import ECSManager from "./ECS/ECSManager";
 
+require("./Game/Models/Components");
+require("./Graphics/Models/Components");
+require("./Input/Models/Components");
+require("./Physics/Models/Components");
+
 const ecs = new ECSManager();
 
 const minFPS = 10;
@@ -27,4 +32,11 @@ function update(timeInMillis: number)
     requestAnimationFrame(update);
 }
 
-requestAnimationFrame(update);
+function start()
+{
+    ecs.start();
+    requestAnimationFrame(update);
+}
+
+setTimeout(start, 100);
+//requestAnimationFrame(start);

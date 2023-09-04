@@ -12,6 +12,8 @@ export default class Geometry extends AsyncLoadableObject
     protected static override async loadRoutine(id: string,
         options: {gl: WebGL2RenderingContext, program: WebGLProgram}): Promise<Geometry>
     {
+        console.log(`Started loading Geometry (id = ${id})...`);
+        
         const geometryConfig = globalConfig.geometryConfigById[id];
         if (geometryConfig == undefined)
             throw new Error(`GeometryConfig not found (geometryConfigId = ${id})`);
@@ -23,7 +25,7 @@ export default class Geometry extends AsyncLoadableObject
 
         obj.numVertices = geometryConfig.numVertices;
         obj.numInstances = geometryConfig.numInstances;
-
+        
         obj.vertexBuffer = new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.STATIC_DRAW,
             geometryConfig.numVertices, geometryConfig.vertexAttribs, false);
         obj.instanceBuffer = new GLBuffer(gl, program, gl.ARRAY_BUFFER, gl.DYNAMIC_DRAW,
@@ -36,6 +38,12 @@ export default class Geometry extends AsyncLoadableObject
     {
         this.vertexBuffer.use();
         this.instanceBuffer.use();
+    }
+
+    unuse()
+    {
+        this.vertexBuffer.unuse();
+        this.instanceBuffer.unuse();
     }
 
     updateInstanceData(instanceIndex: number, data: Float32Array)

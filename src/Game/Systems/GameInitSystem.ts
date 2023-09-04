@@ -1,5 +1,6 @@
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
+import EntityFactory from "../../ECS/EntityFactory";
 import System from "../../ECS/System";
 
 export default class GameInitSystem extends System
@@ -12,9 +13,12 @@ export default class GameInitSystem extends System
     start(ecs: ECSManager)
     {
         ecs.addEntity("mainCamera");
+        ecs.addEntity("mainLight");
 
         for (let i = 0; i < 8; ++i)
-            ecs.addEntity("default");
+        {
+            EntityFactory.addTripleCube(ecs, 0, 0, 0, 0, 0, 0, 1, 1, 1);
+        }
     }
     
     update(ecs: ECSManager, t: number, dt: number)
