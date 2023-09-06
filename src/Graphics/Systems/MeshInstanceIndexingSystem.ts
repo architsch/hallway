@@ -2,7 +2,7 @@ import { globalConfig } from "../../Config/GlobalConfig";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { MeshInstanceComponent } from "../Models/Components";
+import { MeshInstanceComponent } from "../Models/GraphicsComponents";
 
 export default class MeshInstanceIndexingSystem extends System
 {
@@ -31,7 +31,13 @@ export default class MeshInstanceIndexingSystem extends System
         if (freeInstanceIndices == undefined)
         {
             const meshConfig = globalConfig.meshConfigById[meshInstanceComponent.meshConfigId];
+            if (meshConfig == undefined)
+                throw new Error(`Mesh config not found (id = ${meshInstanceComponent.meshConfigId})`);
+
             const geometryConfig = globalConfig.geometryConfigById[meshConfig.geometryConfigId];
+            if (geometryConfig == undefined)
+                throw new Error(`Geometry config not found (id = ${meshConfig.geometryConfigId})`);
+
             freeInstanceIndices = new Array<number>(geometryConfig.numInstances);
             for (let i = 0; i < geometryConfig.numInstances; ++i)
                 freeInstanceIndices[i] = geometryConfig.numInstances - 1 - i;

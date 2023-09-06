@@ -2,7 +2,7 @@ import { mat4, vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { CameraComponent } from "../Models/Components";
+import { CameraComponent } from "../Models/GraphicsComponents";
 
 export default class CameraMatrixSyncSystem extends System
 {

@@ -19,6 +19,16 @@ export default class GameInitSystem extends System
         {
             EntityFactory.addTripleCube(ecs, 0, 0, 0, 0, 0, 0, 1, 1, 1);
         }
+
+        const s = 0.0625;
+
+        for (let z = 0; z <= 2; ++z)
+        {
+            EntityFactory.addFloor(ecs, z, s, s, 14*s, 8*s);
+            EntityFactory.addCeiling(ecs, z, s, s, 11*s, 8*s);
+            EntityFactory.addLeftWall(ecs, z, s, s, 13*s, 8*s);
+            EntityFactory.addRightWall(ecs, z, s, s, 13*s, 8*s);
+        }
     }
     
     update(ecs: ECSManager, t: number, dt: number)

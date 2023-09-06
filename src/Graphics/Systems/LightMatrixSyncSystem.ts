@@ -2,7 +2,7 @@ import { mat4, vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { LightComponent } from "../Models/Components";
+import { LightComponent } from "../Models/GraphicsComponents";
 
 export default class LightMatrixSyncSystem extends System
 {

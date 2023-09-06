@@ -47,6 +47,11 @@ export default class Mesh extends AsyncLoadableObject
         this.material.unuse();
     }
 
+    getInstanceAttribFloatOffset(attribName: string): number
+    {
+        return this.geometry.getInstanceAttribFloatOffset(attribName);
+    }
+
     updateUniform(name: string, value: any)
     {
         this.material.updateUniform(name, value);

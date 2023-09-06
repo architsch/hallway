@@ -1,8 +1,9 @@
 import { mat4, vec3 } from "gl-matrix";
+import VerticesData from "../Models/VerticesData";
 
 const deg2rad = Math.PI / 180;
 
-export default class GeometryBuilder
+export default class GeometryVerticesFactory
 {
     private static positionData: number[] = [];
     private static normalData: number[] = [];
@@ -15,14 +16,29 @@ export default class GeometryBuilder
     private static vec3Temp: vec3 = vec3.create();
     private static vec3Temp2: vec3 = vec3.create();
 
-    static cube(): {positionData: number[], normalData: number[], uvData: number[]}
+    static plane(): VerticesData
+    {
+        this.clear();
+        for (let y = -3; y <= 3; ++y)
+        {
+            for (let x = -3; x <= 3; ++x)
+            {
+                this.pushTransform(x, y, 0, 0, 0, 0, 0, 1, 1, 1);
+                this.addQuad();
+                this.popTransform();
+            }
+        }
+        return this.getVertexDataCopy();
+    }
+
+    static cube(): VerticesData
     {
         this.clear();
         this.addCube();
         return this.getVertexDataCopy();
     }
 
-    static quad(): {positionData: number[], normalData: number[], uvData: number[]}
+    static quad(): VerticesData
     {
         this.clear();
         this.addQuad();
@@ -132,7 +148,7 @@ export default class GeometryBuilder
         mat4.identity(this.compositeTransform);
     }
 
-    private static getVertexDataCopy(): {positionData: number[], normalData: number[], uvData: number[]}
+    private static getVertexDataCopy(): VerticesData
     {
         const positionDataCopy = new Array<number>(this.positionData.length);
         const normalDataCopy = new Array<number>(this.normalData.length);

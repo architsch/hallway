@@ -2,13 +2,13 @@ import { globalConfig } from "../../Config/GlobalConfig";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { TransformComponent } from "../../Physics/Models/Components";
-import { GraphicsComponent, MeshInstanceComponent } from "../Models/Components";
+import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
+import { ColorComponent, GraphicsComponent, MeshInstanceComponent, SpriteComponent } from "../Models/GraphicsComponents";
 import Mesh from "../Models/Mesh";
 
 export default class MeshRenderSystem extends System
 {
-    private meshInstanceDataTemp: Float32Array = new Float32Array(23);
+    private meshInstanceDataTemp: Float32Array = new Float32Array(64);
     private meshesToRender: Set<Mesh> = new Set<Mesh>();
 
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
@@ -34,27 +34,49 @@ export default class MeshRenderSystem extends System
 
         meshInstanceEntities.forEach((entity: Entity) => {
             const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
-            const transformComponent = ecs.getComponent(entity.id, "Transform") as TransformComponent;
 
-            const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl});
+            const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl}) as Mesh | null;
             if (mesh != null)
             {
                 if (!this.meshesToRender.has(mesh))
                     this.meshesToRender.add(mesh);
 
-                if (!transformComponent.meshInstanceSynced)
+                if (!meshInstanceComponent.bufferSynced)
                 {
-                    for (let i = 0; i < 16; ++i)
-                        this.meshInstanceDataTemp[i] = transformComponent.worldMat[i];
-                    this.meshInstanceDataTemp[16] = meshInstanceComponent.uvScale[0];
-                    this.meshInstanceDataTemp[17] = meshInstanceComponent.uvScale[1];
-                    this.meshInstanceDataTemp[18] = meshInstanceComponent.uvShift[0];
-                    this.meshInstanceDataTemp[19] = meshInstanceComponent.uvShift[1];
-                    this.meshInstanceDataTemp[20] = meshInstanceComponent.color[0];
-                    this.meshInstanceDataTemp[21] = meshInstanceComponent.color[1];
-                    this.meshInstanceDataTemp[22] = meshInstanceComponent.color[2];
+                    if (ecs.hasComponent(entity.id, "Transform"))
+                    {
+                        const c = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+
+                        let floatOffset = mesh.getInstanceAttribFloatOffset("worldMat");
+                        for (let i = 0; i < 16; ++i)
+                            this.meshInstanceDataTemp[floatOffset + i] = c.worldMat[i];
+                    }
+
+                    if (ecs.hasComponent(entity.id, "Sprite"))
+                    {
+                        const c = ecs.getComponent(entity.id, "Sprite") as SpriteComponent;
+
+                        let floatOffset = mesh.getInstanceAttribFloatOffset("uvScale");
+                        this.meshInstanceDataTemp[floatOffset] = c.uvScale[0];
+                        this.meshInstanceDataTemp[floatOffset+1] = c.uvScale[1];
+
+                        floatOffset = mesh.getInstanceAttribFloatOffset("uvShift");
+                        this.meshInstanceDataTemp[floatOffset] = c.uvShift[0];
+                        this.meshInstanceDataTemp[floatOffset+1] = c.uvShift[1];
+                    }
+
+                    if (ecs.hasComponent(entity.id, "Color"))
+                    {
+                        const c = ecs.getComponent(entity.id, "Color") as ColorComponent;
+
+                        let floatOffset = mesh.getInstanceAttribFloatOffset("color");
+                        this.meshInstanceDataTemp[floatOffset] = c.color[0];
+                        this.meshInstanceDataTemp[floatOffset+1] = c.color[1];
+                        this.meshInstanceDataTemp[floatOffset+2] = c.color[2];
+                    }
+
                     mesh.updateInstanceData(meshInstanceComponent.instanceIndex, this.meshInstanceDataTemp);
-                    transformComponent.meshInstanceSynced = true;
+                    meshInstanceComponent.bufferSynced = true;
                 }
             }
         });

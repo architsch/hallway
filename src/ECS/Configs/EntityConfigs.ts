@@ -1,5 +1,5 @@
 import { vec2, vec3 } from "gl-matrix";
-import { EntityConfig } from "./ConfigTypes";
+import { EntityConfig } from "../../Config/ConfigTypes";
 
 const s = 0.0625; // sprite atlas's cell size
 
@@ -14,7 +14,6 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             far: ["number", 100],
             position: ["vec3", vec3.fromValues(0, 0, 10)],
             forward: ["vec3", vec3.fromValues(0, 0, -1)],
-            up: ["vec3", vec3.fromValues(0, 1, 0)],
         }
     },
     "mainLight": {
@@ -30,33 +29,21 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             squareAttenFactor: ["number", 0.05],
             position: ["vec3", vec3.fromValues(-10, 20, 5)],
             forward: ["vec3", vec3.fromValues(0.4364, -0.8729, -0.2182)],
-            up: ["vec3", vec3.fromValues(0, 1, 0)],
         }
     },
-    "sprite": {
-        "Transform": {
-            position: ["vec3", vec3.fromValues(0, 0, 0)],
-            rotation: ["vec3", vec3.fromValues(0, 0, 0)],
-            scale: ["vec3", vec3.fromValues(1, 1, 1)],
-        },
-        "MeshInstance": {
-            meshConfigId: ["string", "quad_unlit"],
-            uvScale: ["vec2", vec2.fromValues(s, s)],
-            uvShift: ["vec2", vec2.fromValues(0, 0)],
-            color: ["vec3", vec3.fromValues(1.0, 1.0, 1.0)],
-        }
+    "particle": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "particle"]},
+        "Sprite": {},
     },
-    "cube": {
-        "Transform": {
-            position: ["vec3", vec3.fromValues(0, 0, 0)],
-            rotation: ["vec3", vec3.fromValues(0, 0, 0)],
-            scale: ["vec3", vec3.fromValues(1, 1, 1)],
-        },
-        "MeshInstance": {
-            meshConfigId: ["string", "cube_diffuse"],
-            uvScale: ["vec2", vec2.fromValues(s, s)],
-            uvShift: ["vec2", vec2.fromValues(14 * s, 8 * s)],
-            color: ["vec3", vec3.fromValues(1.0, 1.0, 1.0)],
-        }
+    "plane": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "plane"]},
+        "Sprite": {},
+    },
+    "block": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "block"]},
+        "Sprite": {},
     },
 };

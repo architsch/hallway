@@ -1,6 +1,6 @@
-import ECSManager from "../ECS/ECSManager";
-import { CameraComponent, LightComponent } from "../Graphics/Models/Components";
-import { UniformConfig } from "./ConfigTypes";
+import ECSManager from "../../ECS/ECSManager";
+import { CameraComponent, LightComponent } from "../Models/GraphicsComponents";
+import { UniformConfig } from "../../Config/ConfigTypes";
 
 const getCamera = (ecs: ECSManager) => ecs.singletonComponents().get("Camera") as CameraComponent;
 const getLight = (ecs: ECSManager) => ecs.singletonComponents().get("Light") as LightComponent;

@@ -1,4 +1,4 @@
-import { TextureConfig } from "./ConfigTypes";
+import { TextureConfig } from "../../Config/ConfigTypes";
 
 export const textureConfigById: {[id: string]: TextureConfig} = {
     "spriteAtlas": {

@@ -46,6 +46,11 @@ export default class Geometry extends AsyncLoadableObject
         this.instanceBuffer.unuse();
     }
 
+    getInstanceAttribFloatOffset(attribName: string): number
+    {
+        return this.instanceBuffer.getAttribFloatOffset(attribName);
+    }
+
     updateInstanceData(instanceIndex: number, data: Float32Array)
     {
         this.instanceBuffer.setDataAtStrideIndex(instanceIndex, data);

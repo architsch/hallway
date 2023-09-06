@@ -1,9 +1,9 @@
 import ECSManager from "./ECS/ECSManager";
 
-require("./Game/Models/Components");
-require("./Graphics/Models/Components");
-require("./Input/Models/Components");
-require("./Physics/Models/Components");
+require("./Game/Models/GameComponents");
+require("./Graphics/Models/GraphicsComponents");
+require("./Input/Models/InputComponents");
+require("./Physics/Models/PhysicsComponents");
 
 const ecs = new ECSManager();
 
@@ -32,11 +32,4 @@ function update(timeInMillis: number)
     requestAnimationFrame(update);
 }
 
-function start()
-{
-    ecs.start();
-    requestAnimationFrame(update);
-}
-
-setTimeout(start, 100);
-//requestAnimationFrame(start);
+requestAnimationFrame(update);

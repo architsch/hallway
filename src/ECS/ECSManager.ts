@@ -16,7 +16,7 @@ import MeshRenderSystem from "../Graphics/Systems/MeshRenderSystem";
 import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexingSystem";
 import SingletonComponentAccessSystem from "../Graphics/Systems/SingletonComponentAccessSystem";
 import LightMatrixSyncSystem from "../Graphics/Systems/LightMatrixSyncSystem";
-import { TransformComponent } from "../Physics/Models/Components";
+import { TransformComponent } from "../Physics/Models/PhysicsComponents";
 
 export default class ECSManager
 {
@@ -26,7 +26,7 @@ export default class ECSManager
 
     constructor()
     {
-        this.entityPool = new Pool<Entity>(256, () => {
+        this.entityPool = new Pool<Entity>("Entity", 256, () => {
             return {
                 id: undefined,
                 parentId: -1,
@@ -34,10 +34,7 @@ export default class ECSManager
                 componentIds: {},
             };
         });
-    }
 
-    start()
-    {
         this.singletonComponentAccessSystem = new SingletonComponentAccessSystem();
 
         this.systems = [
@@ -151,6 +148,7 @@ export default class ECSManager
         if (ComponentPools[componentType] == undefined)
             throw new Error(`Component type "${componentType}" doesn't exist in ComponentPools.`);
         const component = ComponentPools[componentType].rent();
+        component.applyDefaultValues();
         component.entityId = entityId;
 
         for (const [key, typeAndValue] of Object.entries(componentValues))

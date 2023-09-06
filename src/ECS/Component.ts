@@ -1,6 +1,9 @@
 import PoolableObject from "../Util/Pooling/PoolableObject";
 
-export interface Component extends PoolableObject
+export abstract class Component implements PoolableObject
 {
-    entityId: number;
+    id: number = undefined;
+    entityId: number = undefined;
+
+    abstract applyDefaultValues(): void;
 }

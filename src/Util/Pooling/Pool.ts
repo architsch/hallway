@@ -2,14 +2,16 @@ import PoolableObject from "./PoolableObject";
 
 export default class Pool<T extends PoolableObject>
 {
+    private poolName: string;
     private maxInstances: number;
     private instantiationMethod: () => T;
 
     private instances: Array<T>;
     private freeIds: Array<number>;
 
-    constructor(maxInstances: number, instantiationMethod: () => T)
+    constructor(poolName: string, maxInstances: number, instantiationMethod: () => T)
     {
+        this.poolName = poolName;
         this.maxInstances = maxInstances;
         this.instantiationMethod = instantiationMethod;
 
@@ -34,7 +36,7 @@ export default class Pool<T extends PoolableObject>
     {
         if (this.freeIds.length == 0)
         {
-            console.error("Pool size exceeded.");
+            console.error(`Pool size exceeded (${this.poolName})`);
             const newId = this.maxInstances++;
             this.freeIds.push(newId);
 

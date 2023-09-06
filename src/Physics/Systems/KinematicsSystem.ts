@@ -2,7 +2,7 @@ import { vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { RigidbodyComponent, TransformComponent } from "../Models/Components";
+import { RigidbodyComponent, TransformComponent } from "../Models/PhysicsComponents";
 
 export default class KinematicsSystem extends System
 {

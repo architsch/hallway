@@ -2,8 +2,8 @@ import { vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { KeyInputComponent } from "../../Input/Models/Components";
-import { CameraComponent } from "../Models/Components";
+import { KeyInputComponent } from "../../Input/Models/InputComponents";
+import { CameraComponent } from "../Models/GraphicsComponents";
 
 export default class CameraControlSystem extends System
 {

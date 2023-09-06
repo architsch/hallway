@@ -11,6 +11,7 @@ export default class GLBuffer
     protected bufferDataCache: Float32Array;
     protected bufferDataCacheDirty: boolean;
     protected attribs: GLBufferAttrib[];
+    protected attribFloatOffsetByName: {[attribName: string]: number};
 
     constructor(gl: WebGL2RenderingContext, program: WebGLProgram, target: number, usage: number,
         numStrides: number,
@@ -30,6 +31,7 @@ export default class GLBuffer
 
         let offset = 0;
         this.attribs = new Array<GLBufferAttrib>(attribs.length);
+        this.attribFloatOffsetByName = {};
         this.bufferDataCache = new Float32Array(numStrides * (stride / 4));
         this.bufferDataCacheDirty = true;
 
@@ -43,6 +45,8 @@ export default class GLBuffer
             this.attribs[i] = new GLBufferAttrib(gl, attrib.type, index, numFloats, stride, offset, instanced);
 
             const floatOffset = offset / 4;
+            this.attribFloatOffsetByName[attrib.name] = floatOffset;
+
             for (let strideIndex = 0; strideIndex < numStrides; ++strideIndex)
             {
                 for (let j = 0; j < numFloats; ++j)
@@ -77,10 +81,16 @@ export default class GLBuffer
             attrib.unuse();
     }
 
+    getAttribFloatOffset(attribName: string): number
+    {
+        const floatOffset = this.attribFloatOffsetByName[attribName];
+        if (floatOffset == undefined)
+            throw new Error(`Attrib name "${attribName}" doesn't exist in GLBuffer.`);
+        return floatOffset;
+    }
+
     setDataAtStrideIndex(strideIndex: number, data: Float32Array)
     {
-        if (data.length != this.floatStride)
-            throw new Error(`Data size mismatch :: (floatStride = ${this.floatStride}, data.length = ${data.length})`);
         for (let i = 0; i < this.floatStride; ++i)
             this.bufferDataCache[strideIndex * this.floatStride + i] = data[i];
         this.bufferDataCacheDirty = true;

@@ -18,19 +18,17 @@ export default class Shader
         });
 
         const vertSource = `#version 300 es
-            ${geometryConfig.vertexAttribs.map(attrib => `in ${attrib.type} ${attrib.name};`).join("\n")}
-            ${geometryConfig.instanceAttribs.map(attrib => `in ${attrib.type} ${attrib.name};`).join("\n")}
-            ${materialConfig.uniforms.map(uniform => this.getUniformDeclaration("vert", uniform)).join("\n")}
-            ${materialConfig.vertShaderBody}
-        `;
+${geometryConfig.vertexAttribs.map(attrib => `in ${attrib.type} ${attrib.name};`).join("\n")}
+${geometryConfig.instanceAttribs.map(attrib => `in ${attrib.type} ${attrib.name};`).join("\n")}
+${materialConfig.uniforms.map(uniform => this.getUniformDeclaration("vert", uniform)).join("\n")}
+${materialConfig.vertShaderBody}`;
         console.log(vertSource);
 
         const fragSource = `#version 300 es
-            precision mediump float;
-            ${materialConfig.uniforms.map(uniform => this.getUniformDeclaration("frag", uniform)).join("\n")}
-            ${materialConfig.textureBindings.map(texture => `uniform sampler2D u_texture${texture.unit};`).join("\n")}
-            ${materialConfig.fragShaderBody}
-        `;
+precision mediump float;
+${materialConfig.uniforms.map(uniform => this.getUniformDeclaration("frag", uniform)).join("\n")}
+${materialConfig.textureBindings.map(texture => `uniform sampler2D u_texture${texture.unit};`).join("\n")}
+${materialConfig.fragShaderBody}`;
         console.log(fragSource);
 
         const vertShader = gl.createShader(gl.VERTEX_SHADER);

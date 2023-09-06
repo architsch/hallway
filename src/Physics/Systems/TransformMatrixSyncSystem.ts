@@ -2,7 +2,8 @@ import { mat4 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { TransformComponent } from "../Models/Components";
+import { TransformComponent } from "../Models/PhysicsComponents";
+import { MeshInstanceComponent } from "../../Graphics/Models/GraphicsComponents";
 
 export default class TransformMatrixSyncSystem extends System
 {
@@ -45,7 +46,12 @@ export default class TransformMatrixSyncSystem extends System
                 this.updateChildWorldMats(ecs, entity);
 
                 transformComponent.matrixSynced = true;
-                transformComponent.meshInstanceSynced = false;
+
+                if (ecs.hasComponent(entity.id, "MeshInstance"))
+                {
+                    const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
+                    meshInstanceComponent.bufferSynced = false;
+                }
             }
         });
     }
@@ -67,7 +73,11 @@ export default class TransformMatrixSyncSystem extends System
             const child = ecs.getEntity(childId);
             const childTransformComponent = ecs.getComponent(childId, "Transform") as TransformComponent;
             mat4.multiply(childTransformComponent.worldMat, parentTransformComponent.worldMat, childTransformComponent.localMat);
-            childTransformComponent.meshInstanceSynced = false;
+            if (ecs.hasComponent(childId, "MeshInstance"))
+            {
+                const childMeshInstanceComponent = ecs.getComponent(childId, "MeshInstance") as MeshInstanceComponent;
+                childMeshInstanceComponent.bufferSynced = false;
+            }
             this.updateChildWorldMats(ecs, child);
         }
     }

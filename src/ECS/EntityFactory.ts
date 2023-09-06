@@ -1,36 +1,84 @@
-import { vec3 } from "gl-matrix";
+import { vec2, vec3 } from "gl-matrix";
 import ECSManager from "./ECSManager";
-import { TransformComponent } from "../Physics/Models/Components";
+import { TransformComponent } from "../Physics/Models/PhysicsComponents";
+import Entity from "./Entity";
+import { SpriteComponent } from "../Graphics/Models/GraphicsComponents";
+
+const deg2rad = Math.PI / 180;
+const s = 0.0625;
 
 export default class EntityFactory
 {
-    static addTripleCube(ecs: ECSManager,
-        positionX: number, positionY: number, positionZ: number,
-        rotationX: number, rotationY: number, rotationZ: number,
-        scaleX: number, scaleY: number, scaleZ: number)
+    static addLeftWall(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
     {
-        const parentCube = ecs.addEntity("cube");
-        ecs.addComponent(parentCube.id, "Rigidbody", {});
+        this.addPlane(ecs, -3.5, 0.5, z, 0, 90 * deg2rad, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
+    }
 
-        const childCube1 = ecs.addEntity("cube");
-        ecs.setParent(childCube1, parentCube);
+    static addRightWall(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
+    {
+        this.addPlane(ecs, 3.5, 0.5, z, 0, -90 * deg2rad, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
+    }
 
-        const childCube2 = ecs.addEntity("cube");
-        ecs.setParent(childCube2, parentCube);
+    static addCeiling(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
+    {
+        this.addPlane(ecs, 0, 2.5, z, +90 * deg2rad, 0, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
+    }
 
-        let transformComponent = ecs.getComponent(parentCube.id, "Transform") as TransformComponent;
-        vec3.set(transformComponent.position, positionX, positionY, positionZ);
-        vec3.set(transformComponent.rotation, rotationX, rotationY, rotationZ);
-        vec3.set(transformComponent.scale, scaleX, scaleY, scaleZ);
-        
-        transformComponent = ecs.getComponent(childCube1.id, "Transform") as TransformComponent;
-        vec3.set(transformComponent.position, -0.6, 0.6, 0);
-        vec3.set(transformComponent.rotation, 0, 0, 0);
-        vec3.set(transformComponent.scale, 0.5, 0.5, 0.5);
-        
-        transformComponent = ecs.getComponent(childCube2.id, "Transform") as TransformComponent;
-        vec3.set(transformComponent.position, +0.6, 0.6, 0);
-        vec3.set(transformComponent.rotation, 0, 0, 0);
-        vec3.set(transformComponent.scale, 0.5, 0.5, 0.5);
+    static addFloor(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
+    {
+        this.addPlane(ecs, 0, -1.5, z, -90 * deg2rad, 0, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
+    }
+
+    static addPlane(ecs: ECSManager,
+        x: number, y: number, z: number,
+        xr: number, yr: number, zr: number,
+        xs: number, ys: number, zs: number,
+        uScale: number, vScale: number,
+        uShift: number, vShift: number)
+    {
+        const entity = ecs.addEntity("plane");
+        this.setEntityTransformParams(ecs, entity, x, y, z, xr, yr, zr, xs, ys, zs);
+        this.setEntitySpriteParams(ecs, entity, uScale, vScale, uShift, vShift);
+    }
+
+    static addTripleCube(ecs: ECSManager,
+        x: number, y: number, z: number,
+        xr: number, yr: number, zr: number,
+        xs: number, ys: number, zs: number)
+    {
+        const parent = ecs.addEntity("block");
+        ecs.addComponent(parent.id, "Rigidbody", {});
+        this.setEntityTransformParams(ecs, parent, x, y, z, xr, yr, zr, xs, ys, zs);
+        this.setEntitySpriteParams(ecs, parent, s, s, 14*s, 8*s);
+
+        const child1 = ecs.addEntity("particle");
+        ecs.setParent(child1, parent);
+        this.setEntityTransformParams(ecs, child1, -0.6, 0.6, 0, 0, 0, 0, 0.5, 0.5, 0.5);
+        this.setEntitySpriteParams(ecs, child1, s, s, 0, 0);
+
+        const child2 = ecs.addEntity("particle");
+        ecs.setParent(child2, parent);
+        this.setEntityTransformParams(ecs, child2, +0.6, 0.6, 0, 0, 0, 0, 0.5, 0.5, 0.5);
+        this.setEntitySpriteParams(ecs, child2, s, s, 0, 0);
+    }
+
+    private static setEntityTransformParams(ecs: ECSManager, entity: Entity,
+        x: number, y: number, z: number,
+        xr: number, yr: number, zr: number,
+        xs: number, ys: number, zs: number)
+    {
+        const transformComponent = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+        vec3.set(transformComponent.position, x, y, z);
+        vec3.set(transformComponent.rotation, xr, yr, zr);
+        vec3.set(transformComponent.scale, xs, ys, zs);
+    }
+
+    private static setEntitySpriteParams(ecs: ECSManager, entity: Entity,
+        uScale: number, vScale: number,
+        uShift: number, vShift: number)
+    {
+        const spriteComponent = ecs.getComponent(entity.id, "Sprite") as SpriteComponent;
+        vec2.set(spriteComponent.uvScale, uScale, vScale);
+        vec2.set(spriteComponent.uvShift, uShift, vShift);
     }
 }
