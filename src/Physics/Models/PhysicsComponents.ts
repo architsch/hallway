@@ -30,8 +30,27 @@ ComponentPools["Transform"] = new Pool<TransformComponent>("TransformComponent",
 
 export class RigidbodyComponent extends Component
 {
+    mass: number = undefined;
+    elasticity: number = undefined;
+    decelerationRate: number = undefined;
+    hitboxSize: vec3 = vec3.create();
+    velocity: vec3 = vec3.create();
+    force: vec3 = vec3.create();
+
+    // Temporary info storage for collision detection
+    boundingBoxMin: vec3 = vec3.create();
+    boundingBoxMax: vec3 = vec3.create();
+    boundingBoxVoxelCoordsMin: vec3 = vec3.create();
+    boundingBoxVoxelCoordsMax: vec3 = vec3.create();
+
     applyDefaultValues()
-    {    
+    {
+        this.mass = 1;
+        this.elasticity = 1;
+        this.decelerationRate = 1;
+        vec3.set(this.hitboxSize, 1, 1, 1);
+        vec3.set(this.velocity, 0, 0, 0);
+        vec3.set(this.force, 0, 0, 0);
     }
 }
 ComponentPools["Rigidbody"] = new Pool<RigidbodyComponent>("RigidbodyComponent", 256, () => new RigidbodyComponent());

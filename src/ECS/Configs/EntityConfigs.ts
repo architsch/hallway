@@ -1,22 +1,33 @@
 import { vec2, vec3 } from "gl-matrix";
 import { EntityConfig } from "../../Config/ConfigTypes";
 
+require("../../Config/GlobalPropertiesConfig");
+
 const s = 0.0625; // sprite atlas's cell size
+const deg2rad = Math.PI / 180;
 
 export const entityConfigById: {[id: string]: EntityConfig} = {
     "empty": {
     },
-    "mainCamera": {
+    "player": {
+        "Player": {},
+        "Transform": {},
+        "Rigidbody": {
+            decelerationRate: ["number", 5],
+            hitboxSize: ["vec3", vec3.fromValues(1.25, 3, 1.25)],
+        },
         "Camera": {
             fovy: ["number", 45 * Math.PI / 180],
             aspectRatio: ["number", 2],
             near: ["number", 0.1],
             far: ["number", 100],
-            position: ["vec3", vec3.fromValues(0, 0, 10)],
-            forward: ["vec3", vec3.fromValues(0, 0, -1)],
         }
     },
     "mainLight": {
+        "Transform": {
+            position: ["vec3", vec3.fromValues(-100, 200, 50)],
+            rotation: ["vec3", vec3.fromValues(45 * deg2rad, 45 * deg2rad, 0)],
+        },
         "Light": {
             ambLightColor: ["vec3", vec3.fromValues(1, 1, 1)],
             ambLightIntensity: ["number", 0.3],
@@ -24,11 +35,8 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             spotLightIntensity: ["number", 0.7],
             falloffStartAngle: ["number", 45 * Math.PI / 180],
             falloffEndAngle: ["number", 55 * Math.PI / 180],
-            maxDist: ["number", 100],
-            linearAttenFactor: ["number", 0.05],
-            squareAttenFactor: ["number", 0.05],
-            position: ["vec3", vec3.fromValues(-10, 20, 5)],
-            forward: ["vec3", vec3.fromValues(0.4364, -0.8729, -0.2182)],
+            linearAttenFactor: ["number", 0],
+            squareAttenFactor: ["number", 0],
         }
     },
     "particle": {
@@ -36,14 +44,27 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
         "MeshInstance": {meshConfigId: ["string", "particle"]},
         "Sprite": {},
     },
-    "plane": {
+    "actor": {
         "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "plane"]},
+        "MeshInstance": {meshConfigId: ["string", "particle"]},
         "Sprite": {},
+        "Rigidbody": {
+            hitboxSize: ["vec3", vec3.fromValues(2, 2, 2)],
+        },
     },
     "block": {
         "Transform": {},
         "MeshInstance": {meshConfigId: ["string", "block"]},
+        "Sprite": {},
+    },
+    "floor": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "floor"]},
+        "Sprite": {},
+    },
+    "wall": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "wall"]},
         "Sprite": {},
     },
 };

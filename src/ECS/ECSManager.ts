@@ -8,7 +8,7 @@ import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
 import GameInitSystem from "../Game/Systems/GameInitSystem";
 import GraphicsInitSystem from "../Graphics/Systems/GraphicsInitSystem";
 import KeyInputSystem from "../Input/Systems/KeyInputSystem";
-import CameraControlSystem from "../Graphics/Systems/CameraControlSystem";
+import PlayerControlSystem from "../Game/Systems/PlayerControlSystem";
 import CameraMatrixSyncSystem from "../Graphics/Systems/CameraMatrixSyncSystem";
 import KinematicsSystem from "../Physics/Systems/KinematicsSystem";
 import TransformMatrixSyncSystem from "../Physics/Systems/TransformMatrixSyncSystem";
@@ -17,6 +17,7 @@ import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexing
 import SingletonComponentAccessSystem from "../Graphics/Systems/SingletonComponentAccessSystem";
 import LightMatrixSyncSystem from "../Graphics/Systems/LightMatrixSyncSystem";
 import { TransformComponent } from "../Physics/Models/PhysicsComponents";
+import CollisionSystem from "../Physics/Systems/CollisionSystem";
 
 export default class ECSManager
 {
@@ -40,11 +41,12 @@ export default class ECSManager
         this.systems = [
             // Input/Control
             new KeyInputSystem(),
-            new CameraControlSystem(),
+            new PlayerControlSystem(),
             new CameraMatrixSyncSystem(),
             new LightMatrixSyncSystem(),
 
             // Physics
+            new CollisionSystem(),
             new KinematicsSystem(),
             new TransformMatrixSyncSystem(),
 
@@ -85,6 +87,9 @@ export default class ECSManager
         entity.childIds.length = 0;
 
         const entityConfig = globalConfig.entityConfigById[configId];
+        if (entityConfig == undefined)
+            throw new Error(`Entity config not found (id = ${configId})`);
+        
         for (const [componentType, componentValues] of Object.entries(entityConfig))
             this.addComponent(entity.id, componentType, componentValues);
         return entity;

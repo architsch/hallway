@@ -30,10 +30,6 @@ export class LightComponent extends Component
     linearAttenFactor: number = undefined;
     squareAttenFactor: number = undefined;
 
-    position: vec3 = vec3.create();
-    forward: vec3 = vec3.create();
-    up: vec3 = vec3.create();
-
     viewMat: mat4 = mat4.create();
     projMat: mat4 = mat4.create();
     viewProjMat: mat4 = mat4.create();
@@ -50,12 +46,8 @@ export class LightComponent extends Component
         this.falloffStartAngle = Math.PI * 0.2;
         this.falloffEndAngle = Math.PI * 0.3;
         this.maxDist = 100;
-        this.linearAttenFactor = 0.05;
-        this.squareAttenFactor = 0.05;
-
-        vec3.set(this.position, 0, 0, 0);
-        vec3.set(this.forward, 0, 0, -1);
-        vec3.set(this.up, 0, 1, 0);
+        this.linearAttenFactor = 0;
+        this.squareAttenFactor = 0;
 
         mat4.identity(this.viewMat);
         mat4.identity(this.projMat);
@@ -75,10 +67,6 @@ export class CameraComponent extends Component
     near: number = undefined;
     far: number = undefined;
 
-    position: vec3 = vec3.create();
-    forward: vec3 = vec3.create();
-    up: vec3 = vec3.create();
-
     viewMat: mat4 = mat4.create();
     projMat: mat4 = mat4.create();
     viewProjMat: mat4 = mat4.create();
@@ -91,10 +79,6 @@ export class CameraComponent extends Component
         this.aspectRatio = 1;
         this.near = 0.1;
         this.far = 100;
-
-        vec3.set(this.position, 0, 0, 0);
-        vec3.set(this.forward, 0, 0, -1);
-        vec3.set(this.up, 0, 1, 0);
 
         mat4.identity(this.viewMat);
         mat4.identity(this.projMat);

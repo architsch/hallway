@@ -9,34 +9,14 @@ const s = 0.0625;
 
 export default class EntityFactory
 {
-    static addLeftWall(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
-    {
-        this.addPlane(ecs, -3.5, 0.5, z, 0, 90 * deg2rad, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
-    }
-
-    static addRightWall(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
-    {
-        this.addPlane(ecs, 3.5, 0.5, z, 0, -90 * deg2rad, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
-    }
-
-    static addCeiling(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
-    {
-        this.addPlane(ecs, 0, 2.5, z, +90 * deg2rad, 0, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
-    }
-
-    static addFloor(ecs: ECSManager, z: number, uScale: number, vScale: number, uShift: number, vShift: number)
-    {
-        this.addPlane(ecs, 0, -1.5, z, -90 * deg2rad, 0, 0, 1, 1, 1, uScale, vScale, uShift, vShift);
-    }
-
-    static addPlane(ecs: ECSManager,
+    static addSpriteEntity(ecs: ECSManager, entityConfigId: string,
         x: number, y: number, z: number,
         xr: number, yr: number, zr: number,
         xs: number, ys: number, zs: number,
         uScale: number, vScale: number,
         uShift: number, vShift: number)
     {
-        const entity = ecs.addEntity("plane");
+        const entity = ecs.addEntity(entityConfigId);
         this.setEntityTransformParams(ecs, entity, x, y, z, xr, yr, zr, xs, ys, zs);
         this.setEntitySpriteParams(ecs, entity, uScale, vScale, uShift, vShift);
     }

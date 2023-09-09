@@ -16,18 +16,10 @@ export default class GeometryVerticesFactory
     private static vec3Temp: vec3 = vec3.create();
     private static vec3Temp2: vec3 = vec3.create();
 
-    static plane(): VerticesData
+    static plane(numCols: number, numRows: number): VerticesData
     {
         this.clear();
-        for (let y = -3; y <= 3; ++y)
-        {
-            for (let x = -3; x <= 3; ++x)
-            {
-                this.pushTransform(x, y, 0, 0, 0, 0, 0, 1, 1, 1);
-                this.addQuad();
-                this.popTransform();
-            }
-        }
+        this.addPlane(numCols, numRows);
         return this.getVertexDataCopy();
     }
 
@@ -43,6 +35,21 @@ export default class GeometryVerticesFactory
         this.clear();
         this.addQuad();
         return this.getVertexDataCopy();
+    }
+
+    private static addPlane(numCols: number, numRows: number)
+    {
+        const xExtent = 0.5*numCols - 0.5;
+        const yExtent = 0.5*numRows - 0.5;
+        for (let y = -yExtent; y <= yExtent; ++y)
+        {
+            for (let x = -xExtent; x <= xExtent; ++x)
+            {
+                this.pushTransform(x, y, 0, 0, 0, 0, 0, 1, 1, 1);
+                this.addQuad();
+                this.popTransform();
+            }
+        }
     }
 
     private static addCube()

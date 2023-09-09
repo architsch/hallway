@@ -1,6 +1,8 @@
 import { MaterialConfig } from "../../Config/ConfigTypes";
 import MaterialConfigFactory from "../Factories/MaterialConfigFactory";
 
+require("../../Config/GlobalPropertiesConfig");
+
 export const materialConfigById: {[id: string]: MaterialConfig} = {
     "textureUnlit": MaterialConfigFactory.make({texturing: "texture", lighting: "unlit"}),
     "textureDiffuse": MaterialConfigFactory.make({texturing: "texture", lighting: "diffuse"}),

@@ -1,12 +1,18 @@
 import { GeometryConfig } from "../../Config/ConfigTypes";
+import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 import ShadingOptions from "../Models/ShadingOptions";
 import VerticesData from "../Models/VerticesData";
 import GeometryVerticesFactory from "./GeometryVerticesFactory";
 
+require("../../Config/GlobalPropertiesConfig");
+
+const g = globalPropertiesConfig;
+
 const verticesDataByGeometryType: {[geometryType: string]: VerticesData} = {
     "quad": GeometryVerticesFactory.quad(),
     "cube": GeometryVerticesFactory.cube(),
-    "plane": GeometryVerticesFactory.plane(),
+    "floor": GeometryVerticesFactory.plane(g.worldChunkSize[0], g.worldChunkSize[2]),
+    "wall": GeometryVerticesFactory.plane(g.worldChunkSize[2], g.worldChunkSize[1]),
 };
 
 export default class GeometryConfigFactory

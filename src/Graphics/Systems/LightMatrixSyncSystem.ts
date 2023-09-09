@@ -1,17 +1,22 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { LightComponent } from "../Models/GraphicsComponents";
+import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
 
 export default class LightMatrixSyncSystem extends System
 {
     private lightTarget: vec3 = vec3.create();
+    private up: vec3 = vec3.fromValues(0, 1, 0);
+
+    private forwardQuat: quat = quat.create();
+    private forward: vec3 = vec3.create();
 
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Light", ["Light"]],
+            ["Light", ["Light", "Transform"]],
         ];
     }
 
@@ -24,42 +29,47 @@ export default class LightMatrixSyncSystem extends System
         const lightEntities = this.entityGroups["Light"];
 
         lightEntities.forEach((entity: Entity) => {
-            const lightComponent = ecs.getComponent(entity.id, "Light") as LightComponent;
+            const light = ecs.getComponent(entity.id, "Light") as LightComponent;
+            const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
 
             let recalculateViewProjMat = false;
 
-            if (!lightComponent.projMatrixSynced)
+            if (!light.projMatrixSynced)
             {
                 mat4.perspective(
-                    lightComponent.projMat,
-                    lightComponent.falloffEndAngle,
+                    light.projMat,
+                    light.falloffEndAngle,
                     1,
                     0.1,
-                    lightComponent.maxDist);
+                    light.maxDist);
                 
                 recalculateViewProjMat = true;
-                lightComponent.projMatrixSynced = true;
+                light.projMatrixSynced = true;
             }
             
-            if (!lightComponent.viewMatrixSynced)
+            if (!light.viewMatrixSynced)
             {
-                vec3.add(this.lightTarget, lightComponent.position, lightComponent.forward);
+                quat.fromEuler(this.forwardQuat, tr.rotation[0], tr.rotation[1], tr.rotation[2]);
+                vec3.set(this.forward, 0, 0, -1);
+                vec3.transformQuat(this.forward, this.forward, this.forwardQuat);
+
+                vec3.add(this.lightTarget, tr.position, this.forward);
                 mat4.lookAt(
-                    lightComponent.viewMat,
-                    lightComponent.position,
+                    light.viewMat,
+                    tr.position,
                     this.lightTarget,
-                    lightComponent.up);
+                    this.up);
                 
                 recalculateViewProjMat = true;
-                lightComponent.viewMatrixSynced = true;
+                light.viewMatrixSynced = true;
             }
 
             if (recalculateViewProjMat)
             {
                 mat4.multiply(
-                    lightComponent.viewProjMat,
-                    lightComponent.projMat,
-                    lightComponent.viewMat);
+                    light.viewProjMat,
+                    light.projMat,
+                    light.viewMat);
             }
         });
     }

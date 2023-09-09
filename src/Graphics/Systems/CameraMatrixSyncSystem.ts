@@ -1,17 +1,22 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { CameraComponent } from "../Models/GraphicsComponents";
+import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
 
 export default class CameraMatrixSyncSystem extends System
 {
     private cameraTarget: vec3 = vec3.create();
+    private up: vec3 = vec3.fromValues(0, 1, 0);
+
+    private forwardQuat: quat = quat.create();
+    private forward: vec3 = vec3.create();
 
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Camera", ["Camera"]],
+            ["Camera", ["Camera", "Transform"]],
         ];
     }
 
@@ -24,42 +29,47 @@ export default class CameraMatrixSyncSystem extends System
         const cameraEntities = this.entityGroups["Camera"];
 
         cameraEntities.forEach((entity: Entity) => {
-            const cameraComponent = ecs.getComponent(entity.id, "Camera") as CameraComponent;
+            const cam = ecs.getComponent(entity.id, "Camera") as CameraComponent;
+            const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
 
             let recalculateViewProjMat = false;
 
-            if (!cameraComponent.projMatrixSynced)
+            if (!cam.projMatrixSynced)
             {
                 mat4.perspective(
-                    cameraComponent.projMat,
-                    cameraComponent.fovy,
-                    cameraComponent.aspectRatio,
-                    cameraComponent.near,
-                    cameraComponent.far);
+                    cam.projMat,
+                    cam.fovy,
+                    cam.aspectRatio,
+                    cam.near,
+                    cam.far);
                 
                 recalculateViewProjMat = true;
-                cameraComponent.projMatrixSynced = true;
+                cam.projMatrixSynced = true;
             }
             
-            if (!cameraComponent.viewMatrixSynced)
+            if (!cam.viewMatrixSynced)
             {
-                vec3.add(this.cameraTarget, cameraComponent.position, cameraComponent.forward);
+                quat.fromEuler(this.forwardQuat, tr.rotation[0], tr.rotation[1], tr.rotation[2]);
+                vec3.set(this.forward, 0, 0, -1);
+                vec3.transformQuat(this.forward, this.forward, this.forwardQuat);
+
+                vec3.add(this.cameraTarget, tr.position, this.forward);
                 mat4.lookAt(
-                    cameraComponent.viewMat,
-                    cameraComponent.position,
+                    cam.viewMat,
+                    tr.position,
                     this.cameraTarget,
-                    cameraComponent.up);
+                    this.up);
                 
                 recalculateViewProjMat = true;
-                cameraComponent.viewMatrixSynced = true;
+                cam.viewMatrixSynced = true;
             }
 
             if (recalculateViewProjMat)
             {
                 mat4.multiply(
-                    cameraComponent.viewProjMat,
-                    cameraComponent.projMat,
-                    cameraComponent.viewMat);
+                    cam.viewProjMat,
+                    cam.projMat,
+                    cam.viewMat);
             }
         });
     }

@@ -38,6 +38,7 @@ export type EntityConfig =
 
 export interface GlobalConfig
 {
+    globalPropertiesConfig: {[propertyName: string]: any};
     uniformConfigById: {[id: string]: UniformConfig};
     textureConfigById: {[id: string]: TextureConfig};
     geometryConfigById: {[id: string]: GeometryConfig};
