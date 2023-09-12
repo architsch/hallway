@@ -17,48 +17,60 @@ import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexing
 import SingletonComponentAccessSystem from "../Graphics/Systems/SingletonComponentAccessSystem";
 import LightMatrixSyncSystem from "../Graphics/Systems/LightMatrixSyncSystem";
 import { TransformComponent } from "../Physics/Models/PhysicsComponents";
-import CollisionSystem from "../Physics/Systems/CollisionSystem";
+import CollisionDetectionSystem from "../Physics/Systems/CollisionDetectionSystem";
+import CollisionForceSystem from "../Physics/Systems/CollisionForceSystem";
+import ColliderRenderSystem from "../Graphics/Systems/ColliderRenderSystem";
+import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
 
 export default class ECSManager
 {
     private entityPool: Pool<Entity>;
+    private removePendingEntityIds: Array<number>;
+
     private systems: Array<System>;
     private singletonComponentAccessSystem: SingletonComponentAccessSystem;
 
     constructor()
     {
+        const g = globalPropertiesConfig;
+
         this.entityPool = new Pool<Entity>("Entity", 256, () => {
             return {
                 id: undefined,
                 parentId: -1,
-                childIds: new Array<number>(4),
+                childIds: new Array<number>(),
                 componentIds: {},
+                alive: false,
             };
         });
+        this.removePendingEntityIds = new Array<number>();
 
         this.singletonComponentAccessSystem = new SingletonComponentAccessSystem();
 
-        this.systems = [
-            // Input/Control
-            new KeyInputSystem(),
-            new PlayerControlSystem(),
-            new CameraMatrixSyncSystem(),
-            new LightMatrixSyncSystem(),
+        this.systems = [];
 
-            // Physics
-            new CollisionSystem(),
-            new KinematicsSystem(),
-            new TransformMatrixSyncSystem(),
+        // Input/Control
+        this.systems.push(new KeyInputSystem());
+        this.systems.push(new PlayerControlSystem());
+        this.systems.push(new CameraMatrixSyncSystem());
+        this.systems.push(new LightMatrixSyncSystem());
 
-            // Graphics
-            new GraphicsInitSystem(),
-            this.singletonComponentAccessSystem,
-            new MeshInstanceIndexingSystem(),
-            new MeshRenderSystem(),
+        // Physics
+        this.systems.push(new CollisionDetectionSystem());
+        this.systems.push(new CollisionForceSystem());
+        this.systems.push(new KinematicsSystem());
+        this.systems.push(new TransformMatrixSyncSystem());
 
-            // Game
-            new GameInitSystem(),
-        ];
+        // Graphics
+        this.systems.push(new GraphicsInitSystem());
+        this.systems.push(this.singletonComponentAccessSystem);
+        this.systems.push(new MeshInstanceIndexingSystem());
+        this.systems.push(new MeshRenderSystem());
+        if (g.debugEnabled)
+            this.systems.push(new ColliderRenderSystem());
+
+        // Game
+        this.systems.push(new GameInitSystem());
 
         for (const system of this.systems)
             system.start(this);
@@ -72,7 +84,27 @@ export default class ECSManager
     update(t: number, dt: number)
     {
         for (const system of this.systems)
+        {
             system.update(this, t, dt);
+            this.clearRemovePendingEntities();
+        }
+    }
+
+    clearRemovePendingEntities()
+    {
+        for (const id of this.removePendingEntityIds)
+        {
+            const entity = this.entityPool.get(id);
+            for (const componentType of Object.keys(entity.componentIds))
+                this.removeComponent(entity.id, componentType);
+            this.entityPool.return(entity.id);
+        }
+        this.removePendingEntityIds.length = 0;
+    }
+
+    isEntityAlive(id: number): boolean
+    {
+        return this.getEntity(id).alive;
     }
 
     getEntity(id: number): Entity
@@ -85,6 +117,7 @@ export default class ECSManager
         const entity = this.entityPool.rent();
         entity.parentId = -1;
         entity.childIds.length = 0;
+        entity.alive = true;
 
         const entityConfig = globalConfig.entityConfigById[configId];
         if (entityConfig == undefined)
@@ -98,12 +131,8 @@ export default class ECSManager
     removeEntity(id: number)
     {
         const entity = this.entityPool.get(id);
-        entity.parentId = -1;
-        entity.childIds.length = 0;
-        
-        for (const componentType of Object.keys(entity.componentIds))
-            this.removeComponent(entity.id, componentType);
-        this.entityPool.return(entity.id);
+        entity.alive = false;
+        this.removePendingEntityIds.push(id);
     }
 
     setParent(entity: Entity, parent: Entity | null)
@@ -147,7 +176,7 @@ export default class ECSManager
         return entity.componentIds[componentType] != undefined;
     }
 
-    addComponent(entityId: number, componentType: string, componentValues: {[key: string]: [type: string, value: any]})
+    addComponent(entityId: number, componentType: string, componentValues: {[key: string]: [type: string, value: any]} | undefined): Component
     {
         const entity = this.entityPool.get(entityId);
         if (ComponentPools[componentType] == undefined)
@@ -156,26 +185,30 @@ export default class ECSManager
         component.applyDefaultValues();
         component.entityId = entityId;
 
-        for (const [key, typeAndValue] of Object.entries(componentValues))
+        if (componentValues != undefined)
         {
-            const type = typeAndValue[0];
-            const value = typeAndValue[1];
-            switch (type)
+            for (const [key, typeAndValue] of Object.entries(componentValues))
             {
-                case "number": case "string": case "boolean": case "any": (component as any)[key] = value; break;
-                case "vec2": vec2.copy((component as any)[key], value); break;
-                case "vec3": vec3.copy((component as any)[key], value); break;
-                case "vec4": vec4.copy((component as any)[key], value); break;
-                case "mat2": mat2.copy((component as any)[key], value); break;
-                case "mat3": mat3.copy((component as any)[key], value); break;
-                case "mat4": mat4.copy((component as any)[key], value); break;
-                default: throw new Error(`Unhandled component field type :: ${type} (in component "${componentType}")`);
+                const type = typeAndValue[0];
+                const value = typeAndValue[1];
+                switch (type)
+                {
+                    case "number": case "string": case "boolean": case "any": (component as any)[key] = value; break;
+                    case "vec2": vec2.copy((component as any)[key], value); break;
+                    case "vec3": vec3.copy((component as any)[key], value); break;
+                    case "vec4": vec4.copy((component as any)[key], value); break;
+                    case "mat2": mat2.copy((component as any)[key], value); break;
+                    case "mat3": mat3.copy((component as any)[key], value); break;
+                    case "mat4": mat4.copy((component as any)[key], value); break;
+                    default: throw new Error(`Unhandled component field type :: ${type} (in component "${componentType}")`);
+                }
             }
         }
         entity.componentIds[componentType] = component.id;
 
         for (const system of this.systems)
             system.onEntityModified(this, entity);
+        return component;
     }
 
     removeComponent(entityId: number, componentType: string)

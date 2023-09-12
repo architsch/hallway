@@ -32,27 +32,59 @@ export class RigidbodyComponent extends Component
 {
     mass: number = undefined;
     elasticity: number = undefined;
+    rigidity: number = undefined;
     decelerationRate: number = undefined;
-    hitboxSize: vec3 = vec3.create();
     velocity: vec3 = vec3.create();
     force: vec3 = vec3.create();
+
+    applyDefaultValues()
+    {
+        this.mass = 1;
+        this.elasticity = 1;
+        this.rigidity = 1;
+        this.decelerationRate = 1;
+        vec3.set(this.velocity, 0, 0, 0);
+        vec3.set(this.force, 0, 0, 0);
+    }
+}
+ComponentPools["Rigidbody"] = new Pool<RigidbodyComponent>("RigidbodyComponent", 256, () => new RigidbodyComponent());
+
+//-----------------------------------------------------------------------
+
+export class ColliderComponent extends Component
+{
+    boundingBoxSize: vec3 = vec3.create();
 
     // Temporary info storage for collision detection
     boundingBoxMin: vec3 = vec3.create();
     boundingBoxMax: vec3 = vec3.create();
     boundingBoxVoxelCoordsMin: vec3 = vec3.create();
     boundingBoxVoxelCoordsMax: vec3 = vec3.create();
+    currentCollidingEntityIds: Array<number> = new Array<number>(8);
 
     applyDefaultValues()
     {
-        this.mass = 1;
-        this.elasticity = 1;
-        this.decelerationRate = 1;
-        vec3.set(this.hitboxSize, 1, 1, 1);
-        vec3.set(this.velocity, 0, 0, 0);
-        vec3.set(this.force, 0, 0, 0);
+        vec3.set(this.boundingBoxSize, 1, 1, 1);
     }
 }
-ComponentPools["Rigidbody"] = new Pool<RigidbodyComponent>("RigidbodyComponent", 256, () => new RigidbodyComponent());
+ComponentPools["Collider"] = new Pool<ColliderComponent>("ColliderComponent", 256, () => new ColliderComponent());
+
+//-----------------------------------------------------------------------
+
+export class CollisionEventComponent extends Component
+{
+    entityId1: number = undefined;
+    entityId2: number = undefined;
+    intersectionVolume: number = undefined;
+    intersectionCenter: vec3 = vec3.create();
+
+    applyDefaultValues()
+    {
+        this.entityId1 = undefined;
+        this.entityId2 = undefined;
+        this.intersectionVolume = undefined;
+    }
+}
+ComponentPools["CollisionEvent"] = new Pool<CollisionEventComponent>("CollisionEventComponent", 1024, () => new CollisionEventComponent());
 
 //-----------------------------------------------------------------------

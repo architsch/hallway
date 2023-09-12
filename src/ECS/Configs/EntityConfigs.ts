@@ -1,23 +1,27 @@
 import { vec2, vec3 } from "gl-matrix";
 import { EntityConfig } from "../../Config/ConfigTypes";
+import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
-require("../../Config/GlobalPropertiesConfig");
-
-const s = 0.0625; // sprite atlas's cell size
 const deg2rad = Math.PI / 180;
+const g = globalPropertiesConfig;
+const worldBoundColliderThickness = 5;
 
 export const entityConfigById: {[id: string]: EntityConfig} = {
-    "empty": {
-    },
+    //--------------------------------------------------------------------------------
+    // Gameplay
+    //--------------------------------------------------------------------------------
+
     "player": {
         "Player": {},
         "Transform": {},
         "Rigidbody": {
             decelerationRate: ["number", 5],
-            hitboxSize: ["vec3", vec3.fromValues(1.25, 3, 1.25)],
+        },
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(1.5, 3, 1.5)],
         },
         "Camera": {
-            fovy: ["number", 45 * Math.PI / 180],
+            fovy: ["number", 45 * deg2rad],
             aspectRatio: ["number", 2],
             near: ["number", 0.1],
             far: ["number", 100],
@@ -48,14 +52,16 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
         "Transform": {},
         "MeshInstance": {meshConfigId: ["string", "particle"]},
         "Sprite": {},
-        "Rigidbody": {
-            hitboxSize: ["vec3", vec3.fromValues(2, 2, 2)],
+        "Rigidbody": {},
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(2, 2, 2)],
         },
     },
     "block": {
         "Transform": {},
         "MeshInstance": {meshConfigId: ["string", "block"]},
         "Sprite": {},
+        "Collider": {},
     },
     "floor": {
         "Transform": {},
@@ -66,5 +72,84 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
         "Transform": {},
         "MeshInstance": {meshConfigId: ["string", "wall"]},
         "Sprite": {},
+    },
+
+    //--------------------------------------------------------------------------------
+    // Core
+    //--------------------------------------------------------------------------------
+
+    "empty": {
+    },
+    "worldBoundFloorCollider": {
+        "Transform": {
+            position: ["vec3", vec3.fromValues(
+                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
+                g.worldBoundMin[1] - 0.5*worldBoundColliderThickness,
+                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
+            )],
+        },
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
+        },
+    },
+    "worldBoundCeilingCollider": {
+        "Transform": {
+            position: ["vec3", vec3.fromValues(
+                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
+                g.worldBoundMin[1] + g.worldBoundSize[1] + 0.5*worldBoundColliderThickness,
+                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
+            )],
+        },
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
+        },
+    },
+    "worldBoundLeftWallCollider": {
+        "Transform": {
+            position: ["vec3", vec3.fromValues(
+                g.worldBoundMin[0] - 0.5*worldBoundColliderThickness,
+                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
+                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
+            )],
+        },
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
+        },
+    },
+    "worldBoundRightWallCollider": {
+        "Transform": {
+            position: ["vec3", vec3.fromValues(
+                g.worldBoundMin[0] + g.worldBoundSize[0] + 0.5*worldBoundColliderThickness,
+                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
+                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
+            )],
+        },
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
+        },
+    },
+    "worldBoundBackWallCollider": {
+        "Transform": {
+            position: ["vec3", vec3.fromValues(
+                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
+                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
+                g.worldBoundMin[2] - 0.5*worldBoundColliderThickness
+            )],
+        },
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, worldBoundColliderThickness)],
+        },
+    },
+    "worldBoundFrontWallCollider": {
+        "Transform": {
+            position: ["vec3", vec3.fromValues(
+                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
+                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
+                g.worldBoundMin[2] + g.worldBoundSize[2] + 0.5*worldBoundColliderThickness
+            )],
+        },
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, worldBoundColliderThickness)],
+        },
     },
 };

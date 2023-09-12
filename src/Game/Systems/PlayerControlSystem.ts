@@ -23,8 +23,8 @@ export default class PlayerControlSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const playerEntities = this.entityGroups["Player"];
-        const keyInputEntities = this.entityGroups["KeyInput"];
+        const playerEntities = this.queryEntityGroup("Player");
+        const keyInputEntities = this.queryEntityGroup("KeyInput");
 
         let forceX = 0;
         let forceZ = 0;

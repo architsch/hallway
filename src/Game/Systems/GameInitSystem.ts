@@ -20,7 +20,7 @@ export default class GameInitSystem extends System
     start(ecs: ECSManager)
     {
         const g = globalConfig.globalPropertiesConfig;
-        const playerY = g.worldBoundMin[1] + 1.5;
+        const playerY = g.worldBoundMin[1] + 5;
 
         const player = ecs.addEntity("player");
         const playerTr = ecs.getComponent(player.id, "Transform") as TransformComponent;
@@ -29,6 +29,13 @@ export default class GameInitSystem extends System
         playerTr.matrixSynced = false;
 
         ecs.addEntity("mainLight");
+        
+        ecs.addEntity("worldBoundFloorCollider");
+        ecs.addEntity("worldBoundCeilingCollider");
+        ecs.addEntity("worldBoundLeftWallCollider");
+        ecs.addEntity("worldBoundRightWallCollider");
+        ecs.addEntity("worldBoundBackWallCollider");
+        ecs.addEntity("worldBoundFrontWallCollider");
 
         for (let i = 0; i < g.numWorldChunks; ++i)
         {
@@ -61,12 +68,12 @@ export default class GameInitSystem extends System
                 s, s, 13*s, 8*s);
             
             // Actors
-            for (let i = 0; i < 4; ++i)
+            for (let i = 1; i < 4; ++i)
             {
                 const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
-                const y = playerY - 0.5;
+                const y = playerY;
                 const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
-                EntityFactory.addSpriteEntity(ecs, "actor", x, y, z, 0, 0, 0, 2, 2, 2, s, s, 9*s, 3*s);
+                EntityFactory.addSpriteEntity(ecs, "actor", x, y, z, 180 * deg2rad, 180 * deg2rad, 0, 2, 2, 2, 2*s, 2*s, 0*s, 6*s);
             }
         }
     }

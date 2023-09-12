@@ -27,10 +27,12 @@ export default class MeshRenderSystem extends System
         const graphicsComponent = ecs.singletonComponents().get("Graphics") as GraphicsComponent;
         const gl = graphicsComponent.gl;
 
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthMask(true);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
         this.meshesToRender.clear();
-        const meshInstanceEntities = this.entityGroups["MeshInstance"];
+        const meshInstanceEntities = this.queryEntityGroup("MeshInstance");
 
         meshInstanceEntities.forEach((entity: Entity) => {
             const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;

@@ -15,6 +15,10 @@ export const uniformConfigById: {[id: string]: UniformConfig} = {
         type: "mat4",
         getCurrentValue: (ecs: ECSManager) => getCamera(ecs).viewProjMat,
     },
+    "u_cameraPosition": {
+        type: "mat4",
+        getCurrentValue: (ecs: ECSManager) => getCameraTr(ecs).position,
+    },
     "u_ambLightColor": {
         type: "vec3",
         getCurrentValue: (ecs: ECSManager) => getLight(ecs).ambLightColor,

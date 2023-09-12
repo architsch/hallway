@@ -26,7 +26,7 @@ export default class CameraMatrixSyncSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const cameraEntities = this.entityGroups["Camera"];
+        const cameraEntities = this.queryEntityGroup("Camera");
 
         cameraEntities.forEach((entity: Entity) => {
             const cam = ecs.getComponent(entity.id, "Camera") as CameraComponent;

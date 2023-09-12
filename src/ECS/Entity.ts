@@ -5,4 +5,5 @@ export default interface Entity extends PoolableObject
     parentId: number;
     childIds: number[];
     componentIds: {[componentType: string]: number};
+    alive: boolean;
 }

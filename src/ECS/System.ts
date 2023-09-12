@@ -29,6 +29,11 @@ export default abstract class System
     abstract onEntityRegistered(ecs: ECSManager, entity: Entity): void;
     abstract onEntityUnregistered(ecs: ECSManager, entity: Entity): void;
 
+    queryEntityGroup(groupId: string): Set<Entity>
+    {
+        return this.entityGroups[groupId];
+    }
+
     onEntityModified(ecs: ECSManager, entity: Entity)
     {
         for (const [groupId, requiredComponentTypes] of Object.entries(this.requiredComponentTypesByEntityGroup))

@@ -24,7 +24,7 @@ export default class TransformMatrixSyncSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const transformEntities = this.entityGroups["Transform"];
+        const transformEntities = this.queryEntityGroup("Transform");
 
         transformEntities.forEach((entity: Entity) => {
             const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;

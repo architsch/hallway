@@ -7,11 +7,11 @@ import { RigidbodyComponent, TransformComponent } from "../Models/PhysicsCompone
 export default class KinematicsSystem extends System
 {
     private acceleration: vec3 = vec3.create();
-    private forceReduction: vec3 = vec3.create();
-    private displacement: vec3 = vec3.create();
+    private changeInVelocity: vec3 = vec3.create();
+    private changeInPosition: vec3 = vec3.create();
     private deceleration: vec3 = vec3.create();
 
-    private gravity: vec3 = vec3.fromValues(0, -1, 0);
+    private gravity: vec3 = vec3.fromValues(0, -15, 0);
 
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
@@ -26,33 +26,28 @@ export default class KinematicsSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const rigidbodyEntities = this.entityGroups["Rigidbody"];
+        const rigidbodyEntities = this.queryEntityGroup("Rigidbody");
 
         rigidbodyEntities.forEach((entity: Entity) => {
             const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
             const rb = ecs.getComponent(entity.id, "Rigidbody") as RigidbodyComponent;
 
             // Update the current acceleration and velocity.
-            vec3.scale(this.acceleration, rb.force, dt / rb.mass);
-            vec3.add(this.acceleration, this.acceleration, this.gravity);
-            vec3.add(rb.velocity, rb.velocity, this.acceleration);
+            vec3.scale(this.acceleration, rb.force, 1 / rb.mass); // Apply the pending force.
+            vec3.add(this.acceleration, this.acceleration, this.gravity); // Apply the gravitational acceleration.
+            vec3.scale(this.changeInVelocity, this.acceleration, dt);
+            vec3.add(rb.velocity, rb.velocity, this.changeInVelocity); // Update the velocity based on the acceleration.
 
-            // Damp out the current force.
-
-            vec3.negate(this.forceReduction, rb.force);
-            vec3.normalize(this.forceReduction, this.forceReduction);
-            const forceMag = vec3.length(rb.force);
-            const forceReductionMag = Math.min(forceMag, forceMag * 10 * dt);
-            vec3.scale(this.forceReduction, this.forceReduction, forceReductionMag);
-            vec3.add(rb.force, rb.force, this.forceReduction);
+            // Zero out the force because it's been applied (consumed).
+            vec3.set(rb.force, 0, 0, 0);
 
             const velocitySqrMag = vec3.squaredLength(rb.velocity);
             
             if (velocitySqrMag > 0.0025)
             {
                 // Displace
-                vec3.scale(this.displacement, rb.velocity, dt);
-                vec3.add(tr.position, tr.position, this.displacement);
+                vec3.scale(this.changeInPosition, rb.velocity, dt);
+                vec3.add(tr.position, tr.position, this.changeInPosition);
 
                 // Decelerate
                 vec3.scale(this.deceleration, rb.velocity, rb.decelerationRate * dt);

@@ -26,7 +26,7 @@ export default class LightMatrixSyncSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const lightEntities = this.entityGroups["Light"];
+        const lightEntities = this.queryEntityGroup("Light");
 
         lightEntities.forEach((entity: Entity) => {
             const light = ecs.getComponent(entity.id, "Light") as LightComponent;
