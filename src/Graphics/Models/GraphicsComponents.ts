@@ -3,6 +3,9 @@ import { Component } from "../../ECS/Component";
 import ComponentPools from "../../ECS/ComponentPools";
 import Pool from "../../Util/Pooling/Pool";
 import Mesh from "./Mesh";
+import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
+
+const g = globalPropertiesConfig;
 
 export class GraphicsComponent extends Component
 {
@@ -119,7 +122,7 @@ export class MeshInstanceComponent extends Component
         this.bufferSynced = false;
     }
 }
-ComponentPools["MeshInstance"] = new Pool<MeshInstanceComponent>("MeshInstanceComponent", 256, () => new MeshInstanceComponent());
+ComponentPools["MeshInstance"] = new Pool<MeshInstanceComponent>("MeshInstanceComponent", g.maxNumEntities, () => new MeshInstanceComponent());
 
 //-----------------------------------------------------------------------
 
@@ -134,7 +137,7 @@ export class SpriteComponent extends Component
         vec2.set(this.uvShift, 0, 0);
     }
 }
-ComponentPools["Sprite"] = new Pool<SpriteComponent>("SpriteComponent", 256, () => new SpriteComponent());
+ComponentPools["Sprite"] = new Pool<SpriteComponent>("SpriteComponent", g.maxNumEntities, () => new SpriteComponent());
 
 //-----------------------------------------------------------------------
 
@@ -147,6 +150,6 @@ export class ColorComponent extends Component
         vec3.set(this.color, 1, 1, 1);
     }
 }
-ComponentPools["Color"] = new Pool<ColorComponent>("ColorComponent", 256, () => new ColorComponent());
+ComponentPools["Color"] = new Pool<ColorComponent>("ColorComponent", g.maxNumEntities, () => new ColorComponent());
 
 //-----------------------------------------------------------------------

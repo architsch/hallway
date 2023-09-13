@@ -3,7 +3,7 @@ import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { KeyInputComponent } from "../../Input/Models/InputComponents";
-import { RigidbodyComponent } from "../../Physics/Models/PhysicsComponents";
+import { KinematicsComponent } from "../../Physics/Models/PhysicsComponents";
 
 export default class PlayerControlSystem extends System
 {
@@ -12,7 +12,7 @@ export default class PlayerControlSystem extends System
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Player", ["Player", "Rigidbody"]],
+            ["Player", ["Player", "Kinematics"]],
             ["KeyInput", ["KeyInput"]],
         ];
     }
@@ -42,7 +42,7 @@ export default class PlayerControlSystem extends System
         });
 
         playerEntities.forEach((entity: Entity) => {
-            const rb = ecs.getComponent(entity.id, "Rigidbody") as RigidbodyComponent;
+            const kinematics = ecs.getComponent(entity.id, "Kinematics") as KinematicsComponent;
             const forceMag = 20;
 
             forceX *= forceMag;
@@ -52,7 +52,7 @@ export default class PlayerControlSystem extends System
             if (mag > 0.001)
             {
                 vec3.set(this.controlForce, (forceX / mag) * forceMag, 0, (forceZ / mag) * forceMag);
-                vec3.add(rb.force, rb.force, this.controlForce);
+                vec3.add(kinematics.force, kinematics.force, this.controlForce);
             }
         });
     }

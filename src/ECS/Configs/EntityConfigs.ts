@@ -14,8 +14,10 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
     "player": {
         "Player": {},
         "Transform": {},
-        "Rigidbody": {
+        "Kinematics": {
             decelerationRate: ["number", 5],
+        },
+        "Softbody": {
         },
         "Collider": {
             boundingBoxSize: ["vec3", vec3.fromValues(1.5, 3, 1.5)],
@@ -52,6 +54,7 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
         "Transform": {},
         "MeshInstance": {meshConfigId: ["string", "particle"]},
         "Sprite": {},
+        "Kinematics": {},
         "Rigidbody": {},
         "Collider": {
             boundingBoxSize: ["vec3", vec3.fromValues(2, 2, 2)],
@@ -89,6 +92,7 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             )],
         },
         "Collider": {
+            activelyDetectCollisions: ["boolean", false],
             boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
         },
     },
@@ -101,6 +105,7 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             )],
         },
         "Collider": {
+            activelyDetectCollisions: ["boolean", false],
             boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
         },
     },
@@ -113,6 +118,7 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             )],
         },
         "Collider": {
+            activelyDetectCollisions: ["boolean", false],
             boundingBoxSize: ["vec3", vec3.fromValues(worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
         },
     },
@@ -125,6 +131,7 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             )],
         },
         "Collider": {
+            activelyDetectCollisions: ["boolean", false],
             boundingBoxSize: ["vec3", vec3.fromValues(worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, g.worldBoundSize[2] + worldBoundColliderThickness)],
         },
     },
@@ -137,6 +144,7 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             )],
         },
         "Collider": {
+            activelyDetectCollisions: ["boolean", false],
             boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, worldBoundColliderThickness)],
         },
     },
@@ -149,6 +157,7 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             )],
         },
         "Collider": {
+            activelyDetectCollisions: ["boolean", false],
             boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + worldBoundColliderThickness, g.worldBoundSize[1] + worldBoundColliderThickness, worldBoundColliderThickness)],
         },
     },

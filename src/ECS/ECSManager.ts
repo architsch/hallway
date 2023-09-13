@@ -34,7 +34,7 @@ export default class ECSManager
     {
         const g = globalPropertiesConfig;
 
-        this.entityPool = new Pool<Entity>("Entity", 256, () => {
+        this.entityPool = new Pool<Entity>("Entity", g.maxNumEntities, () => {
             return {
                 id: undefined,
                 parentId: -1,

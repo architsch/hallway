@@ -19,6 +19,13 @@ export default class GameInitSystem extends System
 
     start(ecs: ECSManager)
     {
+        ecs.addEntity("worldBoundFloorCollider");
+        ecs.addEntity("worldBoundCeilingCollider");
+        ecs.addEntity("worldBoundLeftWallCollider");
+        ecs.addEntity("worldBoundRightWallCollider");
+        ecs.addEntity("worldBoundBackWallCollider");
+        ecs.addEntity("worldBoundFrontWallCollider");
+        
         const g = globalConfig.globalPropertiesConfig;
         const playerY = g.worldBoundMin[1] + 5;
 
@@ -29,13 +36,6 @@ export default class GameInitSystem extends System
         playerTr.matrixSynced = false;
 
         ecs.addEntity("mainLight");
-        
-        ecs.addEntity("worldBoundFloorCollider");
-        ecs.addEntity("worldBoundCeilingCollider");
-        ecs.addEntity("worldBoundLeftWallCollider");
-        ecs.addEntity("worldBoundRightWallCollider");
-        ecs.addEntity("worldBoundBackWallCollider");
-        ecs.addEntity("worldBoundFrontWallCollider");
 
         for (let i = 0; i < g.numWorldChunks; ++i)
         {

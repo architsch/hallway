@@ -9,7 +9,7 @@ export default class CollisionDetectionSystem extends System
 {
     private worldBoundMinPadded: vec3 = vec3.create();
     private worldBoundSizePadded: vec3 = vec3.create();
-    private worldSizeInVoxels: vec3 = vec3.fromValues(7, 1, 25);
+    private worldSizeInVoxels: vec3 = vec3.fromValues(7, 3, 25);
     private entityIdsByVoxelCoords: number[][];
     private boundingBoxSizeHalf: vec3 = vec3.create();
 
@@ -50,6 +50,7 @@ export default class CollisionDetectionSystem extends System
         eventEntities.forEach((eventEntity: Entity) => {
             ecs.removeEntity(eventEntity.id);
         });
+        ecs.clearRemovePendingEntities();
 
         const colliderEntities = this.queryEntityGroup("Collider");
 
@@ -128,34 +129,34 @@ export default class CollisionDetectionSystem extends System
     {
         const c1 = ecs.getComponent(myEntity.id, "Collider") as ColliderComponent;
 
-        for (const otherEntityId of voxelEntityIds)
+        if (c1.activelyDetectCollisions)
         {
-            if (otherEntityId != myEntity.id)
+            for (const otherEntityId of voxelEntityIds)
             {
-                const c2 = ecs.getComponent(otherEntityId, "Collider") as ColliderComponent;
-
-                if (c2.currentCollidingEntityIds.indexOf(myEntity.id) < 0)
+                if (otherEntityId != myEntity.id)
                 {
-                    const xOverlap = c1.boundingBoxMin[0] < c2.boundingBoxMax[0] && c1.boundingBoxMax[0] > c2.boundingBoxMin[0];
-                    const yOverlap = c1.boundingBoxMin[1] < c2.boundingBoxMax[1] && c1.boundingBoxMax[1] > c2.boundingBoxMin[1];
-                    const zOverlap = c1.boundingBoxMin[2] < c2.boundingBoxMax[2] && c1.boundingBoxMax[2] > c2.boundingBoxMin[2];
+                    const c2 = ecs.getComponent(otherEntityId, "Collider") as ColliderComponent;
 
-                    if (xOverlap && yOverlap && zOverlap) // These two entities are colliding with each other.
+                    if (c1.currentCollidingEntityIds.indexOf(otherEntityId) < 0)
                     {
-                        const eventEntity = ecs.addEntity("empty");
-                        const event = ecs.addComponent(eventEntity.id, "CollisionEvent", undefined) as CollisionEventComponent;
-                        event.entityId1 = myEntity.id;
-                        event.entityId2 = otherEntityId;
+                        const xOverlap = c1.boundingBoxMin[0] <= c2.boundingBoxMax[0] && c1.boundingBoxMax[0] >= c2.boundingBoxMin[0];
+                        const yOverlap = c1.boundingBoxMin[1] <= c2.boundingBoxMax[1] && c1.boundingBoxMax[1] >= c2.boundingBoxMin[1];
+                        const zOverlap = c1.boundingBoxMin[2] <= c2.boundingBoxMax[2] && c1.boundingBoxMax[2] >= c2.boundingBoxMin[2];
 
-                        const ix = this.getBoundingBoxIntersectionInfo(c1, c2, 0);
-                        const iy = this.getBoundingBoxIntersectionInfo(c1, c2, 1);
-                        const iz = this.getBoundingBoxIntersectionInfo(c1, c2, 2);
+                        if (xOverlap && yOverlap && zOverlap) // These two entities are colliding with each other.
+                        {
+                            const eventEntity = ecs.addEntity("empty");
+                            const event = ecs.addComponent(eventEntity.id, "CollisionEvent", undefined) as CollisionEventComponent;
+                            event.entityId1 = myEntity.id;
+                            event.entityId2 = otherEntityId;
 
-                        event.intersectionVolume = ix[0] * iy[0] * iz[0];
-                        vec3.set(event.intersectionCenter, ix[1], iy[1], iz[1]);
-                        
-                        c2.currentCollidingEntityIds.push(myEntity.id);
-                        c1.currentCollidingEntityIds.push(otherEntityId);
+                            this.updateIntersectionStatus(event, c1, c2, 0);
+                            this.updateIntersectionStatus(event, c1, c2, 1);
+                            this.updateIntersectionStatus(event, c1, c2, 2);
+                            
+                            c2.currentCollidingEntityIds.push(myEntity.id);
+                            c1.currentCollidingEntityIds.push(otherEntityId);
+                        }
                     }
                 }
             }
@@ -163,7 +164,7 @@ export default class CollisionDetectionSystem extends System
     }
 
     // (The given two colliders, c1 and c2, must be overlapping)
-    private getBoundingBoxIntersectionInfo(c1: ColliderComponent, c2: ColliderComponent, dimensionIndex: number)
+    private updateIntersectionStatus(event: CollisionEventComponent, c1: ColliderComponent, c2: ColliderComponent, dimensionIndex: number)
     {
         const c1min = c1.boundingBoxMin[dimensionIndex];
         const c1max = c1.boundingBoxMax[dimensionIndex];
@@ -172,29 +173,39 @@ export default class CollisionDetectionSystem extends System
         const c2_lowerBoundIsInside = c2min >= c1min;
         const c2_upperBoundIsInside = c2max <= c1max;
 
+        let intersectionWidth = 0;
+        let intersectionCenter = 0;
+
         if (c2_lowerBoundIsInside && c2_upperBoundIsInside) // c2 is inside c1
         {
-            const intersectionWidth = c2.boundingBoxSize[dimensionIndex];
-            const intersectionCenter = 0.5 * (c2min + c2max);
-            return [intersectionWidth, intersectionCenter];
+            intersectionWidth = c2.boundingBoxSize[dimensionIndex];
+            intersectionCenter = 0.5 * (c2min + c2max);
         }
         else if (c2_lowerBoundIsInside) // c2 tends toward the upper side of c1
         {
-            const intersectionWidth = c1max - c2min;
-            const intersectionCenter = 0.5 * (c1max + c2min);
-            return [intersectionWidth, intersectionCenter];
+            intersectionWidth = c1max - c2min;
+            intersectionCenter = 0.5 * (c1max + c2min);
         }
         else if (c2_upperBoundIsInside) // c2 tends toward the lower side of c1
         {
-            const intersectionWidth = c2max - c1min;
-            const intersectionCenter = 0.5 * (c2max + c1min);
-            return [intersectionWidth, intersectionCenter];
+            intersectionWidth = c2max - c1min;
+            intersectionCenter = 0.5 * (c2max + c1min);
         }
         else // c1 is inside c2
         {
-            const intersectionWidth = c1.boundingBoxSize[dimensionIndex];
-            const intersectionCenter = 0.5 * (c1min + c1max);
-            return [intersectionWidth, intersectionCenter];
+            intersectionWidth = c1.boundingBoxSize[dimensionIndex];
+            intersectionCenter = 0.5 * (c1min + c1max);
         }
+
+        vec3.set(event.intersectionSize,
+            (dimensionIndex == 0) ? intersectionWidth : event.intersectionSize[0],
+            (dimensionIndex == 1) ? intersectionWidth : event.intersectionSize[1],
+            (dimensionIndex == 2) ? intersectionWidth : event.intersectionSize[2]
+        );
+        vec3.set(event.intersectionCenter,
+            (dimensionIndex == 0) ? intersectionCenter : event.intersectionCenter[0],
+            (dimensionIndex == 1) ? intersectionCenter : event.intersectionCenter[1],
+            (dimensionIndex == 2) ? intersectionCenter : event.intersectionCenter[2]
+        );
     }
 }

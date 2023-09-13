@@ -12,6 +12,7 @@ vec3.subtract(worldBoundSize, worldBoundMax, worldBoundMin);
 
 export const globalPropertiesConfig: {
     debugEnabled: boolean,
+    maxNumEntities: number,
     worldChunkSize: vec3,
     numWorldChunks: number,
     worldBoundMin: vec3,
@@ -19,6 +20,7 @@ export const globalPropertiesConfig: {
     worldBoundSize: vec3,
 } = {
     debugEnabled: true,
+    maxNumEntities: 2048,
     worldChunkSize,
     numWorldChunks,
     worldBoundMin,
