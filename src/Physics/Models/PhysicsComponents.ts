@@ -36,14 +36,16 @@ export class KinematicsComponent extends Component
     mass: number = undefined;
     decelerationRate: number = undefined;
     velocity: vec3 = vec3.create();
-    force: vec3 = vec3.create();
+
+    // Temporary storage for the force that is waiting to be applied.
+    pendingForce: vec3 = vec3.create();
 
     applyDefaultValues()
     {
         this.mass = 1;
         this.decelerationRate = 1;
         vec3.set(this.velocity, 0, 0, 0);
-        vec3.set(this.force, 0, 0, 0);
+        vec3.set(this.pendingForce, 0, 0, 0);
     }
 }
 ComponentPools["Kinematics"] = new Pool<KinematicsComponent>("KinematicsComponent", g.maxNumEntities, () => new KinematicsComponent());

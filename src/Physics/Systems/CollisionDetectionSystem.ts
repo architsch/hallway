@@ -146,7 +146,7 @@ export default class CollisionDetectionSystem extends System
                         if (xOverlap && yOverlap && zOverlap) // These two entities are colliding with each other.
                         {
                             const eventEntity = ecs.addEntity("empty");
-                            const event = ecs.addComponent(eventEntity.id, "CollisionEvent", undefined) as CollisionEventComponent;
+                            const event = ecs.addComponent(eventEntity.id, "CollisionEvent") as CollisionEventComponent;
                             event.entityId1 = myEntity.id;
                             event.entityId2 = otherEntityId;
 

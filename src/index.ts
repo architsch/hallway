@@ -1,5 +1,6 @@
 import ECSManager from "./ECS/ECSManager";
 
+require("./AI/Models/AIComponents");
 require("./Game/Models/GameComponents");
 require("./Graphics/Models/GraphicsComponents");
 require("./Input/Models/InputComponents");

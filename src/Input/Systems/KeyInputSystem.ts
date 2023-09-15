@@ -1,6 +1,7 @@
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
+import { KeyInputComponent } from "../Models/InputComponents";
 
 export default class KeyInputSystem extends System
 {
@@ -22,7 +23,8 @@ export default class KeyInputSystem extends System
             if (this.entityIdByPressedKey[event.key] == undefined)
             {
                 const entity = ecs.addEntity("empty");
-                ecs.addComponent(entity.id, "KeyInput", {key: ["string", event.key]});
+                const component = ecs.addComponent(entity.id, "KeyInput") as KeyInputComponent;
+                component.key = event.key;
                 this.entityIdByPressedKey[event.key] = entity.id;
             }
         });

@@ -5,7 +5,6 @@ import { Component } from "./Component";
 import System from "./System";
 import { globalConfig } from "../Config/GlobalConfig";
 import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
-import GameInitSystem from "../Game/Systems/GameInitSystem";
 import GraphicsInitSystem from "../Graphics/Systems/GraphicsInitSystem";
 import KeyInputSystem from "../Input/Systems/KeyInputSystem";
 import PlayerControlSystem from "../Game/Systems/PlayerControlSystem";
@@ -21,6 +20,8 @@ import CollisionDetectionSystem from "../Physics/Systems/CollisionDetectionSyste
 import CollisionForceSystem from "../Physics/Systems/CollisionForceSystem";
 import ColliderRenderSystem from "../Graphics/Systems/ColliderRenderSystem";
 import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
+import PathfindingSystem from "../AI/Systems/PathfindingSystem";
+import LevelChangeSystem from "../Game/Systems/LevelChangeSystem";
 
 export default class ECSManager
 {
@@ -69,8 +70,11 @@ export default class ECSManager
         if (g.debugEnabled)
             this.systems.push(new ColliderRenderSystem());
 
+        // AI
+        this.systems.push(new PathfindingSystem());
+
         // Game
-        this.systems.push(new GameInitSystem());
+        this.systems.push(new LevelChangeSystem());
 
         for (const system of this.systems)
             system.start(this);
@@ -176,7 +180,7 @@ export default class ECSManager
         return entity.componentIds[componentType] != undefined;
     }
 
-    addComponent(entityId: number, componentType: string, componentValues: {[key: string]: [type: string, value: any]} | undefined): Component
+    addComponent(entityId: number, componentType: string, componentValues: {[key: string]: [type: string, value: any]} | undefined = undefined): Component
     {
         const entity = this.entityPool.get(entityId);
         if (ComponentPools[componentType] == undefined)

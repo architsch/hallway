@@ -1,6 +1,7 @@
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
+import { GraphicsComponent } from "../Models/GraphicsComponents";
 
 export default class GraphicsInitSystem extends System
 {
@@ -57,9 +58,8 @@ export default class GraphicsInitSystem extends System
         gl.viewport(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 
         const entity = ecs.addEntity("empty");
-        ecs.addComponent(entity.id, "Graphics", {
-            gl: ["any", gl],
-        });
+        const component = ecs.addComponent(entity.id, "Graphics") as GraphicsComponent;
+        component.gl = gl;
     }
     
     update(ecs: ECSManager, t: number, dt: number)

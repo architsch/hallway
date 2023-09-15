@@ -102,7 +102,7 @@ export default class CollisionForceSystem extends System
         vec3.subtract(this.forceToApply, tr.position, event.intersectionCenter);
         vec3.normalize(this.forceToApply, this.forceToApply);
         vec3.scale(this.forceToApply, this.forceToApply, forceMultiplier);
-        vec3.add(kinematics.force, kinematics.force, this.forceToApply);
+        vec3.add(kinematics.pendingForce, kinematics.pendingForce, this.forceToApply);
     }
 
     private applySingleRigidbodyCollision(ecs: ECSManager, event: CollisionEventComponent, entityId: number,

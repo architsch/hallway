@@ -33,13 +33,13 @@ export default class KinematicsSystem extends System
             const kinematics = ecs.getComponent(entity.id, "Kinematics") as KinematicsComponent;
 
             // Update the current acceleration and velocity.
-            vec3.scale(this.acceleration, kinematics.force, 1 / kinematics.mass); // Apply the pending force.
+            vec3.scale(this.acceleration, kinematics.pendingForce, 1 / kinematics.mass); // Apply the pending force.
             vec3.add(this.acceleration, this.acceleration, this.gravity); // Apply the gravitational acceleration.
             vec3.scale(this.changeInVelocity, this.acceleration, dt);
             vec3.add(kinematics.velocity, kinematics.velocity, this.changeInVelocity); // Update the velocity based on the acceleration.
 
             // Zero out the force because it's been applied (consumed).
-            vec3.set(kinematics.force, 0, 0, 0);
+            vec3.set(kinematics.pendingForce, 0, 0, 0);
 
             const velocitySqrMag = vec3.squaredLength(kinematics.velocity);
             

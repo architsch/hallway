@@ -52,7 +52,7 @@ export default class PlayerControlSystem extends System
             if (mag > 0.001)
             {
                 vec3.set(this.controlForce, (forceX / mag) * forceMag, 0, (forceZ / mag) * forceMag);
-                vec3.add(kinematics.force, kinematics.force, this.controlForce);
+                vec3.add(kinematics.pendingForce, kinematics.pendingForce, this.controlForce);
             }
         });
     }
