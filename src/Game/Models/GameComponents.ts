@@ -6,13 +6,21 @@ import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
 const g = globalPropertiesConfig;
 
-export class PlayerComponent extends Component
+export abstract class CollisionEventAttribComponent extends Component
+{
+    isCollisionEventAttribComponent: boolean = true;
+    attribOwnershipType: "entity1" | "entity2" | "both";
+}
+
+//-----------------------------------------------------------------------
+
+export class PlayerComponent extends CollisionEventAttribComponent
 {
     applyDefaultValues()
     {
     }
 }
-ComponentPools["Player"] = new Pool<PlayerComponent>("PlayerComponent", 1, () => new PlayerComponent());
+ComponentPools["Player"] = new Pool<PlayerComponent>("PlayerComponent", g.estimatedMaxCollisionsPerEntity, () => new PlayerComponent());
 
 //-----------------------------------------------------------------------
 
@@ -29,19 +37,6 @@ ComponentPools["Level"] = new Pool<LevelComponent>("LevelComponent", 1, () => ne
 
 //-----------------------------------------------------------------------
 
-export class LevelChangeSignalComponent extends Component
-{
-    newLevelIndex: number = undefined;
-
-    applyDefaultValues()
-    {
-        this.newLevelIndex = -1;
-    }
-}
-ComponentPools["Level"] = new Pool<LevelComponent>("LevelComponent", 32, () => new LevelComponent());
-
-//-----------------------------------------------------------------------
-
 export class LevelMemberComponent extends Component
 {
     levelIndex: number = undefined;
@@ -54,5 +49,28 @@ export class LevelMemberComponent extends Component
     }
 }
 ComponentPools["LevelMember"] = new Pool<LevelMemberComponent>("LevelMemberComponent", g.maxNumEntities, () => new LevelMemberComponent());
+
+//-----------------------------------------------------------------------
+
+export class DontDisplaceOnLevelChangeComponent extends Component
+{
+    applyDefaultValues()
+    {
+    }
+}
+ComponentPools["DontDisplaceOnLevelChange"] = new Pool<DontDisplaceOnLevelChangeComponent>("DontDisplaceOnLevelChangeComponent", 16, () => new DontDisplaceOnLevelChangeComponent());
+
+//-----------------------------------------------------------------------
+
+export class LevelPortalComponent extends CollisionEventAttribComponent
+{
+    newLevelIndex: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.newLevelIndex = -1;
+    }
+}
+ComponentPools["LevelPortal"] = new Pool<LevelPortalComponent>("LevelPortalComponent", g.estimatedMaxCollisionsPerEntity, () => new LevelPortalComponent());
 
 //-----------------------------------------------------------------------

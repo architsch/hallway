@@ -3,6 +3,7 @@ import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { KinematicsComponent, TransformComponent } from "../Models/PhysicsComponents";
+import { Component } from "../../ECS/Component";
 
 export default class KinematicsSystem extends System
 {
@@ -62,11 +63,11 @@ export default class KinematicsSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
     }
 }

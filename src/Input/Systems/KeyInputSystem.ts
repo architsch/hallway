@@ -1,3 +1,4 @@
+import { Component } from "../../ECS/Component";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
@@ -56,11 +57,11 @@ export default class KeyInputSystem extends System
     {
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
     }
 }

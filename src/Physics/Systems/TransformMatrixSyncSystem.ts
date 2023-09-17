@@ -4,6 +4,7 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { TransformComponent } from "../Models/PhysicsComponents";
 import { CameraComponent, LightComponent, MeshInstanceComponent } from "../../Graphics/Models/GraphicsComponents";
+import { Component } from "../../ECS/Component";
 
 export default class TransformMatrixSyncSystem extends System
 {
@@ -66,11 +67,11 @@ export default class TransformMatrixSyncSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
     }
 

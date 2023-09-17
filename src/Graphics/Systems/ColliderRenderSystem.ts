@@ -5,6 +5,7 @@ import System from "../../ECS/System";
 import { ColliderComponent, TransformComponent } from "../../Physics/Models/PhysicsComponents";
 import { GraphicsComponent } from "../Models/GraphicsComponents";
 import { globalConfig } from "../../Config/GlobalConfig";
+import { Component } from "../../ECS/Component";
 
 export default class ColliderRenderSystem extends System
 {
@@ -179,11 +180,11 @@ void main()
         gl.useProgram(null);
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
     }
 

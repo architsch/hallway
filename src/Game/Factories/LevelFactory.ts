@@ -2,7 +2,7 @@ import { vec2, vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
-import { LevelMemberComponent } from "../Models/GameComponents";
+import { LevelMemberComponent, LevelPortalComponent } from "../Models/GameComponents";
 import { SpriteComponent } from "../../Graphics/Models/GraphicsComponents";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 import Random from "../../Util/Math/Random";
@@ -37,6 +37,18 @@ export default class LevelFactory
             const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
             this.addSpriteEntity(ecs, "actor", x, y, z, 180 * deg2rad, 180 * deg2rad, 0, 2, 2, 2, [[2, 2], [0, 6]], levelIndex, carryoverPending);
         }
+
+        // Level Portal
+        if (chunkIndex == g.numWorldChunks-1)
+        {
+            const entity = this.addSpriteEntity(ecs, "levelPortal",
+                0.5 * (g.worldBoundMin[0] + g.worldBoundMax[0]), g.worldBoundMin[1] + 1, chunkZ2 - 0.5,
+                180 * deg2rad, 180 * deg2rad, 0, 1, 1, 1,
+                [[1, 1], [0, 0]], levelIndex, false);
+            
+            const levelPortal = ecs.getComponent(entity.id, "LevelPortal") as LevelPortalComponent;
+            levelPortal.newLevelIndex = levelIndex + 1;
+        }
     }
 
     static addSpriteEntity(ecs: ECSManager, entityConfigId: string,
@@ -44,7 +56,7 @@ export default class LevelFactory
         xr: number, yr: number, zr: number,
         xs: number, ys: number, zs: number,
         spriteDims: [[number, number], [number, number]],
-        levelIndex: number, carryoverPending: boolean)
+        levelIndex: number, carryoverPending: boolean): Entity
     {
         const entity = ecs.addEntity(entityConfigId);
         this.setEntityTransformParams(ecs, entity, x, y, z, xr, yr, zr, xs, ys, zs);
@@ -55,6 +67,7 @@ export default class LevelFactory
             levelMember.levelIndex = levelIndex;
             levelMember.carryoverPending = carryoverPending;
         }
+        return entity;
     }
 
     private static setEntityTransformParams(ecs: ECSManager, entity: Entity,

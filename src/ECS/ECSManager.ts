@@ -211,17 +211,18 @@ export default class ECSManager
         entity.componentIds[componentType] = component.id;
 
         for (const system of this.systems)
-            system.onEntityModified(this, entity);
+            system.onEntityModified(this, entity, component);
         return component;
     }
 
     removeComponent(entityId: number, componentType: string)
     {
         const entity = this.entityPool.get(entityId);
+        const component = this.getComponent(entityId, componentType);
         ComponentPools[componentType].return(entity.componentIds[componentType]);
         delete entity.componentIds[componentType];
 
         for (const system of this.systems)
-            system.onEntityModified(this, entity);
+            system.onEntityModified(this, entity, component);
     }
 }

@@ -4,6 +4,7 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { KinematicsComponent, TransformComponent } from "../../Physics/Models/PhysicsComponents";
 import { PathfinderComponent } from "../Models/AIComponents";
+import { Component } from "../../ECS/Component";
 
 export default class PathfindingSystem extends System
 {
@@ -29,11 +30,11 @@ export default class PathfindingSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
     }
 }

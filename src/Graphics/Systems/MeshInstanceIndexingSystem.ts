@@ -1,4 +1,5 @@
 import { globalConfig } from "../../Config/GlobalConfig";
+import { Component } from "../../ECS/Component";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
@@ -24,9 +25,9 @@ export default class MeshInstanceIndexingSystem extends System
     {
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
-        const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
+        const meshInstanceComponent = componentAdded as MeshInstanceComponent;
         let freeInstanceIndices = this.freeInstanceIndicesByMeshConfigId[meshInstanceComponent.meshConfigId];
         if (freeInstanceIndices == undefined)
         {
@@ -48,9 +49,9 @@ export default class MeshInstanceIndexingSystem extends System
         meshInstanceComponent.instanceIndex = freeInstanceIndices.pop();
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
-        const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
+        const meshInstanceComponent = componentRemoved as MeshInstanceComponent;
         let freeInstanceIndices = this.freeInstanceIndicesByMeshConfigId[meshInstanceComponent.meshConfigId];
         if (freeInstanceIndices != undefined)
         {

@@ -45,7 +45,7 @@ export default class SingletonComponentAccessSystem extends System
     {
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
         for (const [componentType, component] of Object.entries(this.singletonComponents))
         {
@@ -62,7 +62,7 @@ export default class SingletonComponentAccessSystem extends System
         }
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
         for (const [componentType, component] of Object.entries(this.singletonComponents))
         {

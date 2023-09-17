@@ -4,6 +4,7 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { KeyInputComponent } from "../../Input/Models/InputComponents";
 import { KinematicsComponent } from "../../Physics/Models/PhysicsComponents";
+import { Component } from "../../ECS/Component";
 
 export default class PlayerControlSystem extends System
 {
@@ -57,11 +58,11 @@ export default class PlayerControlSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity)
+    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
     }
 }

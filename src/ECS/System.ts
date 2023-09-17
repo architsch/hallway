@@ -1,3 +1,4 @@
+import { Component } from "./Component";
 import ECSManager from "./ECSManager";
 import Entity from "./Entity";
 
@@ -26,15 +27,16 @@ export default abstract class System
     protected abstract getCriteria(): [groupId: string, requiredComponentTypes: string[]][];
     abstract start(ecs: ECSManager): void;
     abstract update(ecs: ECSManager, t: number, dt: number): void;
-    abstract onEntityRegistered(ecs: ECSManager, entity: Entity): void;
-    abstract onEntityUnregistered(ecs: ECSManager, entity: Entity): void;
+    abstract onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component): void;
+    abstract onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component): void;
 
     queryEntityGroup(groupId: string): Set<Entity>
     {
         return this.entityGroups[groupId];
     }
 
-    onEntityModified(ecs: ECSManager, entity: Entity)
+    // This function is called whenever a component is added to or removed from the given entity.
+    onEntityModified(ecs: ECSManager, entity: Entity, componentInvolved: Component)
     {
         for (const [groupId, requiredComponentTypes] of Object.entries(this.requiredComponentTypesByEntityGroup))
         {
@@ -52,7 +54,7 @@ export default abstract class System
                 if (!entityGroup.has(entity))
                 {
                     entityGroup.add(entity);
-                    this.onEntityRegistered(ecs, entity);
+                    this.onEntityRegistered(ecs, entity, componentInvolved);
                 }
             }
             else
@@ -60,7 +62,7 @@ export default abstract class System
                 if (entityGroup.has(entity))
                 {
                     entityGroup.delete(entity);
-                    this.onEntityUnregistered(ecs, entity);
+                    this.onEntityUnregistered(ecs, entity, componentInvolved);
                 }
             }
         }
