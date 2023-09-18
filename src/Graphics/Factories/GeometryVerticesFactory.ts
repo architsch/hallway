@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec2, vec3 } from "gl-matrix";
 import VerticesData from "../Models/VerticesData";
 
 const deg2rad = Math.PI / 180;
@@ -9,6 +9,7 @@ export default class GeometryVerticesFactory
     private static normalData: number[] = [];
     private static uvData: number[] = [];
 
+    private static currUVRange: vec2 = vec2.create();
     private static transformStack: mat4[] = [];
     private static compositeTransform: mat4 = mat4.create();
     private static invTransCompositeTransform: mat4 = mat4.create();
@@ -16,43 +17,27 @@ export default class GeometryVerticesFactory
     private static vec3Temp: vec3 = vec3.create();
     private static vec3Temp2: vec3 = vec3.create();
 
-    static plane(numCols: number, numRows: number): VerticesData
+    static cuboid(xSize: number, ySize: number, zSize: number, uRange: number, vRange: number): VerticesData
     {
         this.clear();
-        this.addPlane(numCols, numRows);
+        this.setUVRange(uRange, vRange);
+        this.pushTransform(0, 0, 0, 0, 0, 0, 0, xSize, ySize, zSize);
+        this.addCuboid();
+        this.popTransform();
         return this.getVertexDataCopy();
     }
 
-    static cube(): VerticesData
+    static quad(xSize: number, ySize: number, uRange: number, vRange: number): VerticesData
     {
         this.clear();
-        this.addCube();
-        return this.getVertexDataCopy();
-    }
-
-    static quad(): VerticesData
-    {
-        this.clear();
+        this.setUVRange(uRange, vRange);
+        this.pushTransform(0, 0, 0, 0, 0, 0, 0, xSize, ySize, 1);
         this.addQuad();
+        this.popTransform();
         return this.getVertexDataCopy();
     }
 
-    private static addPlane(numCols: number, numRows: number)
-    {
-        const xExtent = 0.5*numCols - 0.5;
-        const yExtent = 0.5*numRows - 0.5;
-        for (let y = -yExtent; y <= yExtent; ++y)
-        {
-            for (let x = -xExtent; x <= xExtent; ++x)
-            {
-                this.pushTransform(x, y, 0, 0, 0, 0, 0, 1, 1, 1);
-                this.addQuad();
-                this.popTransform();
-            }
-        }
-    }
-
-    private static addCube()
+    private static addCuboid()
     {
         this.pushTransform(0.0, 0.0, +0.5, 0, 0, 0, 0, 1, 1, 1); // front
         this.addQuad();
@@ -81,12 +66,14 @@ export default class GeometryVerticesFactory
 
     private static addQuad()
     {
+        const u = this.currUVRange[0];
+        const v = this.currUVRange[1];
         this.addVertex(-0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0, 0);
-        this.addVertex(-0.5, +0.5, 0.0, 0.0, 0.0, 1.0, 0, 1);
-        this.addVertex(+0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 1, 0);
-        this.addVertex(+0.5, +0.5, 0.0, 0.0, 0.0, 1.0, 1, 1);
-        this.addVertex(+0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 1, 0);
-        this.addVertex(-0.5, +0.5, 0.0, 0.0, 0.0, 1.0, 0, 1);
+        this.addVertex(-0.5, +0.5, 0.0, 0.0, 0.0, 1.0, 0, v);
+        this.addVertex(+0.5, -0.5, 0.0, 0.0, 0.0, 1.0, u, 0);
+        this.addVertex(+0.5, +0.5, 0.0, 0.0, 0.0, 1.0, u, v);
+        this.addVertex(+0.5, -0.5, 0.0, 0.0, 0.0, 1.0, u, 0);
+        this.addVertex(-0.5, +0.5, 0.0, 0.0, 0.0, 1.0, 0, v);
     }
 
     private static addVertex(positionX: number, positionY: number, positionZ: number,
@@ -108,6 +95,11 @@ export default class GeometryVerticesFactory
         this.uvData.push(v);
     }
 
+    private static setUVRange(uRange: number, vRange: number)
+    {
+        vec2.set(this.currUVRange, uRange, vRange);
+    }
+
     private static pushTransform(translationX: number, translationY: number, translationZ: number,
         rotationAngle: number,
         rotationAxisX: number, rotationAxisY: number, rotationAxisZ: number,
@@ -115,20 +107,24 @@ export default class GeometryVerticesFactory
     {
         const matrix = mat4.create();
 
-        vec3.set(this.vec3Temp, translationX, translationY, translationZ);
-        mat4.translate(matrix, matrix, this.vec3Temp);
-
+        if (translationX != 0 || translationY != 0 || translationZ != 0)
+        {
+            vec3.set(this.vec3Temp, translationX, translationY, translationZ);
+            mat4.translate(matrix, matrix, this.vec3Temp);
+        }
         if (Math.abs(rotationAngle) >= 0.001)
         {
             vec3.set(this.vec3Temp, rotationAxisX, rotationAxisY, rotationAxisZ);
             mat4.rotate(matrix, matrix, rotationAngle, this.vec3Temp);
         }
-
-        vec3.set(this.vec3Temp, scaleX, scaleY, scaleZ);
-        mat4.scale(matrix, matrix, this.vec3Temp);
+        if (scaleX != 1 || scaleY != 1 || scaleZ != 1)
+        {
+            vec3.set(this.vec3Temp, scaleX, scaleY, scaleZ);
+            mat4.scale(matrix, matrix, this.vec3Temp);
+        }
 
         this.transformStack.push(matrix);
-        mat4.multiply(this.compositeTransform, matrix, this.compositeTransform);
+        mat4.multiply(this.compositeTransform, this.compositeTransform, matrix);
 
         mat4.invert(this.invTransCompositeTransform, this.compositeTransform);
         mat4.transpose(this.invTransCompositeTransform, this.invTransCompositeTransform);
@@ -139,7 +135,7 @@ export default class GeometryVerticesFactory
         const transform = this.transformStack.pop();
         let inverseTransform = mat4.create();
         mat4.invert(inverseTransform, transform);
-        mat4.multiply(this.compositeTransform, inverseTransform, this.compositeTransform);
+        mat4.multiply(this.compositeTransform, this.compositeTransform, inverseTransform);
 
         mat4.invert(this.invTransCompositeTransform, this.compositeTransform);
         mat4.transpose(this.invTransCompositeTransform, this.invTransCompositeTransform);

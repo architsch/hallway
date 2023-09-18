@@ -9,10 +9,11 @@ require("../../Config/GlobalPropertiesConfig");
 const g = globalPropertiesConfig;
 
 const verticesDataByGeometryType: {[geometryType: string]: VerticesData} = {
-    "quad": GeometryVerticesFactory.quad(),
-    "cube": GeometryVerticesFactory.cube(),
-    "floor": GeometryVerticesFactory.plane(g.worldChunkSize[0], g.worldChunkSize[2]),
-    "wall": GeometryVerticesFactory.plane(g.worldChunkSize[2], g.worldChunkSize[1]),
+    "quad": GeometryVerticesFactory.quad(1, 1, 1, 1),
+    "cube": GeometryVerticesFactory.cuboid(1, 1, 1, 1, 1),
+    "column": GeometryVerticesFactory.cuboid(1, g.worldChunkSize[1], 1, 1, g.worldChunkSize[1]),
+    "floor": GeometryVerticesFactory.quad(g.worldChunkSize[0], g.worldChunkSize[2], g.worldChunkSize[0], g.worldChunkSize[2]),
+    "wall": GeometryVerticesFactory.quad(g.worldChunkSize[2], g.worldChunkSize[1], g.worldChunkSize[2], g.worldChunkSize[1]),
 };
 
 export default class GeometryConfigFactory

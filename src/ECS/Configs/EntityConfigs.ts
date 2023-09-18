@@ -17,21 +17,34 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
         "Sprite": {},
     },
     "actor": {
-        "Transform": {},
+        "Transform": {
+            scale: ["vec3", vec3.fromValues(2, 2, 2)],
+        },
         "MeshInstance": {meshConfigId: ["string", "particle"]},
         "Sprite": {},
         "Kinematics": {},
         "Rigidbody": {},
         "Collider": {
-            boundingBoxSize: ["vec3", vec3.fromValues(2, 2, 2)],
+            boundingBoxSize: ["vec3", vec3.fromValues(1.75, 2, 0.5)],
         },
     },
-    "block": {
+    "cube": {
         "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "block"]},
+        "MeshInstance": {meshConfigId: ["string", "cube"]},
         "Sprite": {},
         "Rigidbody": {},
-        "Collider": {},
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(1, 1, 1)],
+        },
+    },
+    "column": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "column"]},
+        "Sprite": {},
+        "Rigidbody": {},
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(1.0, g.worldChunkSize[1], 1.0)],
+        },
     },
     "floor": {
         "Transform": {},

@@ -21,13 +21,13 @@ export default class LevelFactory
         const chunkZCenter = 0.5 * (chunkZ1 + chunkZ2);
         
         // Floor
-        this.addSpriteEntity(ecs, "floor", 0, 0, chunkZCenter, -90 * deg2rad, 0, 0, 1, 1, 1, this.getFloorSpriteDims(levelIndex), levelIndex, carryoverPending);
+        this.addSpriteEntity(ecs, "floor", 0, 0, chunkZCenter, -90 * deg2rad, 0, 0, this.getFloorSpriteDims(levelIndex), levelIndex, carryoverPending);
         // Ceiling
-        this.addSpriteEntity(ecs, "floor", 0, g.worldChunkSize[1], chunkZCenter, +90 * deg2rad, 0, 0, 1, 1, 1, this.getCeilingSpriteDims(levelIndex), levelIndex, carryoverPending);
+        this.addSpriteEntity(ecs, "floor", 0, g.worldChunkSize[1], chunkZCenter, +90 * deg2rad, 0, 0, this.getCeilingSpriteDims(levelIndex), levelIndex, carryoverPending);
         // Left Wall
-        this.addSpriteEntity(ecs, "wall", -0.5*g.worldChunkSize[0], 0.5*g.worldChunkSize[1], chunkZCenter, 0, 90 * deg2rad, 0, 1, 1, 1, this.getWallSpriteDims(levelIndex), levelIndex, carryoverPending);
+        this.addSpriteEntity(ecs, "wall", -0.5*g.worldChunkSize[0], 0.5*g.worldChunkSize[1], chunkZCenter, 0, 90 * deg2rad, 0, this.getWallSpriteDims(levelIndex), levelIndex, carryoverPending);
         // Right Wall
-        this.addSpriteEntity(ecs, "wall", 0.5*g.worldChunkSize[0], 0.5*g.worldChunkSize[1], chunkZCenter, 0, -90 * deg2rad, 0, 1, 1, 1, this.getWallSpriteDims(levelIndex), levelIndex, carryoverPending);
+        this.addSpriteEntity(ecs, "wall", 0.5*g.worldChunkSize[0], 0.5*g.worldChunkSize[1], chunkZCenter, 0, -90 * deg2rad, 0, this.getWallSpriteDims(levelIndex), levelIndex, carryoverPending);
 
         // Actors
         for (let i = 1; i < 4; ++i)
@@ -35,7 +35,23 @@ export default class LevelFactory
             const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
             const y = g.worldBoundMin[1] + 5;
             const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
-            this.addSpriteEntity(ecs, "actor", x, y, z, 180 * deg2rad, 180 * deg2rad, 0, 2, 2, 2, [[2, 2], [0, 6]], levelIndex, carryoverPending);
+            this.addSpriteEntity(ecs, "actor", x, y, z, 180 * deg2rad, 180 * deg2rad, 0, [[2, 2], [0, 6]], levelIndex, carryoverPending);
+        }
+
+        for (let i = 1; i < 4; ++i)
+        {
+            const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
+            const y = g.worldBoundMin[1] + 0.5*g.worldChunkSize[1];
+            const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
+            this.addSpriteEntity(ecs, "column", x, y, z, 0, 0, 0, [[1, 1], [15, 8]], levelIndex, carryoverPending);
+        }
+
+        for (let i = 1; i < 4; ++i)
+        {
+            const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
+            const y = g.worldBoundMin[1] + 0.5;
+            const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
+            this.addSpriteEntity(ecs, "cube", x, y, z, 0, 0, 0, [[1, 1], [15, 8]], levelIndex, carryoverPending);
         }
 
         // Level Portal
@@ -43,7 +59,7 @@ export default class LevelFactory
         {
             const entity = this.addSpriteEntity(ecs, "levelPortal",
                 0.5 * (g.worldBoundMin[0] + g.worldBoundMax[0]), g.worldBoundMin[1] + 1, chunkZ2 - 0.5,
-                180 * deg2rad, 180 * deg2rad, 0, 1, 1, 1,
+                180 * deg2rad, 180 * deg2rad, 0,
                 [[1, 1], [0, 0]], levelIndex, false);
             
             const levelPortal = ecs.getComponent(entity.id, "LevelPortal") as LevelPortalComponent;
@@ -54,12 +70,11 @@ export default class LevelFactory
     static addSpriteEntity(ecs: ECSManager, entityConfigId: string,
         x: number, y: number, z: number,
         xr: number, yr: number, zr: number,
-        xs: number, ys: number, zs: number,
         spriteDims: [[number, number], [number, number]],
         levelIndex: number, carryoverPending: boolean): Entity
     {
         const entity = ecs.addEntity(entityConfigId);
-        this.setEntityTransformParams(ecs, entity, x, y, z, xr, yr, zr, xs, ys, zs);
+        this.setEntityTransformParams(ecs, entity, x, y, z, xr, yr, zr);
         this.setEntitySpriteParams(ecs, entity, spriteDims[0][0]*s, spriteDims[0][1]*s, spriteDims[1][0]*s, spriteDims[1][1]*s);
         if (levelIndex >= 0)
         {
@@ -72,13 +87,11 @@ export default class LevelFactory
 
     private static setEntityTransformParams(ecs: ECSManager, entity: Entity,
         x: number, y: number, z: number,
-        xr: number, yr: number, zr: number,
-        xs: number, ys: number, zs: number)
+        xr: number, yr: number, zr: number)
     {
         const transformComponent = ecs.getComponent(entity.id, "Transform") as TransformComponent;
         vec3.set(transformComponent.position, x, y, z);
         vec3.set(transformComponent.rotation, xr, yr, zr);
-        vec3.set(transformComponent.scale, xs, ys, zs);
     }
 
     private static setEntitySpriteParams(ecs: ECSManager, entity: Entity,

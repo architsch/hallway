@@ -7,8 +7,12 @@ export const meshConfigById: {[id: string]: MeshConfig} = {
         geometryConfigId: "quad_textureUnlit",
         materialConfigId: "textureUnlit",
     },
-    "block": {
+    "cube": {
         geometryConfigId: "cube_textureDiffuse",
+        materialConfigId: "textureDiffuse",
+    },
+    "column": {
+        geometryConfigId: "column_textureDiffuse",
         materialConfigId: "textureDiffuse",
     },
     "floor": {

@@ -97,7 +97,7 @@ export default class LevelChangeSystem extends System
     private createLevel(ecs: ECSManager, levelIndex: number)
     {
         const g = globalPropertiesConfig;
-        for (let chunkIndex = 0; chunkIndex < g.numWorldChunks; ++chunkIndex)
+        for (let chunkIndex = 1; chunkIndex < g.numWorldChunks; ++chunkIndex)
             LevelFactory.addWorldChunk(ecs, levelIndex, chunkIndex);
 
         const levelEntity = ecs.addEntity("empty");
