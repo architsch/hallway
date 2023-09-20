@@ -6,6 +6,7 @@ import Mesh from "./Mesh";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
 const g = globalPropertiesConfig;
+const s = g.spriteAtlasGridCellSize;
 
 export class GraphicsComponent extends Component
 {
@@ -133,11 +134,31 @@ export class SpriteComponent extends Component
 
     applyDefaultValues()
     {
-        vec2.set(this.uvScale, 1, 1);
+        vec2.set(this.uvScale, s, s);
         vec2.set(this.uvShift, 0, 0);
     }
 }
 ComponentPools["Sprite"] = new Pool<SpriteComponent>("SpriteComponent", g.maxNumEntities, () => new SpriteComponent());
+
+//-----------------------------------------------------------------------
+
+export class AnimatedSpriteComponent extends SpriteComponent
+{
+    uvShiftStart: vec2 = vec2.create();
+    uvShiftStep: vec2 = vec2.create();
+    uvShiftMod: vec2 = vec2.create();
+    framesPerSecond: number = undefined;
+
+    applyDefaultValues()
+    {
+        super.applyDefaultValues();
+        vec2.set(this.uvShiftStart, 0, 0);
+        vec2.set(this.uvShiftStep, s, s);
+        vec2.set(this.uvShiftMod, 2, 1);
+        this.framesPerSecond = 10;
+    }
+}
+ComponentPools["AnimatedSprite"] = new Pool<AnimatedSpriteComponent>("AnimatedSpriteComponent", g.maxNumEntities, () => new AnimatedSpriteComponent());
 
 //-----------------------------------------------------------------------
 

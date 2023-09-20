@@ -67,6 +67,18 @@ export default class MeshRenderSystem extends System
                         this.meshInstanceDataTemp[floatOffset] = c.uvShift[0];
                         this.meshInstanceDataTemp[floatOffset+1] = c.uvShift[1];
                     }
+                    else if (ecs.hasComponent(entity.id, "AnimatedSprite"))
+                    {
+                        const c = ecs.getComponent(entity.id, "AnimatedSprite") as SpriteComponent;
+
+                        let floatOffset = mesh.getInstanceAttribFloatOffset("uvScale");
+                        this.meshInstanceDataTemp[floatOffset] = c.uvScale[0];
+                        this.meshInstanceDataTemp[floatOffset+1] = c.uvScale[1];
+
+                        floatOffset = mesh.getInstanceAttribFloatOffset("uvShift");
+                        this.meshInstanceDataTemp[floatOffset] = c.uvShift[0];
+                        this.meshInstanceDataTemp[floatOffset+1] = c.uvShift[1];
+                    }
 
                     if (ecs.hasComponent(entity.id, "Color"))
                     {
@@ -107,5 +119,24 @@ export default class MeshRenderSystem extends System
 
     onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
     {
+        let meshInstanceComponent: MeshInstanceComponent | undefined = undefined;
+        if ((componentRemoved as any).meshConfigId != undefined)
+            meshInstanceComponent = componentRemoved as MeshInstanceComponent;
+        else
+            meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
+        
+        if (meshInstanceComponent == undefined)
+            throw new Error(`MeshInstanceComponent is undefined (entity.id = ${entity.id})`);
+
+        const graphicsComponent = ecs.singletonComponents().get("Graphics") as GraphicsComponent;
+        const gl = graphicsComponent.gl;
+        const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl}) as Mesh | null;
+        if (mesh != null)
+        {
+            this.meshInstanceDataTemp.fill(-999);
+            mesh.updateInstanceData(meshInstanceComponent.instanceIndex, this.meshInstanceDataTemp);
+        }
+        else
+            throw new Error(`Mesh is null (meshConfigId = ${meshInstanceComponent.meshConfigId})`);
     }
 }

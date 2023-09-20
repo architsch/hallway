@@ -3,7 +3,6 @@ import { Component } from "../../ECS/Component";
 import ComponentPools from "../../ECS/ComponentPools";
 import Pool from "../../Util/Pooling/Pool";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
-import ECSManager from "../../ECS/ECSManager";
 
 const g = globalPropertiesConfig;
 

@@ -74,3 +74,20 @@ export class LevelPortalComponent extends CollisionEventAttribComponent
 ComponentPools["LevelPortal"] = new Pool<LevelPortalComponent>("LevelPortalComponent", g.estimatedMaxCollisionsPerEntity, () => new LevelPortalComponent());
 
 //-----------------------------------------------------------------------
+
+export class DelayedSelfRemoverComponent extends Component
+{
+    delayDuration: number = undefined;
+
+    // This one gets initialized by DelayedSelfRemoverSystem.
+    startTime: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.delayDuration = 1;
+        this.startTime = undefined;
+    }
+}
+ComponentPools["DelayedSelfRemover"] = new Pool<DelayedSelfRemoverComponent>("DelayedSelfRemoverComponent", g.maxNumEntities, () => new DelayedSelfRemoverComponent());
+
+//-----------------------------------------------------------------------

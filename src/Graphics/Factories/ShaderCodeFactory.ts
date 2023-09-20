@@ -19,7 +19,7 @@ ${(options.lighting == "diffuse") ? "out vec3 v_diffuse;" : ""}
 void main()
 {
     ${(options.texturing == "color") ? "v_color = color;" : ""}
-    ${(options.texturing == "texture") ? "v_uv = uv;" : ""}
+    ${(options.texturing == "texture") ? "v_uv = vec2(1.0 - uv[0], 1.0 - uv[1]);" : ""}
     ${(options.texturing == "texture") ? "v_uvScale = uvScale;" : ""}
     ${(options.texturing == "texture") ? "v_uvShift = uvShift;" : ""}
 

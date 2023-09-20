@@ -22,6 +22,8 @@ import ColliderRenderSystem from "../Graphics/Systems/ColliderRenderSystem";
 import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
 import PathfindingSystem from "../AI/Systems/PathfindingSystem";
 import LevelChangeSystem from "../Game/Systems/LevelChangeSystem";
+import AnimatedSpriteFramingSystem from "../Graphics/Systems/AnimatedSpriteFramingSystem";
+import DelayedSelfRemoverSystem from "../Game/Systems/DelayedSelfRemoverSystem";
 
 export default class ECSManager
 {
@@ -66,6 +68,7 @@ export default class ECSManager
         this.systems.push(new GraphicsInitSystem());
         this.systems.push(this.singletonComponentAccessSystem);
         this.systems.push(new MeshInstanceIndexingSystem());
+        this.systems.push(new AnimatedSpriteFramingSystem());
         this.systems.push(new MeshRenderSystem());
         if (g.debugEnabled)
             this.systems.push(new ColliderRenderSystem());
@@ -75,6 +78,7 @@ export default class ECSManager
 
         // Game
         this.systems.push(new LevelChangeSystem());
+        this.systems.push(new DelayedSelfRemoverSystem());
 
         for (const system of this.systems)
             system.start(this);
