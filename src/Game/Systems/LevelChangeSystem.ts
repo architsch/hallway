@@ -1,9 +1,9 @@
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
+import { CollisionEventComponent, TransformComponent } from "../../Physics/Models/PhysicsComponents";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
-import { LevelComponent, LevelMemberComponent, LevelPortalComponent } from "../Models/GameComponents";
+import { LevelComponent, LevelMemberComponent, LevelPortalComponent } from "../Models/LevelComponents";
 import { vec3 } from "gl-matrix";
 import LevelFactory from "../Factories/LevelFactory";
 import { Component } from "../../ECS/Component";
@@ -15,7 +15,7 @@ export default class LevelChangeSystem extends System
         return [
             ["Level", ["Level"]],
             ["LevelMember", ["LevelMember"]],
-            ["CollisionEvent", ["CollisionEvent", "Player", "LevelPortal"]],
+            ["CollisionEvent", ["CollisionEvent"]],
             ["Transform", ["Transform"]],
         ];
     }
@@ -42,11 +42,23 @@ export default class LevelChangeSystem extends System
             currLevelIndex = level.levelIndex;
         });
         eventEntities.forEach((entity: Entity) => {
-            const levelPortal = ecs.getComponent(entity.id, "LevelPortal") as LevelPortalComponent;
-            newLevelIndex = levelPortal.newLevelIndex;
-            if (newLevelIndex < 0)
-                throw new Error(`LevelPortal does not have a valid level index (levelPortal.newLevelIndex = ${newLevelIndex}).`);
-            console.log(`Level Changed :: ${currLevelIndex} -> ${newLevelIndex}`);
+            const event = ecs.getComponent(entity.id, "CollisionEvent") as CollisionEventComponent;
+            
+            let levelPortalEntityId = -1;
+
+            if (ecs.hasComponent(event.entityId1, "Player") && ecs.hasComponent(event.entityId2, "LevelPortal"))
+                levelPortalEntityId = event.entityId2;
+            else if (ecs.hasComponent(event.entityId1, "LevelPortal") && ecs.hasComponent(event.entityId2, "Player"))
+                levelPortalEntityId = event.entityId1;
+
+            if (levelPortalEntityId >= 0)
+            {
+                const levelPortal = ecs.getComponent(levelPortalEntityId, "LevelPortal") as LevelPortalComponent;
+                newLevelIndex = levelPortal.newLevelIndex;
+                if (newLevelIndex < 0)
+                    throw new Error(`LevelPortal does not have a valid level index (levelPortal.newLevelIndex = ${newLevelIndex}).`);
+                console.log(`Level Changed :: ${currLevelIndex} -> ${newLevelIndex}`);
+            }
         });
 
         if (currLevelIndex < 0 && newLevelIndex < 0) // No level yet

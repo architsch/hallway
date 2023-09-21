@@ -102,6 +102,21 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             far: ["number", 100],
         },
     },
+    "playerWind": {
+        "Transform": {},
+        "TransformChild": {},
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(8, 8, 8)],
+        },
+        "RadialForceField": {
+            forceIntensity: ["number", 100],
+            forceFalloffStartRadius: ["number", 2],
+            forceFalloffEndRadius: ["number", 4],
+        },
+        "DelayedSelfRemover": {
+            delayDuration: ["number", 0],
+        },
+    },
     "mainLight": {
         "Transform": {
             position: ["vec3", vec3.fromValues(-100, 200, 50)],

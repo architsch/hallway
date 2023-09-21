@@ -1,28 +1,9 @@
-import { vec2, vec3 } from "gl-matrix";
+import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 import { Component } from "../../ECS/Component";
 import ComponentPools from "../../ECS/ComponentPools";
 import Pool from "../../Util/Pooling/Pool";
-import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
 const g = globalPropertiesConfig;
-
-export abstract class CollisionEventAttribComponent extends Component
-{
-    isCollisionEventAttribComponent: boolean = true;
-    attribOwnershipType: "entity1" | "entity2" | "both";
-}
-
-//-----------------------------------------------------------------------
-
-export class PlayerComponent extends CollisionEventAttribComponent
-{
-    applyDefaultValues()
-    {
-    }
-}
-ComponentPools["Player"] = new Pool<PlayerComponent>("PlayerComponent", g.estimatedMaxCollisionsPerEntity, () => new PlayerComponent());
-
-//-----------------------------------------------------------------------
 
 export class LevelComponent extends Component
 {
@@ -62,7 +43,7 @@ ComponentPools["DontDisplaceOnLevelChange"] = new Pool<DontDisplaceOnLevelChange
 
 //-----------------------------------------------------------------------
 
-export class LevelPortalComponent extends CollisionEventAttribComponent
+export class LevelPortalComponent extends Component
 {
     newLevelIndex: number = undefined;
 
@@ -72,22 +53,5 @@ export class LevelPortalComponent extends CollisionEventAttribComponent
     }
 }
 ComponentPools["LevelPortal"] = new Pool<LevelPortalComponent>("LevelPortalComponent", g.estimatedMaxCollisionsPerEntity, () => new LevelPortalComponent());
-
-//-----------------------------------------------------------------------
-
-export class DelayedSelfRemoverComponent extends Component
-{
-    delayDuration: number = undefined;
-
-    // This one gets initialized by DelayedSelfRemoverSystem.
-    startTime: number = undefined;
-
-    applyDefaultValues()
-    {
-        this.delayDuration = 1;
-        this.startTime = undefined;
-    }
-}
-ComponentPools["DelayedSelfRemover"] = new Pool<DelayedSelfRemoverComponent>("DelayedSelfRemoverComponent", g.maxNumEntities, () => new DelayedSelfRemoverComponent());
 
 //-----------------------------------------------------------------------

@@ -2,7 +2,7 @@ import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { Component } from "../../ECS/Component";
-import { DelayedSelfRemoverComponent } from "../Models/GameComponents";
+import { DelayedSelfRemoverComponent } from "../Models/DynamicComponents";
 
 export default class DelayedSelfRemoverSystem extends System
 {
@@ -29,7 +29,7 @@ export default class DelayedSelfRemoverSystem extends System
             }
             else
             {
-                if (t >= component.startTime + component.delayDuration)
+                if (t > component.startTime + component.delayDuration)
                 {
                     ecs.removeEntity(entity.id);
                 }

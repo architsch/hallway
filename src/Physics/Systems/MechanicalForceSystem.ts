@@ -6,7 +6,7 @@ import { CollisionEventComponent, KinematicsComponent, RigidbodyComponent, Softb
 import Geom from "../../Util/Math/Geom";
 import { Component } from "../../ECS/Component";
 
-export default class CollisionForceSystem extends System
+export default class MechanicalForceSystem extends System
 {
     private softbodyForceMultiplier = 30;
     private forceToApply: vec3 = vec3.create();

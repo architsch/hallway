@@ -2,7 +2,7 @@ import { vec2, vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
-import { LevelMemberComponent, LevelPortalComponent } from "../Models/GameComponents";
+import { LevelMemberComponent, LevelPortalComponent } from "../Models/LevelComponents";
 import { SpriteComponent } from "../../Graphics/Models/GraphicsComponents";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 import Random from "../../Util/Math/Random";

@@ -15,15 +15,16 @@ import MeshRenderSystem from "../Graphics/Systems/MeshRenderSystem";
 import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexingSystem";
 import SingletonComponentAccessSystem from "../Graphics/Systems/SingletonComponentAccessSystem";
 import LightMatrixSyncSystem from "../Graphics/Systems/LightMatrixSyncSystem";
-import { TransformComponent } from "../Physics/Models/PhysicsComponents";
 import CollisionDetectionSystem from "../Physics/Systems/CollisionDetectionSystem";
-import CollisionForceSystem from "../Physics/Systems/CollisionForceSystem";
+import MechanicalForceSystem from "../Physics/Systems/MechanicalForceSystem";
 import ColliderRenderSystem from "../Graphics/Systems/ColliderRenderSystem";
 import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
 import PathfindingSystem from "../AI/Systems/PathfindingSystem";
 import LevelChangeSystem from "../Game/Systems/LevelChangeSystem";
 import AnimatedSpriteFramingSystem from "../Graphics/Systems/AnimatedSpriteFramingSystem";
 import DelayedSelfRemoverSystem from "../Game/Systems/DelayedSelfRemoverSystem";
+import TransformChildSyncSystem from "../Physics/Systems/TransformChildSyncSystem";
+import ForceFieldSystem from "../Physics/Systems/ForceFieldSystem";
 
 export default class ECSManager
 {
@@ -40,11 +41,10 @@ export default class ECSManager
         this.entityPool = new Pool<Entity>("Entity", g.maxNumEntities, () => {
             return {
                 id: undefined,
-                parentId: -1,
-                childIds: new Array<number>(),
                 componentIds: {},
                 alive: false,
-            };
+                birthCount: 0,
+            } as Entity;
         });
         this.removePendingEntityIds = new Array<number>();
 
@@ -60,8 +60,10 @@ export default class ECSManager
 
         // Physics
         this.systems.push(new CollisionDetectionSystem());
-        this.systems.push(new CollisionForceSystem());
+        this.systems.push(new MechanicalForceSystem());
+        this.systems.push(new ForceFieldSystem());
         this.systems.push(new KinematicsSystem());
+        this.systems.push(new TransformChildSyncSystem());
         this.systems.push(new TransformMatrixSyncSystem());
 
         // Graphics
@@ -123,9 +125,8 @@ export default class ECSManager
     addEntity(configId: string): Entity
     {
         const entity = this.entityPool.rent();
-        entity.parentId = -1;
-        entity.childIds.length = 0;
         entity.alive = true;
+        entity.birthCount++;
 
         const entityConfig = globalConfig.entityConfigById[configId];
         if (entityConfig == undefined)
@@ -141,35 +142,6 @@ export default class ECSManager
         const entity = this.entityPool.get(id);
         entity.alive = false;
         this.removePendingEntityIds.push(id);
-    }
-
-    setParent(entity: Entity, parent: Entity | null)
-    {
-        if (entity.parentId >= 0) // Detach from the previous parent
-        {
-            const prevParent = this.getEntity(entity.parentId);
-            for (let i = 0; i < prevParent.childIds.length; ++i)
-            {
-                if (prevParent.childIds[i] == entity.id)
-                    prevParent.childIds.splice(i, 1);
-            }
-        }
-
-        if (parent === null)
-        {
-            entity.parentId = -1;
-        }
-        else
-        {
-            entity.parentId = parent.id;
-            parent.childIds.push(entity.id);
-        }
-
-        if (this.hasComponent(entity.id, "Transform"))
-        {
-            const transformComponent = this.getComponent(entity.id, "Transform") as TransformComponent;
-            transformComponent.matrixSynced = false;
-        }
     }
 
     getComponent(entityId: number, componentType: string): Component

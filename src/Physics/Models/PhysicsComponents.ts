@@ -12,7 +12,6 @@ export class TransformComponent extends Component
     rotation: vec3 = vec3.create();
     scale: vec3 = vec3.create();
     
-    localMat: mat4 = mat4.create();
     worldMat: mat4 = mat4.create();
     matrixSynced: boolean = undefined;
 
@@ -22,12 +21,26 @@ export class TransformComponent extends Component
         vec3.set(this.rotation, 0, 0, 0);
         vec3.set(this.scale, 1, 1, 1);
 
-        mat4.identity(this.localMat);
         mat4.identity(this.worldMat);
         this.matrixSynced = false;
     }
 }
 ComponentPools["Transform"] = new Pool<TransformComponent>("TransformComponent", g.maxNumEntities, () => new TransformComponent());
+
+//-----------------------------------------------------------------------
+
+export class TransformChildComponent extends Component
+{
+    parentEntityId: number = undefined; // -1 if there is no parent
+    parentEntityBirthCount: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.parentEntityId = -1;
+        this.parentEntityBirthCount = -1;
+    }
+}
+ComponentPools["TransformChild"] = new Pool<TransformChildComponent>("TransformChildComponent", g.maxNumEntities, () => new TransformChildComponent());
 
 //-----------------------------------------------------------------------
 
@@ -49,32 +62,6 @@ export class KinematicsComponent extends Component
     }
 }
 ComponentPools["Kinematics"] = new Pool<KinematicsComponent>("KinematicsComponent", g.maxNumEntities, () => new KinematicsComponent());
-
-//-----------------------------------------------------------------------
-
-export class RigidbodyComponent extends Component
-{
-    elasticity: number = undefined;
-
-    applyDefaultValues()
-    {
-        this.elasticity = 1;
-    }
-}
-ComponentPools["Rigidbody"] = new Pool<RigidbodyComponent>("RigidbodyComponent", g.maxNumEntities, () => new RigidbodyComponent());
-
-//-----------------------------------------------------------------------
-
-export class SoftbodyComponent extends Component
-{
-    rigidity: number = undefined;
-
-    applyDefaultValues()
-    {
-        this.rigidity = 1;
-    }
-}
-ComponentPools["Softbody"] = new Pool<SoftbodyComponent>("SoftbodyComponent", g.maxNumEntities, () => new SoftbodyComponent());
 
 //-----------------------------------------------------------------------
 
@@ -114,5 +101,61 @@ export class CollisionEventComponent extends Component
     }
 }
 ComponentPools["CollisionEvent"] = new Pool<CollisionEventComponent>("CollisionEventComponent", g.maxNumEntities, () => new CollisionEventComponent());
+
+//-----------------------------------------------------------------------
+
+export class RigidbodyComponent extends Component
+{
+    elasticity: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.elasticity = 1;
+    }
+}
+ComponentPools["Rigidbody"] = new Pool<RigidbodyComponent>("RigidbodyComponent", g.maxNumEntities, () => new RigidbodyComponent());
+
+//-----------------------------------------------------------------------
+
+export class SoftbodyComponent extends Component
+{
+    rigidity: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.rigidity = 1;
+    }
+}
+ComponentPools["Softbody"] = new Pool<SoftbodyComponent>("SoftbodyComponent", g.maxNumEntities, () => new SoftbodyComponent());
+
+//-----------------------------------------------------------------------
+
+export class ConstantForceFieldComponent extends Component
+{
+    force: vec3 = vec3.create();
+
+    applyDefaultValues()
+    {
+        vec3.set(this.force, 0, 0, 0);
+    }
+}
+ComponentPools["ConstantForceField"] = new Pool<ConstantForceFieldComponent>("ConstantForceFieldComponent", g.maxNumEntities, () => new ConstantForceFieldComponent());
+
+//-----------------------------------------------------------------------
+
+export class RadialForceFieldComponent extends Component
+{
+    forceIntensity: number = undefined;
+    forceFalloffStartRadius: number = undefined;
+    forceFalloffEndRadius: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.forceIntensity = 10;
+        this.forceFalloffStartRadius = 3;
+        this.forceFalloffEndRadius = 6;
+    }
+}
+ComponentPools["RadialForceField"] = new Pool<RadialForceFieldComponent>("RadialForceFieldComponent", g.maxNumEntities, () => new RadialForceFieldComponent());
 
 //-----------------------------------------------------------------------

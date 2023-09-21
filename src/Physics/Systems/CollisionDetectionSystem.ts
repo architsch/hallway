@@ -4,7 +4,6 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { ColliderComponent, CollisionEventComponent, TransformComponent } from "../Models/PhysicsComponents";
 import { globalConfig } from "../../Config/GlobalConfig";
-import { CollisionEventAttribComponent } from "../../Game/Models/GameComponents";
 import { Component } from "../../ECS/Component";
 
 export default class CollisionDetectionSystem extends System
@@ -151,50 +150,6 @@ export default class CollisionDetectionSystem extends System
                             const event = ecs.addComponent(eventEntity.id, "CollisionEvent") as CollisionEventComponent;
                             event.entityId1 = myEntity.id;
                             event.entityId2 = otherEntityId;
-
-                            // Add applicable collision event attribs.
-
-                            for (const componentType of Object.keys(myEntity.componentIds))
-                            {
-                                const component = ecs.getComponent(myEntity.id, componentType) as any;
-                                if (component.isCollisionEventAttribComponent)
-                                {
-                                    const attribComponent = ecs.addComponent(event.entityId, componentType) as CollisionEventAttribComponent;
-                                    
-                                    const id_backup = attribComponent.id;
-                                    const entityId_backup = attribComponent.entityId;
-                                    Object.assign(attribComponent, component);
-                                    attribComponent.id = id_backup;
-                                    attribComponent.entityId = entityId_backup;
-
-                                    attribComponent.attribOwnershipType = "entity1";
-                                }
-                            }
-                            const otherEntity = ecs.getEntity(otherEntityId);
-                            for (const componentType of Object.keys(otherEntity.componentIds))
-                            {
-                                const component = ecs.getComponent(otherEntityId, componentType) as any;
-                                if (component.isCollisionEventAttribComponent)
-                                {
-                                    if (ecs.hasComponent(event.entityId, componentType))
-                                    {
-                                        const attribComponent = ecs.getComponent(event.entityId, componentType) as CollisionEventAttribComponent;
-                                        attribComponent.attribOwnershipType = "both";
-                                    }
-                                    else
-                                    {
-                                        const attribComponent = ecs.addComponent(event.entityId, componentType) as CollisionEventAttribComponent;
-                                        
-                                        const id_backup = attribComponent.id;
-                                        const entityId_backup = attribComponent.entityId;
-                                        Object.assign(attribComponent, component);
-                                        attribComponent.id = id_backup;
-                                        attribComponent.entityId = entityId_backup;
-
-                                        attribComponent.attribOwnershipType = "entity2";
-                                    }
-                                }
-                            }
 
                             this.updateIntersectionStatus(event, c1, c2, 0);
                             this.updateIntersectionStatus(event, c1, c2, 1);
