@@ -2,7 +2,7 @@ import { vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { KinematicsComponent, TransformComponent } from "../Models/PhysicsComponents";
+import { KinematicsComponent, SpeedConstraintComponent, TransformComponent } from "../Models/PhysicsComponents";
 import { Component } from "../../ECS/Component";
 
 export default class KinematicsSystem extends System
@@ -13,6 +13,7 @@ export default class KinematicsSystem extends System
     private deceleration: vec3 = vec3.create();
 
     private gravity: vec3 = vec3.fromValues(0, -15, 0);
+    private scaledGravity: vec3 = vec3.create();
 
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
@@ -35,17 +36,27 @@ export default class KinematicsSystem extends System
 
             // Update the current acceleration and velocity.
             vec3.scale(this.acceleration, kinematics.pendingForce, 1 / kinematics.mass); // Apply the pending force.
-            vec3.add(this.acceleration, this.acceleration, this.gravity); // Apply the gravitational acceleration.
+            vec3.scale(this.scaledGravity, this.gravity, kinematics.gravityMultiplier);
+            vec3.add(this.acceleration, this.acceleration, this.scaledGravity); // Apply the gravitational acceleration.
             vec3.scale(this.changeInVelocity, this.acceleration, dt);
             vec3.add(kinematics.velocity, kinematics.velocity, this.changeInVelocity); // Update the velocity based on the acceleration.
 
             // Zero out the force because it's been applied (consumed).
             vec3.set(kinematics.pendingForce, 0, 0, 0);
 
-            const velocitySqrMag = vec3.squaredLength(kinematics.velocity);
+            let velocityMag = vec3.length(kinematics.velocity);
             
-            if (velocitySqrMag > 0.0025)
+            if (velocityMag > 0.05)
             {
+                if (ecs.hasComponent(entity.id, "SpeedConstraint"))
+                {
+                    const c = ecs.getComponent(entity.id, "SpeedConstraint") as SpeedConstraintComponent;
+                    if (velocityMag < c.minSpeed)
+                        vec3.scale(kinematics.velocity, kinematics.velocity, c.minSpeed / velocityMag);
+                    else if (velocityMag > c.maxSpeed)
+                        vec3.scale(kinematics.velocity, kinematics.velocity, c.maxSpeed / velocityMag);
+                }
+
                 // Displace
                 vec3.scale(this.changeInPosition, kinematics.velocity, dt);
                 vec3.add(tr.position, tr.position, this.changeInPosition);

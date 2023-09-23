@@ -54,7 +54,7 @@ void main()
     ${(options.texturing == "color") ? "vec4 fragColor = vec4(v_color, 1.0);" : ""}
     ${(options.texturing == "texture") ? "vec2 uvAdjusted = mod(v_uv, vec2(1.0)) * v_uvScale + v_uvShift;" : ""}
     ${(options.texturing == "texture") ? "vec4 fragColor = texture(u_texture0, uvAdjusted);" : ""}
-    ${(options.texturing == "texture") ? "if (fragColor.a < 0.5)" : ""}
+    ${(options.texturing == "texture") ? "if (fragColor.a < 0.25)" : ""}
     ${(options.texturing == "texture") ? "    discard;" : ""}
 
     ${(options.lighting == "unlit") ? "FragColor = fragColor;" : ""}

@@ -48,20 +48,37 @@ export class KinematicsComponent extends Component
 {
     mass: number = undefined;
     decelerationRate: number = undefined;
-    velocity: vec3 = vec3.create();
+    gravityMultiplier: number = undefined;
 
-    // Temporary storage for the force that is waiting to be applied.
+    // State
+    velocity: vec3 = vec3.create();
     pendingForce: vec3 = vec3.create();
 
     applyDefaultValues()
     {
         this.mass = 1;
         this.decelerationRate = 1;
+        this.gravityMultiplier = 1;
         vec3.set(this.velocity, 0, 0, 0);
         vec3.set(this.pendingForce, 0, 0, 0);
     }
 }
 ComponentPools["Kinematics"] = new Pool<KinematicsComponent>("KinematicsComponent", g.maxNumEntities, () => new KinematicsComponent());
+
+//-----------------------------------------------------------------------
+
+export class SpeedConstraintComponent extends Component
+{
+    minSpeed: number = undefined;
+    maxSpeed: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.minSpeed = 1;
+        this.maxSpeed = 2;
+    }
+}
+ComponentPools["SpeedConstraint"] = new Pool<SpeedConstraintComponent>("SpeedConstraintComponent", g.maxNumEntities, () => new SpeedConstraintComponent());
 
 //-----------------------------------------------------------------------
 

@@ -3,23 +3,32 @@ import { Component } from "../../ECS/Component";
 import ComponentPools from "../../ECS/ComponentPools";
 import Pool from "../../Util/Pooling/Pool";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
+import ECSManager from "../../ECS/ECSManager";
+import Entity from "../../ECS/Entity";
 
 const g = globalPropertiesConfig;
 
-export class DelayedSelfRemoverComponent extends Component
+export class TimerComponent extends Component
 {
-    delayDuration: number = undefined;
+    initialDelay: number = undefined;
+    tickInterval: number = undefined;
+    maxTicks: number = undefined;
+    onTick: (ecs: ECSManager, entity: Entity, tickCount: number) => void = undefined;
 
-    // This one gets initialized by DelayedSelfRemoverSystem.
+    // State
     startTime: number = undefined;
+    tickCount: number = undefined;
 
     applyDefaultValues()
     {
-        this.delayDuration = 1;
+        this.initialDelay = 1;
+        this.tickInterval = 1;
+        this.maxTicks = 1;
+        this.onTick = undefined;
         this.startTime = undefined;
+        this.tickCount = undefined;
     }
 }
-ComponentPools["DelayedSelfRemover"] = new Pool<DelayedSelfRemoverComponent>("DelayedSelfRemoverComponent", g.maxNumEntities, () => new DelayedSelfRemoverComponent());
+ComponentPools["Timer"] = new Pool<TimerComponent>("TimerComponent", g.maxNumEntities, () => new TimerComponent());
 
 //-----------------------------------------------------------------------
-

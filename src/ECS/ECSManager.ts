@@ -22,7 +22,7 @@ import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
 import PathfindingSystem from "../AI/Systems/PathfindingSystem";
 import LevelChangeSystem from "../Game/Systems/LevelChangeSystem";
 import AnimatedSpriteFramingSystem from "../Graphics/Systems/AnimatedSpriteFramingSystem";
-import DelayedSelfRemoverSystem from "../Game/Systems/DelayedSelfRemoverSystem";
+import TimerSystem from "../Game/Systems/TimerSystem";
 import TransformChildSyncSystem from "../Physics/Systems/TransformChildSyncSystem";
 import ForceFieldSystem from "../Physics/Systems/ForceFieldSystem";
 
@@ -80,7 +80,7 @@ export default class ECSManager
 
         // Game
         this.systems.push(new LevelChangeSystem());
-        this.systems.push(new DelayedSelfRemoverSystem());
+        this.systems.push(new TimerSystem());
 
         for (const system of this.systems)
             system.start(this);

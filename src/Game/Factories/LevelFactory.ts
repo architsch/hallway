@@ -40,28 +40,28 @@ export default class LevelFactory
         this.setWallSpriteDims(ecs, entity, levelIndex);
         this.setRotation(ecs, entity, 0, -90 * deg2rad, 0);
 
-        for (let i = 1; i < 4; ++i)
+        for (let i = 1; i <= 3; ++i)
         {
             const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
             const y = g.worldBoundMin[1] + 5;
             const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
             this.addSpriteEntity(ecs, "actor", x, y, z, levelIndex, carryoverPending);
         }
-        for (let i = 1; i < 4; ++i)
+        for (let i = 1; i <= 1; ++i)
         {
             const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
             const y = g.worldBoundMin[1] + 1.25;
             const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
-            this.addSpriteEntity(ecs, "vfx", x, y, z, levelIndex, carryoverPending);
+            this.addSpriteEntity(ecs, "shooter", x, y, z, levelIndex, carryoverPending);
         }
-        for (let i = 1; i < 4; ++i)
+        for (let i = 1; i <= 3; ++i)
         {
             const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
             const y = g.worldBoundMin[1] + 0.5*g.worldChunkSize[1];
             const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
             this.addSpriteEntity(ecs, "column", x, y, z, levelIndex, carryoverPending);
         }
-        for (let i = 1; i < 4; ++i)
+        for (let i = 1; i <= 3; ++i)
         {
             const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
             const y = g.worldBoundMin[1] + 0.5;

@@ -1,87 +1,15 @@
 import { vec2, vec3 } from "gl-matrix";
 import { EntityConfig } from "../../Config/ConfigTypes";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
+import ECSManager from "../ECSManager";
+import Entity from "../Entity";
 
 const deg2rad = Math.PI / 180;
 const g = globalPropertiesConfig;
 const worldBoundColliderThickness = 5;
 const s = g.spriteAtlasGridCellSize;
 
-export const entityConfigById: {[id: string]: EntityConfig} = {
-    //--------------------------------------------------------------------------------
-    // Gameplay
-    //--------------------------------------------------------------------------------
-
-    "particle": {
-        "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "particle"]},
-        "Sprite": {
-            uvShift: ["vec2", vec2.fromValues(1*s, 0)],
-        },
-    },
-    "vfx": {
-        "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "particle"]},
-        "AnimatedSprite": {
-            uvShiftStart: ["vec2", vec2.fromValues(3*s, 2*s)],
-            uvShiftMod: ["vec2", vec2.fromValues(13, 1)],
-        },
-        "DelayedSelfRemover": {
-            delayDuration: ["number", 2],
-        },
-    },
-    "actor": {
-        "Transform": {
-            scale: ["vec3", vec3.fromValues(2, 2, 2)],
-        },
-        "MeshInstance": {meshConfigId: ["string", "particle"]},
-        "Sprite": {
-            uvScale: ["vec2", vec2.fromValues(2*s, 2*s)],
-            uvShift: ["vec2", vec2.fromValues(0, 6*s)],
-        },
-        "Kinematics": {},
-        "Rigidbody": {},
-        "Collider": {
-            boundingBoxSize: ["vec3", vec3.fromValues(1.75, 2, 0.5)],
-        },
-    },
-    "cube": {
-        "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "cube"]},
-        "Sprite": {
-            uvShift: ["vec2", vec2.fromValues(15*s, 8*s)],
-        },
-        "Rigidbody": {},
-        "Collider": {
-            boundingBoxSize: ["vec3", vec3.fromValues(1, 1, 1)],
-        },
-    },
-    "column": {
-        "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "column"]},
-        "Sprite": {
-            uvShift: ["vec2", vec2.fromValues(15*s, 8*s)],
-        },
-        "Rigidbody": {},
-        "Collider": {
-            boundingBoxSize: ["vec3", vec3.fromValues(1.0, g.worldChunkSize[1], 1.0)],
-        },
-    },
-    "floor": {
-        "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "floor"]},
-        "Sprite": {},
-    },
-    "wall": {
-        "Transform": {},
-        "MeshInstance": {meshConfigId: ["string", "wall"]},
-        "Sprite": {},
-    },
-
-    //--------------------------------------------------------------------------------
-    // Core
-    //--------------------------------------------------------------------------------
-
+export const coreEntityConfigById: {[id: string]: EntityConfig} = {
     "empty": {
     },
     "player": {
@@ -113,8 +41,13 @@ export const entityConfigById: {[id: string]: EntityConfig} = {
             forceFalloffStartRadius: ["number", 2],
             forceFalloffEndRadius: ["number", 4],
         },
-        "DelayedSelfRemover": {
-            delayDuration: ["number", 0],
+        "Timer": {
+            initialDelay: ["number", 0],
+            tickInterval: ["number", 0],
+            maxTicks: ["number", 1],
+            onTick: ["any", (ecs: ECSManager, entity: Entity, tickCount: number) => {
+                ecs.removeEntity(entity.id);
+            }],
         },
     },
     "mainLight": {
