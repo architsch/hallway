@@ -25,6 +25,8 @@ import AnimatedSpriteFramingSystem from "../Graphics/Systems/AnimatedSpriteFrami
 import TimerSystem from "../Game/Systems/TimerSystem";
 import TransformChildSyncSystem from "../Physics/Systems/TransformChildSyncSystem";
 import ForceFieldSystem from "../Physics/Systems/ForceFieldSystem";
+import SelfRemoveSystem from "../Game/Systems/SelfRemoveSystem";
+import SpawnSystem from "../Game/Systems/SpawnSystem";
 
 export default class ECSManager
 {
@@ -58,13 +60,8 @@ export default class ECSManager
         this.systems.push(new CameraMatrixSyncSystem());
         this.systems.push(new LightMatrixSyncSystem());
 
-        // Physics
+        // Physics (Detection)
         this.systems.push(new CollisionDetectionSystem());
-        this.systems.push(new MechanicalForceSystem());
-        this.systems.push(new ForceFieldSystem());
-        this.systems.push(new KinematicsSystem());
-        this.systems.push(new TransformChildSyncSystem());
-        this.systems.push(new TransformMatrixSyncSystem());
 
         // Graphics
         this.systems.push(new GraphicsInitSystem());
@@ -81,6 +78,15 @@ export default class ECSManager
         // Game
         this.systems.push(new LevelChangeSystem());
         this.systems.push(new TimerSystem());
+        this.systems.push(new SpawnSystem());
+        this.systems.push(new SelfRemoveSystem()); // <--- This system must come last
+
+        // Physics (Application)
+        this.systems.push(new MechanicalForceSystem());
+        this.systems.push(new ForceFieldSystem());
+        this.systems.push(new KinematicsSystem());
+        this.systems.push(new TransformChildSyncSystem());
+        this.systems.push(new TransformMatrixSyncSystem());
 
         for (const system of this.systems)
             system.start(this);

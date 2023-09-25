@@ -4,6 +4,7 @@ require("./AI/Models/AIComponents");
 require("./Game/Models/CoreComponents");
 require("./Game/Models/DynamicComponents");
 require("./Game/Models/LevelComponents");
+require("./Game/Models/TriggerComponents");
 require("./Graphics/Models/GraphicsComponents");
 require("./Input/Models/InputComponents");
 require("./Physics/Models/PhysicsComponents");

@@ -6,10 +6,13 @@ import { TimerComponent } from "../Models/DynamicComponents";
 
 export default class TimerSystem extends System
 {
+    private timerTickEventEntitiesRemovePending: number[] = [];
+
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
             ["Timer", ["Timer"]],
+            ["TimerTickEvent", ["TimerTickEvent"]],
         ];
     }
 
@@ -19,7 +22,15 @@ export default class TimerSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
+        const timerTickEventEntities = this.queryEntityGroup("TimerTickEvent");
         const timerEntities = this.queryEntityGroup("Timer");
+
+        timerTickEventEntities.forEach((entity: Entity) => {
+            this.timerTickEventEntitiesRemovePending.push(entity.id);
+        });
+        for (const id of this.timerTickEventEntitiesRemovePending)
+            ecs.removeComponent(id, "TimerTickEvent");
+        this.timerTickEventEntitiesRemovePending.length = 0;
 
         timerEntities.forEach((entity: Entity) => {
             const timer = ecs.getComponent(entity.id, "Timer") as TimerComponent;
@@ -56,6 +67,6 @@ export default class TimerSystem extends System
     {
         timer.startTime = t;
         timer.tickCount++;
-        timer.onTick(ecs, entity, timer.tickCount);
+        ecs.addComponent(entity.id, "TimerTickEvent");
     }
 }

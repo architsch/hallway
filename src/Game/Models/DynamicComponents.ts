@@ -3,8 +3,6 @@ import { Component } from "../../ECS/Component";
 import ComponentPools from "../../ECS/ComponentPools";
 import Pool from "../../Util/Pooling/Pool";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
-import ECSManager from "../../ECS/ECSManager";
-import Entity from "../../ECS/Entity";
 
 const g = globalPropertiesConfig;
 
@@ -13,7 +11,6 @@ export class TimerComponent extends Component
     initialDelay: number = undefined;
     tickInterval: number = undefined;
     maxTicks: number = undefined;
-    onTick: (ecs: ECSManager, entity: Entity, tickCount: number) => void = undefined;
 
     // State
     startTime: number = undefined;
@@ -24,11 +21,45 @@ export class TimerComponent extends Component
         this.initialDelay = 1;
         this.tickInterval = 1;
         this.maxTicks = 1;
-        this.onTick = undefined;
         this.startTime = undefined;
         this.tickCount = undefined;
     }
 }
 ComponentPools["Timer"] = new Pool<TimerComponent>("TimerComponent", g.maxNumEntities, () => new TimerComponent());
+
+//-----------------------------------------------------------------------
+
+export class TimerTickEventComponent extends Component
+{
+    applyDefaultValues()
+    {
+    }
+}
+ComponentPools["TimerTickEvent"] = new Pool<TimerTickEventComponent>("TimerTickEventComponent", g.maxNumEntities, () => new TimerTickEventComponent());
+
+//-----------------------------------------------------------------------
+
+export class SelfRemoverComponent extends Component
+{
+    applyDefaultValues()
+    {
+    }
+}
+ComponentPools["SelfRemover"] = new Pool<SelfRemoverComponent>("SelfRemoverComponent", g.maxNumEntities, () => new SelfRemoverComponent());
+
+//-----------------------------------------------------------------------
+
+export class SpawnerComponent extends Component
+{
+    entityToSpawnConfigId: string = undefined;
+    spawnOffset: vec3 = vec3.create();
+
+    applyDefaultValues()
+    {
+        this.entityToSpawnConfigId = undefined;
+        vec3.set(this.spawnOffset, 0, 0, 0);
+    }
+}
+ComponentPools["Spawner"] = new Pool<SpawnerComponent>("SpawnerComponent", g.maxNumEntities, () => new SpawnerComponent());
 
 //-----------------------------------------------------------------------

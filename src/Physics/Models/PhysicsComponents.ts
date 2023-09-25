@@ -115,6 +115,8 @@ export class CollisionEventComponent extends Component
     {
         this.entityId1 = undefined;
         this.entityId2 = undefined;
+        vec3.set(this.intersectionSize, 0, 0, 0);
+        vec3.set(this.intersectionCenter, 0, 0, 0);
     }
 }
 ComponentPools["CollisionEvent"] = new Pool<CollisionEventComponent>("CollisionEventComponent", g.maxNumEntities, () => new CollisionEventComponent());

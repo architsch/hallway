@@ -1,8 +1,6 @@
 import { vec2, vec3 } from "gl-matrix";
 import { EntityConfig } from "../../Config/ConfigTypes";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
-import ECSManager from "../ECSManager";
-import Entity from "../Entity";
 
 const deg2rad = Math.PI / 180;
 const g = globalPropertiesConfig;
@@ -45,10 +43,8 @@ export const coreEntityConfigById: {[id: string]: EntityConfig} = {
             initialDelay: ["number", 0],
             tickInterval: ["number", 0],
             maxTicks: ["number", 1],
-            onTick: ["any", (ecs: ECSManager, entity: Entity, tickCount: number) => {
-                ecs.removeEntity(entity.id);
-            }],
         },
+        "SelfRemoveOnTimerTick": {},
     },
     "mainLight": {
         "Transform": {

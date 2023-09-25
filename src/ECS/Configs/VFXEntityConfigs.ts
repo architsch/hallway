@@ -29,10 +29,8 @@ export const vfxEntityConfigById: {[id: string]: EntityConfig} = {
             initialDelay: ["number", 0.5],
             tickInterval: ["number", 0],
             maxTicks: ["number", 1],
-            onTick: ["any", (ecs: ECSManager, entity: Entity, tickCount: number) => {
-                ecs.removeEntity(entity.id);
-                console.log("VFX despawned");
-            }],
         },
+        "SelfRemover": {},
+        "SelfRemoveOnTimerTick": {},
     },
 };
