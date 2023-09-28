@@ -67,21 +67,6 @@ ComponentPools["Kinematics"] = new Pool<KinematicsComponent>("KinematicsComponen
 
 //-----------------------------------------------------------------------
 
-export class SpeedConstraintComponent extends Component
-{
-    minSpeed: number = undefined;
-    maxSpeed: number = undefined;
-
-    applyDefaultValues()
-    {
-        this.minSpeed = 1;
-        this.maxSpeed = 2;
-    }
-}
-ComponentPools["SpeedConstraint"] = new Pool<SpeedConstraintComponent>("SpeedConstraintComponent", g.maxNumEntities, () => new SpeedConstraintComponent());
-
-//-----------------------------------------------------------------------
-
 export class ColliderComponent extends Component
 {
     activelyDetectCollisions: boolean = undefined;
@@ -107,14 +92,18 @@ ComponentPools["Collider"] = new Pool<ColliderComponent>("ColliderComponent", g.
 export class CollisionEventComponent extends Component
 {
     entityId1: number = undefined;
+    entityBirthCount1: number = undefined;
     entityId2: number = undefined;
+    entityBirthCount2: number = undefined;
     intersectionSize: vec3 = vec3.create();
     intersectionCenter: vec3 = vec3.create();
 
     applyDefaultValues()
     {
         this.entityId1 = undefined;
+        this.entityBirthCount1 = undefined;
         this.entityId2 = undefined;
+        this.entityBirthCount2 = undefined;
         vec3.set(this.intersectionSize, 0, 0, 0);
         vec3.set(this.intersectionCenter, 0, 0, 0);
     }

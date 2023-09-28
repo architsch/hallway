@@ -155,7 +155,7 @@ export class AnimatedSpriteComponent extends SpriteComponent
         vec2.set(this.uvShiftStart, 0, 0);
         vec2.set(this.uvShiftStep, s, s);
         vec2.set(this.uvShiftMod, 2, 1);
-        this.framesPerSecond = 10;
+        this.framesPerSecond = g.animFramesPerSecond;
     }
 }
 ComponentPools["AnimatedSprite"] = new Pool<AnimatedSpriteComponent>("AnimatedSpriteComponent", g.maxNumEntities, () => new AnimatedSpriteComponent());

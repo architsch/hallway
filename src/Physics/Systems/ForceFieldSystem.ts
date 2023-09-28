@@ -2,7 +2,7 @@ import { vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { CollisionEventComponent, ConstantForceFieldComponent, KinematicsComponent, RadialForceFieldComponent, TransformComponent } from "../Models/PhysicsComponents";
+import { CollisionEventComponent, ConstantForceFieldComponent, KinematicsComponent, RadialForceFieldComponent, TransformChildComponent, TransformComponent } from "../Models/PhysicsComponents";
 import { Component } from "../../ECS/Component";
 
 export default class ForceFieldSystem extends System
@@ -26,14 +26,10 @@ export default class ForceFieldSystem extends System
 
         eventEntities.forEach((eventEntity: Entity) => {
             const event = ecs.getComponent(eventEntity.id, "CollisionEvent") as CollisionEventComponent;
-
-            if (ecs.isEntityAlive(event.entityId1) && ecs.isEntityAlive(event.entityId2))
-            {
-                this.tryApplyConstantForceField(ecs, event.entityId1, event.entityId2);
-                this.tryApplyConstantForceField(ecs, event.entityId2, event.entityId1);
-                this.tryApplyRadialForceField(ecs, event.entityId1, event.entityId2);
-                this.tryApplyRadialForceField(ecs, event.entityId2, event.entityId1);
-            }
+            this.tryApplyConstantForceField(ecs, event.entityId1, event.entityId2);
+            this.tryApplyConstantForceField(ecs, event.entityId2, event.entityId1);
+            this.tryApplyRadialForceField(ecs, event.entityId1, event.entityId2);
+            this.tryApplyRadialForceField(ecs, event.entityId2, event.entityId1);
         });
     }
 
@@ -49,6 +45,12 @@ export default class ForceFieldSystem extends System
     {
         if (ecs.hasComponent(entityIdFrom, "ConstantForceField") && ecs.hasComponent(entityIdTo, "Kinematics"))
         {
+            if (ecs.hasComponent(entityIdFrom, "TransformChild")) // Don't apply force to the parent entity.
+            {
+                const child = ecs.getComponent(entityIdFrom, "TransformChild") as TransformChildComponent;
+                if (entityIdTo == child.parentEntityId)
+                    return;
+            }
             const field = ecs.getComponent(entityIdFrom, "ConstantForceField") as ConstantForceFieldComponent;
             const kinematics = ecs.getComponent(entityIdTo, "Kinematics") as KinematicsComponent;
             vec3.add(kinematics.pendingForce, kinematics.pendingForce, field.force);
@@ -59,6 +61,12 @@ export default class ForceFieldSystem extends System
     {
         if (ecs.hasComponent(entityIdFrom, "RadialForceField") && ecs.hasComponent(entityIdTo, "Kinematics"))
         {
+            if (ecs.hasComponent(entityIdFrom, "TransformChild")) // Don't apply force to the parent entity.
+            {
+                const child = ecs.getComponent(entityIdFrom, "TransformChild") as TransformChildComponent;
+                if (entityIdTo == child.parentEntityId)
+                    return;
+            }
             const fieldTr = ecs.getComponent(entityIdFrom, "Transform") as TransformComponent;
             const field = ecs.getComponent(entityIdFrom, "RadialForceField") as RadialForceFieldComponent;
             const kinematicsTr = ecs.getComponent(entityIdTo, "Transform") as TransformComponent;

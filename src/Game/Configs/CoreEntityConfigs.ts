@@ -1,6 +1,7 @@
 import { vec2, vec3 } from "gl-matrix";
 import { EntityConfig } from "../../Config/ConfigTypes";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
+import EntityConfigFactory from "../Factories/EntityConfigFactory";
 
 const deg2rad = Math.PI / 180;
 const g = globalPropertiesConfig;
@@ -16,7 +17,7 @@ export const coreEntityConfigById: {[id: string]: EntityConfig} = {
         "Kinematics": {
             decelerationRate: ["number", 5],
         },
-        "Softbody": {
+        "Rigidbody": {
         },
         "Collider": {
             boundingBoxSize: ["vec3", vec3.fromValues(1.5, 3, 1.5)],
@@ -28,24 +29,41 @@ export const coreEntityConfigById: {[id: string]: EntityConfig} = {
             far: ["number", 100],
         },
     },
-    "playerWind": {
+    "playerWind": EntityConfigFactory.explosionForce({}, 100, 4),
+
+    "cube": {
         "Transform": {},
-        "TransformChild": {},
+        "MeshInstance": {meshConfigId: ["string", "cube"]},
+        "Sprite": {
+            uvShift: ["vec2", vec2.fromValues(15*s, 8*s)],
+        },
+        "Rigidbody": {},
         "Collider": {
-            boundingBoxSize: ["vec3", vec3.fromValues(8, 8, 8)],
+            boundingBoxSize: ["vec3", vec3.fromValues(1, 1, 1)],
         },
-        "RadialForceField": {
-            forceIntensity: ["number", 100],
-            forceFalloffStartRadius: ["number", 2],
-            forceFalloffEndRadius: ["number", 4],
-        },
-        "Timer": {
-            initialDelay: ["number", 0],
-            tickInterval: ["number", 0],
-            maxTicks: ["number", 1],
-        },
-        "SelfRemoveOnTimerTick": {},
     },
+    "column": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "column"]},
+        "Sprite": {
+            uvShift: ["vec2", vec2.fromValues(15*s, 8*s)],
+        },
+        "Rigidbody": {},
+        "Collider": {
+            boundingBoxSize: ["vec3", vec3.fromValues(1.0, g.worldChunkSize[1], 1.0)],
+        },
+    },
+    "floor": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "floor"]},
+        "Sprite": {},
+    },
+    "wall": {
+        "Transform": {},
+        "MeshInstance": {meshConfigId: ["string", "wall"]},
+        "Sprite": {},
+    },
+    
     "mainLight": {
         "Transform": {
             position: ["vec3", vec3.fromValues(-100, 200, 50)],

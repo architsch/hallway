@@ -149,7 +149,9 @@ export default class CollisionDetectionSystem extends System
                             const eventEntity = ecs.addEntity("empty");
                             const event = ecs.addComponent(eventEntity.id, "CollisionEvent") as CollisionEventComponent;
                             event.entityId1 = myEntity.id;
+                            event.entityBirthCount1 = myEntity.birthCount;
                             event.entityId2 = otherEntityId;
+                            event.entityBirthCount2 = ecs.getEntity(otherEntityId).birthCount;
 
                             this.updateIntersectionStatus(event, c1, c2, 0);
                             this.updateIntersectionStatus(event, c1, c2, 1);

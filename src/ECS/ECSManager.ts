@@ -7,7 +7,7 @@ import { globalConfig } from "../Config/GlobalConfig";
 import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
 import GraphicsInitSystem from "../Graphics/Systems/GraphicsInitSystem";
 import KeyInputSystem from "../Input/Systems/KeyInputSystem";
-import PlayerControlSystem from "../Game/Systems/PlayerControlSystem";
+import PlayerControlSystem from "../Game/Systems/Core/PlayerControlSystem";
 import CameraMatrixSyncSystem from "../Graphics/Systems/CameraMatrixSyncSystem";
 import KinematicsSystem from "../Physics/Systems/KinematicsSystem";
 import TransformMatrixSyncSystem from "../Physics/Systems/TransformMatrixSyncSystem";
@@ -19,14 +19,12 @@ import CollisionDetectionSystem from "../Physics/Systems/CollisionDetectionSyste
 import MechanicalForceSystem from "../Physics/Systems/MechanicalForceSystem";
 import ColliderRenderSystem from "../Graphics/Systems/ColliderRenderSystem";
 import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
-import PathfindingSystem from "../AI/Systems/PathfindingSystem";
-import LevelChangeSystem from "../Game/Systems/LevelChangeSystem";
+import LevelChangeSystem from "../Game/Systems/Core/LevelChangeSystem";
 import AnimatedSpriteFramingSystem from "../Graphics/Systems/AnimatedSpriteFramingSystem";
-import TimerSystem from "../Game/Systems/TimerSystem";
 import TransformChildSyncSystem from "../Physics/Systems/TransformChildSyncSystem";
 import ForceFieldSystem from "../Physics/Systems/ForceFieldSystem";
-import SelfRemoveSystem from "../Game/Systems/SelfRemoveSystem";
-import SpawnSystem from "../Game/Systems/SpawnSystem";
+import DieSystem from "../Game/Systems/Dynamic/DieSystem";
+import SpawnSystem from "../Game/Systems/Dynamic/SpawnSystem";
 
 export default class ECSManager
 {
@@ -72,14 +70,10 @@ export default class ECSManager
         if (g.debugEnabled)
             this.systems.push(new ColliderRenderSystem());
 
-        // AI
-        this.systems.push(new PathfindingSystem());
-
         // Game
         this.systems.push(new LevelChangeSystem());
-        this.systems.push(new TimerSystem());
         this.systems.push(new SpawnSystem());
-        this.systems.push(new SelfRemoveSystem()); // <--- This system must come last
+        this.systems.push(new DieSystem());
 
         // Physics (Application)
         this.systems.push(new MechanicalForceSystem());
@@ -102,8 +96,8 @@ export default class ECSManager
         for (const system of this.systems)
         {
             system.update(this, t, dt);
-            this.clearRemovePendingEntities();
         }
+        this.clearRemovePendingEntities();
     }
 
     clearRemovePendingEntities()
@@ -118,9 +112,10 @@ export default class ECSManager
         this.removePendingEntityIds.length = 0;
     }
 
-    isEntityAlive(id: number): boolean
+    isEntityAlive(id: number, birthCount: number): boolean
     {
-        return this.getEntity(id).alive;
+        const entity = this.getEntity(id);
+        return entity.alive && entity.birthCount == birthCount;
     }
 
     getEntity(id: number): Entity

@@ -27,16 +27,15 @@ export default class TransformChildSyncSystem extends System
 
             if (child.parentEntityId >= 0) // I have a parent (-1 means there is no parent)
             {
-                const parent = ecs.getEntity(child.parentEntityId);
-                if (parent.alive && parent.birthCount == child.parentEntityBirthCount)
+                if (ecs.isEntityAlive(child.parentEntityId, child.parentEntityBirthCount))
                 {
                     const childTr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
-                    const parentTr = ecs.getComponent(parent.id, "Transform") as TransformComponent;
+                    const parentTr = ecs.getComponent(child.parentEntityId, "Transform") as TransformComponent;
                     vec3.copy(childTr.position, parentTr.position);
                     vec3.copy(childTr.rotation, parentTr.rotation);
                     vec3.copy(childTr.scale, parentTr.scale);
                 }
-                else // Parent has been remove, so let's remove myself as well because I depend on it.
+                else // Parent has been removed, so let's remove myself as well because I depend on it.
                 {
                     ecs.removeEntity(child.id);
                 }

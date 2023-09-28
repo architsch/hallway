@@ -40,36 +40,33 @@ export default class MechanicalForceSystem extends System
         eventEntities.forEach((eventEntity: Entity) => {
             const event = ecs.getComponent(eventEntity.id, "CollisionEvent") as CollisionEventComponent;
 
-            if (ecs.isEntityAlive(event.entityId1) && ecs.isEntityAlive(event.entityId2))
+            let rb1: RigidbodyComponent | undefined = undefined;
+            let rb2: RigidbodyComponent | undefined = undefined;
+            let sb1: SoftbodyComponent | undefined = undefined;
+            let sb2: SoftbodyComponent | undefined = undefined;
+
+            if (ecs.hasComponent(event.entityId1, "Rigidbody"))
+                rb1 = ecs.getComponent(event.entityId1, "Rigidbody") as RigidbodyComponent;
+            if (ecs.hasComponent(event.entityId2, "Rigidbody"))
+                rb2 = ecs.getComponent(event.entityId2, "Rigidbody") as RigidbodyComponent;
+            if (ecs.hasComponent(event.entityId1, "Softbody"))
+                sb1 = ecs.getComponent(event.entityId1, "Softbody") as SoftbodyComponent;
+            if (ecs.hasComponent(event.entityId2, "Softbody"))
+                sb2 = ecs.getComponent(event.entityId2, "Softbody") as SoftbodyComponent;
+
+            if ((sb1 != undefined || rb1 != undefined) && (sb2 != undefined || rb2 != undefined))
             {
-                let rb1: RigidbodyComponent | undefined = undefined;
-                let rb2: RigidbodyComponent | undefined = undefined;
-                let sb1: SoftbodyComponent | undefined = undefined;
-                let sb2: SoftbodyComponent | undefined = undefined;
-
-                if (ecs.hasComponent(event.entityId1, "Rigidbody"))
-                    rb1 = ecs.getComponent(event.entityId1, "Rigidbody") as RigidbodyComponent;
-                if (ecs.hasComponent(event.entityId2, "Rigidbody"))
-                    rb2 = ecs.getComponent(event.entityId2, "Rigidbody") as RigidbodyComponent;
-                if (ecs.hasComponent(event.entityId1, "Softbody"))
-                    sb1 = ecs.getComponent(event.entityId1, "Softbody") as SoftbodyComponent;
-                if (ecs.hasComponent(event.entityId2, "Softbody"))
-                    sb2 = ecs.getComponent(event.entityId2, "Softbody") as SoftbodyComponent;
-
-                if ((sb1 != undefined || rb1 != undefined) && (sb2 != undefined || rb2 != undefined))
+                if (sb1 != undefined || sb2 != undefined) // At least either of them is a softbody.
                 {
-                    if (sb1 != undefined || sb2 != undefined) // At least either of them is a softbody.
-                    {
-                        this.applySoftbodyCollision(ecs, event, event.entityId1, (sb1 != undefined) ? sb1.rigidity : sb2.rigidity);
-                        this.applySoftbodyCollision(ecs, event, event.entityId2, (sb2 != undefined) ? sb2.rigidity : sb1.rigidity);
-                    }
-                    else
-                    {
-                        if (rb1 != undefined)
-                            this.applyRigidbodyCollision(ecs, event, event.entityId1, event.entityId2, rb1.elasticity);
-                        if (rb2 != undefined)
-                            this.applyRigidbodyCollision(ecs, event, event.entityId2, event.entityId1, rb2.elasticity);
-                    }
+                    this.applySoftbodyCollision(ecs, event, event.entityId1, (sb1 != undefined) ? sb1.rigidity : sb2.rigidity);
+                    this.applySoftbodyCollision(ecs, event, event.entityId2, (sb2 != undefined) ? sb2.rigidity : sb1.rigidity);
+                }
+                else
+                {
+                    if (rb1 != undefined)
+                        this.applyRigidbodyCollision(ecs, event, event.entityId1, event.entityId2, rb1.elasticity);
+                    if (rb2 != undefined)
+                        this.applyRigidbodyCollision(ecs, event, event.entityId2, event.entityId1, rb2.elasticity);
                 }
             }
         });

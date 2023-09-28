@@ -1,10 +1,10 @@
 import { vec3 } from "gl-matrix";
-import ECSManager from "../../ECS/ECSManager";
-import Entity from "../../ECS/Entity";
-import System from "../../ECS/System";
-import { KeyInputComponent } from "../../Input/Models/InputComponents";
-import { KinematicsComponent, TransformChildComponent, TransformComponent } from "../../Physics/Models/PhysicsComponents";
-import { Component } from "../../ECS/Component";
+import ECSManager from "../../../ECS/ECSManager";
+import Entity from "../../../ECS/Entity";
+import System from "../../../ECS/System";
+import { KeyInputComponent } from "../../../Input/Models/InputComponents";
+import { KinematicsComponent, TransformChildComponent, TransformComponent } from "../../../Physics/Models/PhysicsComponents";
+import { Component } from "../../../ECS/Component";
 
 export default class PlayerControlSystem extends System
 {

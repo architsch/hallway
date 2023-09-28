@@ -24,30 +24,8 @@ export const dynamicEntityConfigById: {[id: string]: EntityConfig} = {
             boundingBoxSize: ["vec3", vec3.fromValues(1.75, 2, 0.5)],
         },
     },
-    "shooter": {
-        "Transform": {
-            scale: ["vec3", vec3.fromValues(1, 1, 1)],
-        },
-        "MeshInstance": {meshConfigId: ["string", "particle"]},
-        "Sprite": {
-            uvScale: ["vec2", vec2.fromValues(1*s, 1*s)],
-            uvShift: ["vec2", vec2.fromValues(1*s, 3*s)],
-        },
-        "Kinematics": {},
-        "Rigidbody": {},
-        "Collider": {
-            boundingBoxSize: ["vec3", vec3.fromValues(1, 3, 1)],
-        },
-        "Timer": {
-            initialDelay: ["number", 1],
-            tickInterval: ["number", 1],
-            maxTicks: ["number", -1],
-        },
-        "Spawner": {
-            entityToSpawnConfigId: ["string", "projectile"],
-            spawnOffset: ["vec3", vec3.fromValues(0, 0, -1)],
-        },
-        "SpawnOnTimerTick": {},
-    },
-    "projectile": EntityConfigFactory.projectile(0.5, [8, 3], [0, 0, -5], 0.05, "vfx"),
+    "shooter": EntityConfigFactory.periodicSpawner({}, 1, [1, 3], 1, 1, [0, 1, -1], "bullet"),
+    "bullet": EntityConfigFactory.bullet({}, 0.5, [8, 3], [0, 4, -5], 0.5, "explosion_bullet"),
+    "explosion_bullet": EntityConfigFactory.explosion({}, 2, [0, 15], 16, "explosionForce_bullet"),
+    "explosionForce_bullet": EntityConfigFactory.explosionForce({}, 100, 4),
 };

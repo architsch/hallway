@@ -2,7 +2,7 @@ import { vec3 } from "gl-matrix";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { KinematicsComponent, SpeedConstraintComponent, TransformComponent } from "../Models/PhysicsComponents";
+import { KinematicsComponent, TransformComponent } from "../Models/PhysicsComponents";
 import { Component } from "../../ECS/Component";
 
 export default class KinematicsSystem extends System
@@ -48,15 +48,6 @@ export default class KinematicsSystem extends System
             
             if (velocityMag > 0.05)
             {
-                if (ecs.hasComponent(entity.id, "SpeedConstraint"))
-                {
-                    const c = ecs.getComponent(entity.id, "SpeedConstraint") as SpeedConstraintComponent;
-                    if (velocityMag < c.minSpeed)
-                        vec3.scale(kinematics.velocity, kinematics.velocity, c.minSpeed / velocityMag);
-                    else if (velocityMag > c.maxSpeed)
-                        vec3.scale(kinematics.velocity, kinematics.velocity, c.maxSpeed / velocityMag);
-                }
-
                 // Displace
                 vec3.scale(this.changeInPosition, kinematics.velocity, dt);
                 vec3.add(tr.position, tr.position, this.changeInPosition);

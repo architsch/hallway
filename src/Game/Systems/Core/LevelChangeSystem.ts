@@ -1,12 +1,12 @@
-import ECSManager from "../../ECS/ECSManager";
-import Entity from "../../ECS/Entity";
-import System from "../../ECS/System";
-import { CollisionEventComponent, TransformComponent } from "../../Physics/Models/PhysicsComponents";
-import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
-import { LevelComponent, LevelMemberComponent, LevelPortalComponent } from "../Models/LevelComponents";
+import ECSManager from "../../../ECS/ECSManager";
+import Entity from "../../../ECS/Entity";
+import System from "../../../ECS/System";
+import { CollisionEventComponent, TransformComponent } from "../../../Physics/Models/PhysicsComponents";
+import { globalPropertiesConfig } from "../../../Config/GlobalPropertiesConfig";
+import { LevelComponent, LevelMemberComponent, LevelPortalComponent } from "../../Models/LevelComponents";
 import { vec3 } from "gl-matrix";
-import LevelFactory from "../Factories/LevelFactory";
-import { Component } from "../../ECS/Component";
+import LevelFactory from "../../Factories/LevelFactory";
+import { Component } from "../../../ECS/Component";
 
 export default class LevelChangeSystem extends System
 {
