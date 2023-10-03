@@ -1,4 +1,3 @@
-import { Component } from "../../ECS/Component";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
@@ -12,7 +11,7 @@ export default class GraphicsInitSystem extends System
     private canvasHeight: number = 400;
     private canvasAspectRatio: number = this.canvasWidth / this.canvasHeight;
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [];
     }
@@ -59,7 +58,7 @@ export default class GraphicsInitSystem extends System
         gl.viewport(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 
         const entity = ecs.addEntity("empty");
-        const component = ecs.addComponent(entity.id, "Graphics") as GraphicsComponent;
+        const component = ecs.addComponent(entity.id, "GraphicsComponent") as GraphicsComponent;
         component.gl = gl;
     }
     
@@ -67,11 +66,11 @@ export default class GraphicsInitSystem extends System
     {
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 

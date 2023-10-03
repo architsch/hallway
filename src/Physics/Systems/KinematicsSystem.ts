@@ -3,7 +3,6 @@ import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { KinematicsComponent, TransformComponent } from "../Models/PhysicsComponents";
-import { Component } from "../../ECS/Component";
 
 export default class KinematicsSystem extends System
 {
@@ -15,10 +14,10 @@ export default class KinematicsSystem extends System
     private gravity: vec3 = vec3.fromValues(0, -15, 0);
     private scaledGravity: vec3 = vec3.create();
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Kinematics", ["Transform", "Kinematics"]],
+            ["KinematicsComponent", ["TransformComponent", "KinematicsComponent"]],
         ];
     }
 
@@ -28,11 +27,11 @@ export default class KinematicsSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const kinematicsEntities = this.queryEntityGroup("Kinematics");
+        const kinematicsEntities = this.queryEntityGroup("KinematicsComponent");
 
         kinematicsEntities.forEach((entity: Entity) => {
-            const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
-            const kinematics = ecs.getComponent(entity.id, "Kinematics") as KinematicsComponent;
+            const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
+            const kinematics = ecs.getComponent(entity.id, "KinematicsComponent") as KinematicsComponent;
 
             // Update the current acceleration and velocity.
             vec3.scale(this.acceleration, kinematics.pendingForce, 1 / kinematics.mass); // Apply the pending force.
@@ -65,11 +64,11 @@ export default class KinematicsSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 }

@@ -1,7 +1,5 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
-import { Component } from "../../ECS/Component";
-import ComponentPools from "../../ECS/ComponentPools";
-import Pool from "../../Util/Pooling/Pool";
+import { Component, registerComponent } from "../../ECS/Component";
 import Mesh from "./Mesh";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
@@ -17,7 +15,7 @@ export class GraphicsComponent extends Component
         this.gl = undefined;
     }
 }
-ComponentPools["Graphics"] = new Pool<GraphicsComponent>("GraphicsComponent", 1, () => new GraphicsComponent());
+registerComponent("GraphicsComponent", () => new GraphicsComponent());
 
 //-----------------------------------------------------------------------
 
@@ -60,7 +58,7 @@ export class LightComponent extends Component
         this.viewMatrixSynced = false;
     }
 }
-ComponentPools["Light"] = new Pool<LightComponent>("LightComponent", 1, () => new LightComponent());
+registerComponent("LightComponent", () => new LightComponent());
 
 //-----------------------------------------------------------------------
 
@@ -91,7 +89,7 @@ export class CameraComponent extends Component
         this.viewMatrixSynced = false;
     }
 }
-ComponentPools["Camera"] = new Pool<CameraComponent>("CameraComponent", 1, () => new CameraComponent());
+registerComponent("CameraComponent", () => new CameraComponent());
 
 //-----------------------------------------------------------------------
 
@@ -106,7 +104,7 @@ export class MeshComponent extends Component
         this.mesh = undefined;
     }
 }
-ComponentPools["Mesh"] = new Pool<MeshComponent>("MeshComponent", 16, () => new MeshComponent());
+registerComponent("MeshComponent", () => new MeshComponent());
 
 //-----------------------------------------------------------------------
 
@@ -123,7 +121,7 @@ export class MeshInstanceComponent extends Component
         this.bufferSynced = false;
     }
 }
-ComponentPools["MeshInstance"] = new Pool<MeshInstanceComponent>("MeshInstanceComponent", g.maxNumEntities, () => new MeshInstanceComponent());
+registerComponent("MeshInstanceComponent", () => new MeshInstanceComponent());
 
 //-----------------------------------------------------------------------
 
@@ -138,7 +136,7 @@ export class SpriteComponent extends Component
         vec2.set(this.uvShift, 0, 0);
     }
 }
-ComponentPools["Sprite"] = new Pool<SpriteComponent>("SpriteComponent", g.maxNumEntities, () => new SpriteComponent());
+registerComponent("SpriteComponent", () => new SpriteComponent());
 
 //-----------------------------------------------------------------------
 
@@ -158,7 +156,7 @@ export class AnimatedSpriteComponent extends SpriteComponent
         this.framesPerSecond = g.animFramesPerSecond;
     }
 }
-ComponentPools["AnimatedSprite"] = new Pool<AnimatedSpriteComponent>("AnimatedSpriteComponent", g.maxNumEntities, () => new AnimatedSpriteComponent());
+registerComponent("AnimatedSpriteComponent", () => new AnimatedSpriteComponent());
 
 //-----------------------------------------------------------------------
 
@@ -171,6 +169,6 @@ export class ColorComponent extends Component
         vec3.set(this.color, 1, 1, 1);
     }
 }
-ComponentPools["Color"] = new Pool<ColorComponent>("ColorComponent", g.maxNumEntities, () => new ColorComponent());
+registerComponent("ColorComponent", () => new ColorComponent());
 
 //-----------------------------------------------------------------------

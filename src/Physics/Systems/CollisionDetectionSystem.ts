@@ -4,7 +4,6 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { ColliderComponent, CollisionEventComponent, TransformComponent } from "../Models/PhysicsComponents";
 import { globalConfig } from "../../Config/GlobalConfig";
-import { Component } from "../../ECS/Component";
 
 export default class CollisionDetectionSystem extends System
 {
@@ -14,11 +13,11 @@ export default class CollisionDetectionSystem extends System
     private entityIdsByVoxelCoords: number[][];
     private boundingBoxSizeHalf: vec3 = vec3.create();
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["CollisionEvent", ["CollisionEvent"]],
-            ["Collider", ["Transform", "Collider"]],
+            ["CollisionEventComponent", ["CollisionEventComponent"]],
+            ["ColliderComponent", ["TransformComponent", "ColliderComponent"]],
         ];
     }
 
@@ -45,20 +44,19 @@ export default class CollisionDetectionSystem extends System
         for (const entityIds of this.entityIdsByVoxelCoords)
             entityIds.length = 0;
 
-        const eventEntities = this.queryEntityGroup("CollisionEvent");
-        
-        // Clean up previously detected collisions before raising new ones.
-        eventEntities.forEach((eventEntity: Entity) => {
-            ecs.removeEntity(eventEntity.id);
-        });
-        ecs.clearRemovePendingEntities();
+        const eventEntities = this.queryEntityGroup("CollisionEventComponent");
 
-        const colliderEntities = this.queryEntityGroup("Collider");
+        // Make each collision event last only for a single frame.
+        eventEntities.forEach((entity: Entity) => {
+            ecs.removeEntity(entity.id);
+        });
+
+        const colliderEntities = this.queryEntityGroup("ColliderComponent");
 
         // Calculate bounding-box dimensions, and mark their overlapping voxels.
         colliderEntities.forEach((entity: Entity) => {
-            const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
-            const collider = ecs.getComponent(entity.id, "Collider") as ColliderComponent;
+            const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
+            const collider = ecs.getComponent(entity.id, "ColliderComponent") as ColliderComponent;
             collider.currentCollidingEntityIds.length = 0;
     
             vec3.scale(this.boundingBoxSizeHalf, collider.boundingBoxSize, 0.5);
@@ -84,18 +82,18 @@ export default class CollisionDetectionSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 
     private forEachVoxel(ecs: ECSManager, t: number, dt: number, entity: Entity,
         functionToRun: (ecs: ECSManager, t: number, dt: number, entity: Entity, voxelEntityIds: number[]) => void)
     {
-        const collider = ecs.getComponent(entity.id, "Collider") as ColliderComponent;
+        const collider = ecs.getComponent(entity.id, "ColliderComponent") as ColliderComponent;
 
         const coordsMin = collider.boundingBoxVoxelCoordsMin;
         const coordsMax = collider.boundingBoxVoxelCoordsMax;
@@ -128,7 +126,7 @@ export default class CollisionDetectionSystem extends System
 
     private detectCollision(ecs: ECSManager, t: number, dt: number, myEntity: Entity, voxelEntityIds: number[])
     {
-        const c1 = ecs.getComponent(myEntity.id, "Collider") as ColliderComponent;
+        const c1 = ecs.getComponent(myEntity.id, "ColliderComponent") as ColliderComponent;
 
         if (c1.activelyDetectCollisions)
         {
@@ -136,7 +134,7 @@ export default class CollisionDetectionSystem extends System
             {
                 if (otherEntityId != myEntity.id)
                 {
-                    const c2 = ecs.getComponent(otherEntityId, "Collider") as ColliderComponent;
+                    const c2 = ecs.getComponent(otherEntityId, "ColliderComponent") as ColliderComponent;
 
                     if (c1.currentCollidingEntityIds.indexOf(otherEntityId) < 0)
                     {
@@ -147,11 +145,9 @@ export default class CollisionDetectionSystem extends System
                         if (xOverlap && yOverlap && zOverlap) // These two entities are colliding with each other.
                         {
                             const eventEntity = ecs.addEntity("empty");
-                            const event = ecs.addComponent(eventEntity.id, "CollisionEvent") as CollisionEventComponent;
+                            const event = ecs.addComponent(eventEntity.id, "CollisionEventComponent") as CollisionEventComponent;
                             event.entityId1 = myEntity.id;
-                            event.entityBirthCount1 = myEntity.birthCount;
                             event.entityId2 = otherEntityId;
-                            event.entityBirthCount2 = ecs.getEntity(otherEntityId).birthCount;
 
                             this.updateIntersectionStatus(event, c1, c2, 0);
                             this.updateIntersectionStatus(event, c1, c2, 1);

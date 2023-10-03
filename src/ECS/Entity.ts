@@ -1,8 +1,8 @@
 import PoolableObject from "../Util/Pooling/PoolableObject";
+import { ComponentBitMask } from "./Component";
 
 export default interface Entity extends PoolableObject
 {
-    componentIds: {[componentType: string]: number};
+    componentBitMask: ComponentBitMask;
     alive: boolean;
-    birthCount: number;
 }

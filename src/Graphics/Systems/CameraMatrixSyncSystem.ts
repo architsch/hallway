@@ -4,7 +4,6 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { CameraComponent } from "../Models/GraphicsComponents";
 import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
-import { Component } from "../../ECS/Component";
 
 export default class CameraMatrixSyncSystem extends System
 {
@@ -14,10 +13,10 @@ export default class CameraMatrixSyncSystem extends System
     private forwardQuat: quat = quat.create();
     private forward: vec3 = vec3.create();
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Camera", ["Camera", "Transform"]],
+            ["CameraComponent", ["CameraComponent"]],
         ];
     }
 
@@ -27,11 +26,11 @@ export default class CameraMatrixSyncSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const cameraEntities = this.queryEntityGroup("Camera");
+        const cameraEntities = this.queryEntityGroup("CameraComponent");
 
         cameraEntities.forEach((entity: Entity) => {
-            const cam = ecs.getComponent(entity.id, "Camera") as CameraComponent;
-            const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+            const cam = ecs.getComponent(entity.id, "CameraComponent") as CameraComponent;
+            const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
 
             let recalculateViewProjMat = false;
 
@@ -75,11 +74,11 @@ export default class CameraMatrixSyncSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 }

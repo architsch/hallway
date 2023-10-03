@@ -1,7 +1,6 @@
 import ECSManager from "../../../ECS/ECSManager";
 import Entity from "../../../ECS/Entity";
 import System from "../../../ECS/System";
-import { Component } from "../../../ECS/Component";
 import { CollisionEventComponent, TransformChildComponent, TransformComponent } from "../../../Physics/Models/PhysicsComponents";
 import { vec3 } from "gl-matrix";
 import { SpawnAfterDelayComponent, SpawnOnCollisionComponent, SpawnOnIntervalComponent } from "../../Models/DynamicComponents";
@@ -11,9 +10,9 @@ export default class SpawnSystem extends System
     getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["CollisionEvent", ["CollisionEvent"]],
-            ["SpawnAfterDelay", ["SpawnAfterDelay"]],
-            ["SpawnOnInterval", ["SpawnOnInterval"]],
+            ["CollisionEventComponent", ["CollisionEventComponent"]],
+            ["SpawnAfterDelayComponent", ["SpawnAfterDelayComponent"]],
+            ["SpawnOnIntervalComponent", ["SpawnOnIntervalComponent"]],
         ];
     }
 
@@ -23,18 +22,18 @@ export default class SpawnSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        let entities = this.queryEntityGroup("CollisionEvent");
+        let entities = this.queryEntityGroup("CollisionEventComponent");
 
         entities.forEach((entity: Entity) => {
-            const event = ecs.getComponent(entity.id, "CollisionEvent") as CollisionEventComponent;
+            const event = ecs.getComponent(entity.id, "CollisionEventComponent") as CollisionEventComponent;
             this.onCollision(ecs, event.entityId1, event.entityId2);
             this.onCollision(ecs, event.entityId2, event.entityId1);
         });
 
-        entities = this.queryEntityGroup("SpawnAfterDelay");
+        entities = this.queryEntityGroup("SpawnAfterDelayComponent");
 
         entities.forEach((entity: Entity) => {
-            const c = ecs.getComponent(entity.id, "SpawnAfterDelay") as SpawnAfterDelayComponent;
+            const c = ecs.getComponent(entity.id, "SpawnAfterDelayComponent") as SpawnAfterDelayComponent;
             if (c.startTime == undefined)
             {
                 c.startTime = t;
@@ -42,14 +41,14 @@ export default class SpawnSystem extends System
             if (t > c.startTime + c.delay)
             {
                 this.action(ecs, entity.id, c.entityToSpawnConfigId, c.spawnOffset);
-                ecs.removeComponent(entity.id, "SpawnAfterDelay");
+                ecs.removeComponent(entity.id, "SpawnAfterDelayComponent");
             }
         });
 
-        entities = this.queryEntityGroup("SpawnOnInterval");
+        entities = this.queryEntityGroup("SpawnOnIntervalComponent");
 
         entities.forEach((entity: Entity) => {
-            const c = ecs.getComponent(entity.id, "SpawnOnInterval") as SpawnOnIntervalComponent;
+            const c = ecs.getComponent(entity.id, "SpawnOnIntervalComponent") as SpawnOnIntervalComponent;
             if (c.startTime == undefined)
             {
                 c.startTime = t;
@@ -62,19 +61,19 @@ export default class SpawnSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 
     private onCollision(ecs: ECSManager, myEntityId: number, otherEntityId: number)
     {
-        if (ecs.hasComponent(myEntityId, "SpawnOnCollision"))
+        if (ecs.hasComponent(myEntityId, "SpawnOnCollisionComponent"))
         {
-            const c = ecs.getComponent(myEntityId, "SpawnOnCollision") as SpawnOnCollisionComponent;
+            const c = ecs.getComponent(myEntityId, "SpawnOnCollisionComponent") as SpawnOnCollisionComponent;
             if ((c.myEntityComponentTypeRequired == undefined || ecs.hasComponent(myEntityId, c.myEntityComponentTypeRequired)) &&
                 (c.otherEntityComponentTypeRequired == undefined || ecs.hasComponent(otherEntityId, c.otherEntityComponentTypeRequired)))
             {
@@ -85,16 +84,16 @@ export default class SpawnSystem extends System
 
     private action(ecs: ECSManager, spawnerEntityId: number, entityToSpawnConfigId: string, spawnOffset: vec3)
     {
-        const spawnerTr = ecs.getComponent(spawnerEntityId, "Transform") as TransformComponent;
+        const spawnerTr = ecs.getComponent(spawnerEntityId, "TransformComponent") as TransformComponent;
         const spawnedEntity = ecs.addEntity(entityToSpawnConfigId);
-        const spawnedEntityTr = ecs.getComponent(spawnedEntity.id, "Transform") as TransformComponent;
+        const spawnedEntityTr = ecs.getComponent(spawnedEntity.id, "TransformComponent") as TransformComponent;
         vec3.add(spawnedEntityTr.position, spawnerTr.position, spawnOffset);
+        spawnedEntityTr.matrixSynced = false;
 
-        if (ecs.hasComponent(spawnedEntity.id, "TransformChild"))
+        if (ecs.hasComponent(spawnedEntity.id, "TransformChildComponent"))
         {
-            const child = ecs.getComponent(spawnedEntity.id, "TransformChild") as TransformChildComponent;
+            const child = ecs.getComponent(spawnedEntity.id, "TransformChildComponent") as TransformChildComponent;
             child.parentEntityId = spawnerEntityId;
-            child.parentEntityBirthCount = ecs.getEntity(spawnerEntityId).birthCount;
         }
     }
 }

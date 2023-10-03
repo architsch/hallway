@@ -1,7 +1,5 @@
 import { vec2, vec3 } from "gl-matrix";
-import { Component } from "../../ECS/Component";
-import ComponentPools from "../../ECS/ComponentPools";
-import Pool from "../../Util/Pooling/Pool";
+import { Component, registerComponent } from "../../ECS/Component";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
 const g = globalPropertiesConfig;
@@ -29,7 +27,7 @@ export class DieAfterDelayComponent extends AfterDelayComponent
         super.applyDefaultValues();
     }
 }
-ComponentPools["DieAfterDelay"] = new Pool<DieAfterDelayComponent>("DieAfterDelayComponent", g.maxNumEntities, () => new DieAfterDelayComponent());
+registerComponent("DieAfterDelayComponent", () => new DieAfterDelayComponent());
 
 export class SpawnAfterDelayComponent extends AfterDelayComponent
 {
@@ -43,7 +41,7 @@ export class SpawnAfterDelayComponent extends AfterDelayComponent
         vec3.set(this.spawnOffset, 0, 0, 0);
     }
 }
-ComponentPools["SpawnAfterDelay"] = new Pool<SpawnAfterDelayComponent>("SpawnAfterDelayComponent", g.maxNumEntities, () => new SpawnAfterDelayComponent());
+registerComponent("SpawnAfterDelayComponent", () => new SpawnAfterDelayComponent());
 
 //-----------------------------------------------------------------------
 // OnInterval
@@ -73,7 +71,7 @@ export class SpawnOnIntervalComponent extends OnIntervalComponent
         vec3.set(this.spawnOffset, 0, 0, 0);
     }
 }
-ComponentPools["SpawnOnInterval"] = new Pool<SpawnOnIntervalComponent>("SpawnOnIntervalComponent", g.maxNumEntities, () => new SpawnOnIntervalComponent());
+registerComponent("SpawnOnIntervalComponent", () => new SpawnOnIntervalComponent());
 
 //-----------------------------------------------------------------------
 // OnCollision
@@ -98,7 +96,7 @@ export class DieOnCollisionComponent extends OnCollisionComponent
         super.applyDefaultValues();
     }
 }
-ComponentPools["DieOnCollision"] = new Pool<DieOnCollisionComponent>("DieOnCollisionComponent", g.maxNumEntities, () => new DieOnCollisionComponent());
+registerComponent("DieOnCollisionComponent", () => new DieOnCollisionComponent());
 
 export class SpawnOnCollisionComponent extends OnCollisionComponent
 {
@@ -112,4 +110,4 @@ export class SpawnOnCollisionComponent extends OnCollisionComponent
         vec3.set(this.spawnOffset, 0, 0, 0);
     }
 }
-ComponentPools["SpawnOnCollision"] = new Pool<SpawnOnCollisionComponent>("SpawnOnCollisionComponent", g.maxNumEntities, () => new SpawnOnCollisionComponent());
+registerComponent("SpawnOnCollisionComponent", () => new SpawnOnCollisionComponent());

@@ -4,14 +4,13 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { TransformComponent } from "../Models/PhysicsComponents";
 import { CameraComponent, LightComponent, MeshInstanceComponent } from "../../Graphics/Models/GraphicsComponents";
-import { Component } from "../../ECS/Component";
 
 export default class TransformMatrixSyncSystem extends System
 {
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Transform", ["Transform"]],
+            ["TransformComponent", ["TransformComponent"]],
         ];
     }
 
@@ -21,10 +20,10 @@ export default class TransformMatrixSyncSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const transformEntities = this.queryEntityGroup("Transform");
+        const transformEntities = this.queryEntityGroup("TransformComponent");
 
         transformEntities.forEach((entity: Entity) => {
-            const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+            const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
 
             if (!tr.matrixSynced)
             {
@@ -36,30 +35,30 @@ export default class TransformMatrixSyncSystem extends System
                 mat4.scale(tr.worldMat, tr.worldMat, tr.scale);
                 tr.matrixSynced = true;
 
-                if (ecs.hasComponent(entity.id, "MeshInstance"))
+                if (ecs.hasComponent(entity.id, "MeshInstanceComponent"))
                 {
-                    const meshInstance = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
+                    const meshInstance = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
                     meshInstance.bufferSynced = false;
                 }
-                if (ecs.hasComponent(entity.id, "Camera"))
+                if (ecs.hasComponent(entity.id, "CameraComponent"))
                 {
-                    const cam = ecs.getComponent(entity.id, "Camera") as CameraComponent;
+                    const cam = ecs.getComponent(entity.id, "CameraComponent") as CameraComponent;
                     cam.viewMatrixSynced = false;
                 }
-                if (ecs.hasComponent(entity.id, "Light"))
+                if (ecs.hasComponent(entity.id, "LightComponent"))
                 {
-                    const light = ecs.getComponent(entity.id, "Light") as LightComponent;
+                    const light = ecs.getComponent(entity.id, "LightComponent") as LightComponent;
                     light.viewMatrixSynced = false;
                 }
             }
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 }

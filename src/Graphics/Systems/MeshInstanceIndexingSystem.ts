@@ -1,5 +1,4 @@
 import { globalConfig } from "../../Config/GlobalConfig";
-import { Component } from "../../ECS/Component";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
@@ -7,27 +6,26 @@ import { MeshInstanceComponent } from "../Models/GraphicsComponents";
 
 export default class MeshInstanceIndexingSystem extends System
 {
-    private freeInstanceIndicesByMeshConfigId: {[meshConfigId: string]: Array<number>};
+    private freeInstanceIndicesByMeshConfigId: {[meshConfigId: string]: Array<number>} = {};
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["MeshInstance", ["MeshInstance"]],
+            ["MeshInstanceComponent", ["MeshInstanceComponent"]],
         ];
     }
 
     start(ecs: ECSManager)
     {
-        this.freeInstanceIndicesByMeshConfigId = {};
     }
     
     update(ecs: ECSManager, t: number, dt: number)
     {
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
-        const meshInstanceComponent = componentAdded as MeshInstanceComponent;
+        const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
         let freeInstanceIndices = this.freeInstanceIndicesByMeshConfigId[meshInstanceComponent.meshConfigId];
         if (freeInstanceIndices == undefined)
         {
@@ -49,9 +47,9 @@ export default class MeshInstanceIndexingSystem extends System
         meshInstanceComponent.instanceIndex = freeInstanceIndices.pop();
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
-        const meshInstanceComponent = componentRemoved as MeshInstanceComponent;
+        const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
         let freeInstanceIndices = this.freeInstanceIndicesByMeshConfigId[meshInstanceComponent.meshConfigId];
         if (freeInstanceIndices != undefined)
         {

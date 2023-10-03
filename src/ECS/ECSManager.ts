@@ -1,7 +1,6 @@
-import ComponentPools from "./ComponentPools";
 import Pool from "../Util/Pooling/Pool";
 import Entity from "./Entity";
-import { Component } from "./Component";
+import { Component, ComponentBitMask, ComponentCache, ComponentTypeBitMasks } from "./Component";
 import System from "./System";
 import { globalConfig } from "../Config/GlobalConfig";
 import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
@@ -13,7 +12,7 @@ import KinematicsSystem from "../Physics/Systems/KinematicsSystem";
 import TransformMatrixSyncSystem from "../Physics/Systems/TransformMatrixSyncSystem";
 import MeshRenderSystem from "../Graphics/Systems/MeshRenderSystem";
 import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexingSystem";
-import SingletonComponentAccessSystem from "../Graphics/Systems/SingletonComponentAccessSystem";
+import UniformSystem from "../Graphics/Systems/UniformSystem";
 import LightMatrixSyncSystem from "../Graphics/Systems/LightMatrixSyncSystem";
 import CollisionDetectionSystem from "../Physics/Systems/CollisionDetectionSystem";
 import MechanicalForceSystem from "../Physics/Systems/MechanicalForceSystem";
@@ -25,14 +24,14 @@ import TransformChildSyncSystem from "../Physics/Systems/TransformChildSyncSyste
 import ForceFieldSystem from "../Physics/Systems/ForceFieldSystem";
 import DieSystem from "../Game/Systems/Dynamic/DieSystem";
 import SpawnSystem from "../Game/Systems/Dynamic/SpawnSystem";
+import ECSCommand from "./ECSCommand";
 
 export default class ECSManager
 {
     private entityPool: Pool<Entity>;
-    private removePendingEntityIds: Array<number>;
-
+    private commandPool: Pool<ECSCommand>;
+    private pendingCommands: Array<ECSCommand>;
     private systems: Array<System>;
-    private singletonComponentAccessSystem: SingletonComponentAccessSystem;
 
     constructor()
     {
@@ -41,81 +40,90 @@ export default class ECSManager
         this.entityPool = new Pool<Entity>("Entity", g.maxNumEntities, () => {
             return {
                 id: undefined,
-                componentIds: {},
+                componentBitMask: new ComponentBitMask(),
                 alive: false,
-                birthCount: 0,
             } as Entity;
         });
-        this.removePendingEntityIds = new Array<number>();
-
-        this.singletonComponentAccessSystem = new SingletonComponentAccessSystem();
+        this.commandPool = new Pool<ECSCommand>("ECSCommand", g.maxNumEntities, () => {
+            return {
+                id: undefined,
+                commandType: undefined,
+                entityId: undefined,
+                componentType: undefined,
+            } as ECSCommand;
+        })
+        this.pendingCommands = new Array<ECSCommand>();
 
         this.systems = [];
 
-        // Input/Control
-        this.systems.push(new KeyInputSystem());
-        this.systems.push(new PlayerControlSystem());
-        this.systems.push(new CameraMatrixSyncSystem());
-        this.systems.push(new LightMatrixSyncSystem());
-
-        // Physics (Detection)
+        //######################################################################
+        // Phase 1 (Physics)
+        //######################################################################
         this.systems.push(new CollisionDetectionSystem());
-
-        // Graphics
-        this.systems.push(new GraphicsInitSystem());
-        this.systems.push(this.singletonComponentAccessSystem);
-        this.systems.push(new MeshInstanceIndexingSystem());
-        this.systems.push(new AnimatedSpriteFramingSystem());
-        this.systems.push(new MeshRenderSystem());
-        if (g.debugEnabled)
-            this.systems.push(new ColliderRenderSystem());
-
-        // Game
-        this.systems.push(new LevelChangeSystem());
-        this.systems.push(new SpawnSystem());
-        this.systems.push(new DieSystem());
-
-        // Physics (Application)
         this.systems.push(new MechanicalForceSystem());
         this.systems.push(new ForceFieldSystem());
         this.systems.push(new KinematicsSystem());
         this.systems.push(new TransformChildSyncSystem());
         this.systems.push(new TransformMatrixSyncSystem());
 
+        //######################################################################
+        // Phase 2 (Gameplay)
+        //######################################################################
+        this.systems.push(new KeyInputSystem());
+        this.systems.push(new LevelChangeSystem());
+        this.systems.push(new PlayerControlSystem());
+        this.systems.push(new CameraMatrixSyncSystem());
+        this.systems.push(new LightMatrixSyncSystem());
+        this.systems.push(new SpawnSystem());
+        this.systems.push(new DieSystem());
+
+        //######################################################################
+        // Phase 3 (Graphics)
+        //######################################################################
+        this.systems.push(new GraphicsInitSystem());
+        this.systems.push(new UniformSystem());
+        this.systems.push(new MeshInstanceIndexingSystem());
+        this.systems.push(new AnimatedSpriteFramingSystem());
+        this.systems.push(new MeshRenderSystem());
+        if (g.debugEnabled)
+            this.systems.push(new ColliderRenderSystem());
+
         for (const system of this.systems)
             system.start(this);
     }
 
-    singletonComponents(): SingletonComponentAccessSystem
-    {
-        return this.singletonComponentAccessSystem;
-    }
-
     update(t: number, dt: number)
     {
+        // Update systems
         for (const system of this.systems)
-        {
             system.update(this, t, dt);
-        }
-        this.clearRemovePendingEntities();
-    }
 
-    clearRemovePendingEntities()
-    {
-        for (const id of this.removePendingEntityIds)
+        // Process pending commands
+        for (const command of this.pendingCommands)
         {
-            const entity = this.entityPool.get(id);
-            for (const componentType of Object.keys(entity.componentIds))
-                this.removeComponent(entity.id, componentType);
-            this.entityPool.return(entity.id);
-        }
-        this.removePendingEntityIds.length = 0;
-    }
+            const entity = this.entityPool.get(command.entityId);
 
-    isEntityAlive(id: number, birthCount: number): boolean
-    {
-        const entity = this.getEntity(id);
-        return entity.alive && entity.birthCount == birthCount;
+            switch (command.commandType)
+            {
+                case "addEntity":
+                    break;
+                case "removeEntity":
+                    entity.componentBitMask.clear();
+                    this.entityPool.return(entity.id);
+                    break;
+                case "addComponent":
+                    entity.componentBitMask.addMask(ComponentTypeBitMasks[command.componentType]);
+                    break;
+                case "removeComponent":
+                    entity.componentBitMask.removeMask(ComponentTypeBitMasks[command.componentType]);
+                    break;
+                default:
+                    throw new Error(`Unknown command type :: "${command.commandType}"`);
+            }
+            this.reregisterEntity(entity);
+            this.commandPool.return(command.id);
+        }
+        this.pendingCommands.length = 0;
     }
 
     getEntity(id: number): Entity
@@ -126,45 +134,77 @@ export default class ECSManager
     addEntity(configId: string): Entity
     {
         const entity = this.entityPool.rent();
+        if (entity.alive)
+            throw new Error(`Entity (id = ${entity.id}) is already alive.`);
         entity.alive = true;
-        entity.birthCount++;
 
         const entityConfig = globalConfig.entityConfigById[configId];
         if (entityConfig == undefined)
             throw new Error(`Entity config not found (id = ${configId})`);
-        
         for (const [componentType, componentValues] of Object.entries(entityConfig))
-            this.addComponent(entity.id, componentType, componentValues);
+        {
+            this.initComponent(entity.id, componentType, componentValues);
+            entity.componentBitMask.addMask(ComponentTypeBitMasks[componentType]);
+        }
+        const command = this.commandPool.rent();
+        command.commandType = "addEntity";
+        command.entityId = entity.id;
+        command.componentType = undefined;
+        this.pendingCommands.push(command);
         return entity;
     }
 
     removeEntity(id: number)
     {
         const entity = this.entityPool.get(id);
-        entity.alive = false;
-        this.removePendingEntityIds.push(id);
+        if (entity.alive)
+        {
+            entity.alive = false;
+            const command = this.commandPool.rent();
+            command.commandType = "removeEntity";
+            command.entityId = entity.id;
+            command.componentType = undefined;
+            this.pendingCommands.push(command);
+        }
+    }
+
+    addComponent(entityId: number, componentType: string): Component
+    {
+        const component = this.initComponent(entityId, componentType);
+        const command = this.commandPool.rent();
+        command.commandType = "addComponent";
+        command.entityId = entityId;
+        command.componentType = componentType;
+        this.pendingCommands.push(command);
+        return component;
+    }
+
+    removeComponent(entityId: number, componentType: string)
+    {
+        const command = this.commandPool.rent();
+        command.commandType = "removeComponent";
+        command.entityId = entityId;
+        command.componentType = componentType;
+        this.pendingCommands.push(command);
     }
 
     getComponent(entityId: number, componentType: string): Component
     {
-        const entity = this.entityPool.get(entityId);
-        return ComponentPools[componentType].get(entity.componentIds[componentType]);
+        return ComponentCache[componentType][entityId];
     }
 
     hasComponent(entityId: number, componentType: string): boolean
     {
-        const entity = this.entityPool.get(entityId);
-        return entity.componentIds[componentType] != undefined;
+        const entity = this.getEntity(entityId);
+        return entity.componentBitMask.hasAllComponentsInMask(ComponentTypeBitMasks[componentType]);
     }
 
-    addComponent(entityId: number, componentType: string, componentValues: {[key: string]: [type: string, value: any]} | undefined = undefined): Component
+    private initComponent(entityId: number, componentType: string, componentValues: {[key: string]: [type: string, value: any]} | undefined = undefined): Component
     {
-        const entity = this.entityPool.get(entityId);
-        if (ComponentPools[componentType] == undefined)
-            throw new Error(`Component type "${componentType}" doesn't exist in ComponentPools.`);
-        const component = ComponentPools[componentType].rent();
+        if (ComponentCache[componentType] == undefined)
+            throw new Error(`Component type "${componentType}" doesn't exist in ComponentCache.`);
+        const component = this.getComponent(entityId, componentType);
         component.applyDefaultValues();
-        component.entityId = entityId;
 
         if (componentValues != undefined)
         {
@@ -185,21 +225,12 @@ export default class ECSManager
                 }
             }
         }
-        entity.componentIds[componentType] = component.id;
-
-        for (const system of this.systems)
-            system.onEntityModified(this, entity, component);
         return component;
     }
 
-    removeComponent(entityId: number, componentType: string)
+    private reregisterEntity(entity: Entity)
     {
-        const entity = this.entityPool.get(entityId);
-        const component = this.getComponent(entityId, componentType);
-        ComponentPools[componentType].return(entity.componentIds[componentType]);
-        delete entity.componentIds[componentType];
-
         for (const system of this.systems)
-            system.onEntityModified(this, entity, component);
+            system.reregisterEntity(this, entity);
     }
 }

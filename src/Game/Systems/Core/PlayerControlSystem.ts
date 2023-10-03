@@ -4,17 +4,16 @@ import Entity from "../../../ECS/Entity";
 import System from "../../../ECS/System";
 import { KeyInputComponent } from "../../../Input/Models/InputComponents";
 import { KinematicsComponent, TransformChildComponent, TransformComponent } from "../../../Physics/Models/PhysicsComponents";
-import { Component } from "../../../ECS/Component";
 
 export default class PlayerControlSystem extends System
 {
     controlForce: vec3 = vec3.create();
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Player", ["Player"]],
-            ["KeyInput", ["KeyInput"]],
+            ["PlayerComponent", ["PlayerComponent"]],
+            ["KeyInputComponent", ["KeyInputComponent"]],
         ];
     }
 
@@ -24,8 +23,8 @@ export default class PlayerControlSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const playerEntities = this.queryEntityGroup("Player");
-        const keyInputEntities = this.queryEntityGroup("KeyInput");
+        const playerEntities = this.queryEntityGroup("PlayerComponent");
+        const keyInputEntities = this.queryEntityGroup("KeyInputComponent");
 
         let player: Entity;
         let playerKinematics: KinematicsComponent;
@@ -34,8 +33,8 @@ export default class PlayerControlSystem extends System
         playerEntities.forEach((entity: Entity) => {
             if (player == undefined)
             {
-                playerKinematics = ecs.getComponent(entity.id, "Kinematics") as KinematicsComponent;
-                playerTr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+                playerKinematics = ecs.getComponent(entity.id, "KinematicsComponent") as KinematicsComponent;
+                playerTr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
                 player = entity;
             }
             else
@@ -46,7 +45,7 @@ export default class PlayerControlSystem extends System
         let forceZ = 0;
 
         keyInputEntities.forEach((entity: Entity) => {
-            const keyInputComponent = ecs.getComponent(entity.id, "KeyInput") as KeyInputComponent;
+            const keyInputComponent = ecs.getComponent(entity.id, "KeyInputComponent") as KeyInputComponent;
             
             switch (keyInputComponent.key)
             {
@@ -56,11 +55,11 @@ export default class PlayerControlSystem extends System
                 case "ArrowRight": forceX -= 1; break;
                 case " ":
                     const entity = ecs.addEntity("playerWind");
-                    const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+                    const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
                     vec3.copy(tr.position, playerTr.position);
-                    const child = ecs.getComponent(entity.id, "TransformChild") as TransformChildComponent;
+                    tr.matrixSynced = false;
+                    const child = ecs.getComponent(entity.id, "TransformChildComponent") as TransformChildComponent;
                     child.parentEntityId = player.id;
-                    child.parentEntityBirthCount = player.birthCount;
                     break;
             }
         });
@@ -78,11 +77,11 @@ export default class PlayerControlSystem extends System
         }
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 }

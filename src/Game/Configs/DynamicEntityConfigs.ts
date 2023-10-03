@@ -5,22 +5,21 @@ import EntityConfigFactory from "../../Game/Factories/EntityConfigFactory";
 
 const deg2rad = Math.PI / 180;
 const g = globalPropertiesConfig;
-const worldBoundColliderThickness = 5;
 const s = g.spriteAtlasGridCellSize;
 
 export const dynamicEntityConfigById: {[id: string]: EntityConfig} = {
     "actor": {
-        "Transform": {
+        "TransformComponent": {
             scale: ["vec3", vec3.fromValues(2, 2, 2)],
         },
-        "MeshInstance": {meshConfigId: ["string", "particle"]},
-        "Sprite": {
+        "MeshInstanceComponent": {meshConfigId: ["string", "particle"]},
+        "SpriteComponent": {
             uvScale: ["vec2", vec2.fromValues(2*s, 2*s)],
             uvShift: ["vec2", vec2.fromValues(0, 6*s)],
         },
-        "Kinematics": {},
-        "Rigidbody": {},
-        "Collider": {
+        "KinematicsComponent": {},
+        "RigidbodyComponent": {},
+        "ColliderComponent": {
             boundingBoxSize: ["vec3", vec3.fromValues(1.75, 2, 0.5)],
         },
     },

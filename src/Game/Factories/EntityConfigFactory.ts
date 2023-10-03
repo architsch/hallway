@@ -4,7 +4,6 @@ import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
 const deg2rad = Math.PI / 180;
 const g = globalPropertiesConfig;
-const worldBoundColliderThickness = 5;
 const s = g.spriteAtlasGridCellSize;
 
 export default class EntityConfigFactory
@@ -15,8 +14,8 @@ export default class EntityConfigFactory
         spawnInterval: number, spawnOffset: [number, number, number],
         entityToSpawnConfigId: string): EntityConfig
     {
-        this.tangibleObject(entityConfig, size, spriteCoords, [0,0,0], gravityMultiplier, "Rigidbody");
-        this.add(entityConfig, "SpawnOnInterval", {
+        this.tangibleObject(entityConfig, size, spriteCoords, [0,0,0], gravityMultiplier, "RigidbodyComponent");
+        this.add(entityConfig, "SpawnOnIntervalComponent", {
             interval: ["number", spawnInterval],
             entityToSpawnConfigId: ["string", entityToSpawnConfigId],
             spawnOffset: ["vec3", vec3.fromValues(spawnOffset[0], spawnOffset[1], spawnOffset[2])],
@@ -29,15 +28,15 @@ export default class EntityConfigFactory
         initialVelocity: [number, number, number], gravityMultiplier: number,
         explosionEntityConfigId: string): EntityConfig
     {
-        this.tangibleObject(entityConfig, size, spriteCoords, initialVelocity, gravityMultiplier, "Rigidbody");
-        this.add(entityConfig, "SpawnOnCollision", {
+        this.tangibleObject(entityConfig, size, spriteCoords, initialVelocity, gravityMultiplier, "RigidbodyComponent");
+        this.add(entityConfig, "SpawnOnCollisionComponent", {
             myEntityComponentTypeRequired: ["string", undefined],
-            otherEntityComponentTypeRequired: ["string", "Rigidbody"],
+            otherEntityComponentTypeRequired: ["string", "RigidbodyComponent"],
             entityToSpawnConfigId: ["string", explosionEntityConfigId],
         });
-        this.add(entityConfig, "DieOnCollision", {
+        this.add(entityConfig, "DieOnCollisionComponent", {
             myEntityComponentTypeRequired: ["string", undefined],
-            otherEntityComponentTypeRequired: ["string", "Rigidbody"],
+            otherEntityComponentTypeRequired: ["string", "RigidbodyComponent"],
         });
         return entityConfig;
     }
@@ -47,11 +46,11 @@ export default class EntityConfigFactory
         explosionForceEntityConfigId: string): EntityConfig
     {
         this.animatedVFXParticle(entityConfig, size, spriteStartCoords, numFrames);
-        this.add(entityConfig, "SpawnAfterDelay", {
+        this.add(entityConfig, "SpawnAfterDelayComponent", {
             delay: ["number", 0],
             entityToSpawnConfigId: ["string", explosionForceEntityConfigId],
         });
-        this.add(entityConfig, "DieAfterDelay", {
+        this.add(entityConfig, "DieAfterDelayComponent", {
             delay: ["number", numFrames / g.animFramesPerSecond],
         });
         return entityConfig;
@@ -60,17 +59,17 @@ export default class EntityConfigFactory
     static explosionForce(entityConfig: EntityConfig,
         forceIntensity: number, forceRadius: number): EntityConfig
     {
-        this.add(entityConfig, "Transform", {});
-        this.add(entityConfig, "TransformChild", {});
-        this.add(entityConfig, "Collider", {
+        this.add(entityConfig, "TransformComponent", {});
+        this.add(entityConfig, "TransformChildComponent", {});
+        this.add(entityConfig, "ColliderComponent", {
             boundingBoxSize: ["vec3", vec3.fromValues(2*forceRadius, 2*forceRadius, 2*forceRadius)],
         });
-        this.add(entityConfig, "RadialForceField", {
+        this.add(entityConfig, "RadialForceFieldComponent", {
             forceIntensity: ["number", forceIntensity],
             forceFalloffStartRadius: ["number", forceRadius * 0.75],
             forceFalloffEndRadius: ["number", forceRadius],
         });
-        this.add(entityConfig, "DieAfterDelay", {
+        this.add(entityConfig, "DieAfterDelayComponent", {
             delay: ["number", 0],
         });
         return entityConfig;
@@ -79,25 +78,25 @@ export default class EntityConfigFactory
     static tangibleObject(entityConfig: EntityConfig,
         size: number, spriteCoords: [number, number],
         initialVelocity: [number, number, number], gravityMultiplier: number,
-        bodyType: "Rigidbody" | "Softbody"): EntityConfig
+        bodyType: "RigidbodyComponent" | "SoftbodyComponent"): EntityConfig
     {
-        this.add(entityConfig, "Transform", {
+        this.add(entityConfig, "TransformComponent", {
             scale: ["vec3", vec3.fromValues(size, size, size)],
         });
-        this.add(entityConfig, "MeshInstance", {
+        this.add(entityConfig, "MeshInstanceComponent", {
             meshConfigId: ["string", "particle"],
         });
-        this.add(entityConfig, "Sprite", {
+        this.add(entityConfig, "SpriteComponent", {
             uvScale: ["vec2", vec2.fromValues(1*s, 1*s)],
             uvShift: ["vec2", vec2.fromValues(spriteCoords[0]*s, spriteCoords[1]*s)],
         });
-        this.add(entityConfig, "Kinematics", {
+        this.add(entityConfig, "KinematicsComponent", {
             decelerationRate: ["number", 1],
             gravityMultiplier: ["number", gravityMultiplier],
             velocity: ["vec3", vec3.fromValues(initialVelocity[0], initialVelocity[1], initialVelocity[2])],
         });
         this.add(entityConfig, bodyType, {});
-        this.add(entityConfig, "Collider", {
+        this.add(entityConfig, "ColliderComponent", {
             boundingBoxSize: ["vec3", vec3.fromValues(size, size, size)],
         });
         return entityConfig;
@@ -106,13 +105,13 @@ export default class EntityConfigFactory
     static animatedVFXParticle(entityConfig: EntityConfig,
         size: number, spriteStartCoords: [number, number], numFrames: number): EntityConfig
     {
-        this.add(entityConfig, "Transform", {
+        this.add(entityConfig, "TransformComponent", {
             scale: ["vec3", vec3.fromValues(size, size, size)],
         });
-        this.add(entityConfig, "MeshInstance", {
+        this.add(entityConfig, "MeshInstanceComponent", {
             meshConfigId: ["string", "particle"],
         });
-        this.add(entityConfig, "AnimatedSprite", {
+        this.add(entityConfig, "AnimatedSpriteComponent", {
             uvScale: ["vec2", vec2.fromValues(1*s, 1*s)],
             uvShiftStart: ["vec2", vec2.fromValues(spriteStartCoords[0]*s, spriteStartCoords[1]*s)],
             uvShiftMod: ["vec2", vec2.fromValues(numFrames, 1)],

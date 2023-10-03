@@ -1,17 +1,16 @@
 import ECSManager from "../../../ECS/ECSManager";
 import Entity from "../../../ECS/Entity";
 import System from "../../../ECS/System";
-import { Component } from "../../../ECS/Component";
 import { CollisionEventComponent } from "../../../Physics/Models/PhysicsComponents";
 import { DieAfterDelayComponent, DieOnCollisionComponent } from "../../Models/DynamicComponents";
 
 export default class DieSystem extends System
 {
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["CollisionEvent", ["CollisionEvent"]],
-            ["DieAfterDelay", ["DieAfterDelay"]],
+            ["CollisionEventComponent", ["CollisionEventComponent"]],
+            ["DieAfterDelayComponent", ["DieAfterDelayComponent"]],
         ];
     }
 
@@ -21,18 +20,18 @@ export default class DieSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        let entities = this.queryEntityGroup("CollisionEvent");
+        let entities = this.queryEntityGroup("CollisionEventComponent");
 
         entities.forEach((entity: Entity) => {
-            const event = ecs.getComponent(entity.id, "CollisionEvent") as CollisionEventComponent;
+            const event = ecs.getComponent(entity.id, "CollisionEventComponent") as CollisionEventComponent;
             this.onCollision(ecs, event.entityId1, event.entityId2);
             this.onCollision(ecs, event.entityId2, event.entityId1);
         });
 
-        entities = this.queryEntityGroup("DieAfterDelay");
+        entities = this.queryEntityGroup("DieAfterDelayComponent");
 
         entities.forEach((entity: Entity) => {
-            const c = ecs.getComponent(entity.id, "DieAfterDelay") as DieAfterDelayComponent;
+            const c = ecs.getComponent(entity.id, "DieAfterDelayComponent") as DieAfterDelayComponent;
             if (c.startTime == undefined)
             {
                 c.startTime = t;
@@ -44,19 +43,19 @@ export default class DieSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 
     private onCollision(ecs: ECSManager, myEntityId: number, otherEntityId: number)
     {
-        if (ecs.hasComponent(myEntityId, "DieOnCollision"))
+        if (ecs.hasComponent(myEntityId, "DieOnCollisionComponent"))
         {
-            const c = ecs.getComponent(myEntityId, "DieOnCollision") as DieOnCollisionComponent;
+            const c = ecs.getComponent(myEntityId, "DieOnCollisionComponent") as DieOnCollisionComponent;
             if ((c.myEntityComponentTypeRequired == undefined || ecs.hasComponent(myEntityId, c.myEntityComponentTypeRequired)) &&
                 (c.otherEntityComponentTypeRequired == undefined || ecs.hasComponent(otherEntityId, c.otherEntityComponentTypeRequired)))
             {

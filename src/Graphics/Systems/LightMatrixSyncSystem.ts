@@ -4,7 +4,6 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { LightComponent } from "../Models/GraphicsComponents";
 import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
-import { Component } from "../../ECS/Component";
 
 export default class LightMatrixSyncSystem extends System
 {
@@ -14,10 +13,10 @@ export default class LightMatrixSyncSystem extends System
     private forwardQuat: quat = quat.create();
     private forward: vec3 = vec3.create();
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["Light", ["Light", "Transform"]],
+            ["LightComponent", ["LightComponent"]],
         ];
     }
 
@@ -27,11 +26,11 @@ export default class LightMatrixSyncSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const lightEntities = this.queryEntityGroup("Light");
+        const lightEntities = this.queryEntityGroup("LightComponent");
 
         lightEntities.forEach((entity: Entity) => {
-            const light = ecs.getComponent(entity.id, "Light") as LightComponent;
-            const tr = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+            const light = ecs.getComponent(entity.id, "LightComponent") as LightComponent;
+            const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
 
             let recalculateViewProjMat = false;
 
@@ -75,11 +74,11 @@ export default class LightMatrixSyncSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 }

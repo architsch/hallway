@@ -1,4 +1,3 @@
-import { Component } from "../../ECS/Component";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
@@ -8,7 +7,7 @@ export default class KeyInputSystem extends System
 {
     private entityIdByPressedKey: {[key: string]: number};
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [];
     }
@@ -24,7 +23,7 @@ export default class KeyInputSystem extends System
             if (this.entityIdByPressedKey[event.key] == undefined)
             {
                 const entity = ecs.addEntity("empty");
-                const component = ecs.addComponent(entity.id, "KeyInput") as KeyInputComponent;
+                const component = ecs.addComponent(entity.id, "KeyInputComponent") as KeyInputComponent;
                 component.key = event.key;
                 this.entityIdByPressedKey[event.key] = entity.id;
             }
@@ -57,11 +56,11 @@ export default class KeyInputSystem extends System
     {
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 }

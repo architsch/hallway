@@ -4,7 +4,6 @@ import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { CollisionEventComponent, KinematicsComponent, RigidbodyComponent, SoftbodyComponent, TransformComponent } from "../Models/PhysicsComponents";
 import Geom from "../../Util/Math/Geom";
-import { Component } from "../../ECS/Component";
 
 export default class MechanicalForceSystem extends System
 {
@@ -22,10 +21,10 @@ export default class MechanicalForceSystem extends System
         vec3.fromValues(0, 0, -1),
     ];
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["CollisionEvent", ["CollisionEvent"]],
+            ["CollisionEventComponent", ["CollisionEventComponent"]],
         ];
     }
 
@@ -35,24 +34,24 @@ export default class MechanicalForceSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const eventEntities = this.queryEntityGroup("CollisionEvent");
+        const eventEntities = this.queryEntityGroup("CollisionEventComponent");
 
         eventEntities.forEach((eventEntity: Entity) => {
-            const event = ecs.getComponent(eventEntity.id, "CollisionEvent") as CollisionEventComponent;
+            const event = ecs.getComponent(eventEntity.id, "CollisionEventComponent") as CollisionEventComponent;
 
             let rb1: RigidbodyComponent | undefined = undefined;
             let rb2: RigidbodyComponent | undefined = undefined;
             let sb1: SoftbodyComponent | undefined = undefined;
             let sb2: SoftbodyComponent | undefined = undefined;
 
-            if (ecs.hasComponent(event.entityId1, "Rigidbody"))
-                rb1 = ecs.getComponent(event.entityId1, "Rigidbody") as RigidbodyComponent;
-            if (ecs.hasComponent(event.entityId2, "Rigidbody"))
-                rb2 = ecs.getComponent(event.entityId2, "Rigidbody") as RigidbodyComponent;
-            if (ecs.hasComponent(event.entityId1, "Softbody"))
-                sb1 = ecs.getComponent(event.entityId1, "Softbody") as SoftbodyComponent;
-            if (ecs.hasComponent(event.entityId2, "Softbody"))
-                sb2 = ecs.getComponent(event.entityId2, "Softbody") as SoftbodyComponent;
+            if (ecs.hasComponent(event.entityId1, "RigidbodyComponent"))
+                rb1 = ecs.getComponent(event.entityId1, "RigidbodyComponent") as RigidbodyComponent;
+            if (ecs.hasComponent(event.entityId2, "RigidbodyComponent"))
+                rb2 = ecs.getComponent(event.entityId2, "RigidbodyComponent") as RigidbodyComponent;
+            if (ecs.hasComponent(event.entityId1, "SoftbodyComponent"))
+                sb1 = ecs.getComponent(event.entityId1, "SoftbodyComponent") as SoftbodyComponent;
+            if (ecs.hasComponent(event.entityId2, "SoftbodyComponent"))
+                sb2 = ecs.getComponent(event.entityId2, "SoftbodyComponent") as SoftbodyComponent;
 
             if ((sb1 != undefined || rb1 != undefined) && (sb2 != undefined || rb2 != undefined))
             {
@@ -72,20 +71,20 @@ export default class MechanicalForceSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
     }
 
     private applySoftbodyCollision(ecs: ECSManager, event: CollisionEventComponent, entityId: number, effectiveRigidity: number)
     {
-        if (ecs.hasComponent(entityId, "Kinematics"))
+        if (ecs.hasComponent(entityId, "KinematicsComponent"))
         {
-            const tr = ecs.getComponent(entityId, "Transform") as TransformComponent;
-            const kinematics = ecs.getComponent(entityId, "Kinematics") as KinematicsComponent;
+            const tr = ecs.getComponent(entityId, "TransformComponent") as TransformComponent;
+            const kinematics = ecs.getComponent(entityId, "KinematicsComponent") as KinematicsComponent;
 
             const intersectionVolume = event.intersectionSize[0] * event.intersectionSize[1] * event.intersectionSize[2];
             const forceMultiplier = effectiveRigidity * intersectionVolume * this.softbodyForceMultiplier;
@@ -98,14 +97,14 @@ export default class MechanicalForceSystem extends System
 
     private applyRigidbodyCollision(ecs: ECSManager, event: CollisionEventComponent, myEntityId: number, otherEntityId: number, effectiveElasticity: number)
     {
-        if (ecs.hasComponent(myEntityId, "Kinematics"))
+        if (ecs.hasComponent(myEntityId, "KinematicsComponent"))
         {
-            const myTr = ecs.getComponent(myEntityId, "Transform") as TransformComponent;
-            const myK = ecs.getComponent(myEntityId, "Kinematics") as KinematicsComponent;
+            const myTr = ecs.getComponent(myEntityId, "TransformComponent") as TransformComponent;
+            const myK = ecs.getComponent(myEntityId, "KinematicsComponent") as KinematicsComponent;
 
             let otherK: KinematicsComponent | undefined = undefined;
-            if (ecs.hasComponent(otherEntityId, "Kinematics"))
-                otherK = ecs.getComponent(otherEntityId, "Kinematics") as KinematicsComponent;
+            if (ecs.hasComponent(otherEntityId, "KinematicsComponent"))
+                otherK = ecs.getComponent(otherEntityId, "KinematicsComponent") as KinematicsComponent;
 
             const minSize = Math.min(event.intersectionSize[0], event.intersectionSize[1], event.intersectionSize[2]);
             let normal: vec3;
@@ -137,6 +136,7 @@ export default class MechanicalForceSystem extends System
 
             vec3.multiply(this.positionChange, normal, event.intersectionSize);
             vec3.add(myTr.position, myTr.position, this.positionChange);
+            myTr.matrixSynced = false;
         }
     }
 }

@@ -1,5 +1,4 @@
 import { globalConfig } from "../../Config/GlobalConfig";
-import { Component } from "../../ECS/Component";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
@@ -12,10 +11,11 @@ export default class MeshRenderSystem extends System
     private meshInstanceDataTemp: Float32Array = new Float32Array(64);
     private meshesToRender: Set<Mesh> = new Set<Mesh>();
 
-    getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
+    protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["MeshInstance", ["MeshInstance", "Transform"]],
+            ["GraphicsComponent", ["GraphicsComponent"]],
+            ["MeshInstanceComponent", ["MeshInstanceComponent", "TransformComponent"]],
         ];
     }
 
@@ -25,18 +25,24 @@ export default class MeshRenderSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const graphicsComponent = ecs.singletonComponents().get("Graphics") as GraphicsComponent;
-        const gl = graphicsComponent.gl;
+        let gl: WebGL2RenderingContext;
+        this.queryEntityGroup("GraphicsComponent").forEach((entity: Entity) => {
+            const c = ecs.getComponent(entity.id, "GraphicsComponent") as GraphicsComponent;
+            gl = c.gl;
+        });
+
+        if (gl == undefined)
+            return;
 
         gl.enable(gl.DEPTH_TEST);
         gl.depthMask(true);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
         this.meshesToRender.clear();
-        const meshInstanceEntities = this.queryEntityGroup("MeshInstance");
+        const meshInstanceEntities = this.queryEntityGroup("MeshInstanceComponent");
 
         meshInstanceEntities.forEach((entity: Entity) => {
-            const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
+            const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
 
             const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl}) as Mesh | null;
             if (mesh != null)
@@ -46,18 +52,18 @@ export default class MeshRenderSystem extends System
 
                 if (!meshInstanceComponent.bufferSynced)
                 {
-                    if (ecs.hasComponent(entity.id, "Transform"))
+                    if (ecs.hasComponent(entity.id, "TransformComponent"))
                     {
-                        const c = ecs.getComponent(entity.id, "Transform") as TransformComponent;
+                        const c = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
 
                         let floatOffset = mesh.getInstanceAttribFloatOffset("worldMat");
                         for (let i = 0; i < 16; ++i)
                             this.meshInstanceDataTemp[floatOffset + i] = c.worldMat[i];
                     }
 
-                    if (ecs.hasComponent(entity.id, "Sprite"))
+                    if (ecs.hasComponent(entity.id, "SpriteComponent"))
                     {
-                        const c = ecs.getComponent(entity.id, "Sprite") as SpriteComponent;
+                        const c = ecs.getComponent(entity.id, "SpriteComponent") as SpriteComponent;
 
                         let floatOffset = mesh.getInstanceAttribFloatOffset("uvScale");
                         this.meshInstanceDataTemp[floatOffset] = c.uvScale[0];
@@ -67,9 +73,9 @@ export default class MeshRenderSystem extends System
                         this.meshInstanceDataTemp[floatOffset] = c.uvShift[0];
                         this.meshInstanceDataTemp[floatOffset+1] = c.uvShift[1];
                     }
-                    else if (ecs.hasComponent(entity.id, "AnimatedSprite"))
+                    else if (ecs.hasComponent(entity.id, "AnimatedSpriteComponent"))
                     {
-                        const c = ecs.getComponent(entity.id, "AnimatedSprite") as SpriteComponent;
+                        const c = ecs.getComponent(entity.id, "AnimatedSpriteComponent") as SpriteComponent;
 
                         let floatOffset = mesh.getInstanceAttribFloatOffset("uvScale");
                         this.meshInstanceDataTemp[floatOffset] = c.uvScale[0];
@@ -80,9 +86,9 @@ export default class MeshRenderSystem extends System
                         this.meshInstanceDataTemp[floatOffset+1] = c.uvShift[1];
                     }
 
-                    if (ecs.hasComponent(entity.id, "Color"))
+                    if (ecs.hasComponent(entity.id, "ColorComponent"))
                     {
-                        const c = ecs.getComponent(entity.id, "Color") as ColorComponent;
+                        const c = ecs.getComponent(entity.id, "ColorComponent") as ColorComponent;
 
                         let floatOffset = mesh.getInstanceAttribFloatOffset("color");
                         this.meshInstanceDataTemp[floatOffset] = c.color[0];
@@ -113,23 +119,20 @@ export default class MeshRenderSystem extends System
         });
     }
 
-    onEntityRegistered(ecs: ECSManager, entity: Entity, componentAdded: Component)
+    protected onEntityRegistered(ecs: ECSManager, entity: Entity)
     {
     }
 
-    onEntityUnregistered(ecs: ECSManager, entity: Entity, componentRemoved: Component)
+    protected onEntityUnregistered(ecs: ECSManager, entity: Entity)
     {
-        let meshInstanceComponent: MeshInstanceComponent | undefined = undefined;
-        if ((componentRemoved as any).meshConfigId != undefined)
-            meshInstanceComponent = componentRemoved as MeshInstanceComponent;
-        else
-            meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstance") as MeshInstanceComponent;
-        
-        if (meshInstanceComponent == undefined)
-            throw new Error(`MeshInstanceComponent is undefined (entity.id = ${entity.id})`);
+        const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
 
-        const graphicsComponent = ecs.singletonComponents().get("Graphics") as GraphicsComponent;
-        const gl = graphicsComponent.gl;
+        let gl: WebGL2RenderingContext;
+        this.queryEntityGroup("GraphicsComponent").forEach((entity: Entity) => {
+            const c = ecs.getComponent(entity.id, "GraphicsComponent") as GraphicsComponent;
+            gl = c.gl;
+        });
+        
         const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl}) as Mesh | null;
         if (mesh != null)
         {

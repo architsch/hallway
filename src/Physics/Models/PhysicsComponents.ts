@@ -1,7 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
-import { Component } from "../../ECS/Component";
-import ComponentPools from "../../ECS/ComponentPools";
-import Pool from "../../Util/Pooling/Pool";
+import { Component, registerComponent } from "../../ECS/Component";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 
 const g = globalPropertiesConfig;
@@ -25,22 +23,20 @@ export class TransformComponent extends Component
         this.matrixSynced = false;
     }
 }
-ComponentPools["Transform"] = new Pool<TransformComponent>("TransformComponent", g.maxNumEntities, () => new TransformComponent());
+registerComponent("TransformComponent", () => new TransformComponent());
 
 //-----------------------------------------------------------------------
 
 export class TransformChildComponent extends Component
 {
     parentEntityId: number = undefined; // -1 if there is no parent
-    parentEntityBirthCount: number = undefined;
 
     applyDefaultValues()
     {
         this.parentEntityId = -1;
-        this.parentEntityBirthCount = -1;
     }
 }
-ComponentPools["TransformChild"] = new Pool<TransformChildComponent>("TransformChildComponent", g.maxNumEntities, () => new TransformChildComponent());
+registerComponent("TransformChildComponent", () => new TransformChildComponent());
 
 //-----------------------------------------------------------------------
 
@@ -63,7 +59,7 @@ export class KinematicsComponent extends Component
         vec3.set(this.pendingForce, 0, 0, 0);
     }
 }
-ComponentPools["Kinematics"] = new Pool<KinematicsComponent>("KinematicsComponent", g.maxNumEntities, () => new KinematicsComponent());
+registerComponent("KinematicsComponent", () => new KinematicsComponent());
 
 //-----------------------------------------------------------------------
 
@@ -85,30 +81,26 @@ export class ColliderComponent extends Component
         vec3.set(this.boundingBoxSize, 1, 1, 1);
     }
 }
-ComponentPools["Collider"] = new Pool<ColliderComponent>("ColliderComponent", g.maxNumEntities, () => new ColliderComponent());
+registerComponent("ColliderComponent", () => new ColliderComponent());
 
 //-----------------------------------------------------------------------
 
 export class CollisionEventComponent extends Component
 {
     entityId1: number = undefined;
-    entityBirthCount1: number = undefined;
     entityId2: number = undefined;
-    entityBirthCount2: number = undefined;
     intersectionSize: vec3 = vec3.create();
     intersectionCenter: vec3 = vec3.create();
 
     applyDefaultValues()
     {
         this.entityId1 = undefined;
-        this.entityBirthCount1 = undefined;
         this.entityId2 = undefined;
-        this.entityBirthCount2 = undefined;
         vec3.set(this.intersectionSize, 0, 0, 0);
         vec3.set(this.intersectionCenter, 0, 0, 0);
     }
 }
-ComponentPools["CollisionEvent"] = new Pool<CollisionEventComponent>("CollisionEventComponent", g.maxNumEntities, () => new CollisionEventComponent());
+registerComponent("CollisionEventComponent", () => new CollisionEventComponent());
 
 //-----------------------------------------------------------------------
 
@@ -121,7 +113,7 @@ export class RigidbodyComponent extends Component
         this.elasticity = 1;
     }
 }
-ComponentPools["Rigidbody"] = new Pool<RigidbodyComponent>("RigidbodyComponent", g.maxNumEntities, () => new RigidbodyComponent());
+registerComponent("RigidbodyComponent", () => new RigidbodyComponent());
 
 //-----------------------------------------------------------------------
 
@@ -134,7 +126,7 @@ export class SoftbodyComponent extends Component
         this.rigidity = 1;
     }
 }
-ComponentPools["Softbody"] = new Pool<SoftbodyComponent>("SoftbodyComponent", g.maxNumEntities, () => new SoftbodyComponent());
+registerComponent("SoftbodyComponent", () => new SoftbodyComponent());
 
 //-----------------------------------------------------------------------
 
@@ -147,7 +139,7 @@ export class ConstantForceFieldComponent extends Component
         vec3.set(this.force, 0, 0, 0);
     }
 }
-ComponentPools["ConstantForceField"] = new Pool<ConstantForceFieldComponent>("ConstantForceFieldComponent", g.maxNumEntities, () => new ConstantForceFieldComponent());
+registerComponent("ConstantForceFieldComponent", () => new ConstantForceFieldComponent());
 
 //-----------------------------------------------------------------------
 
@@ -164,6 +156,6 @@ export class RadialForceFieldComponent extends Component
         this.forceFalloffEndRadius = 6;
     }
 }
-ComponentPools["RadialForceField"] = new Pool<RadialForceFieldComponent>("RadialForceFieldComponent", g.maxNumEntities, () => new RadialForceFieldComponent());
+registerComponent("RadialForceFieldComponent", () => new RadialForceFieldComponent());
 
 //-----------------------------------------------------------------------

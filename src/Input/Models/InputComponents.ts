@@ -1,6 +1,4 @@
-import { Component } from "../../ECS/Component";
-import ComponentPools from "../../ECS/ComponentPools";
-import Pool from "../../Util/Pooling/Pool";
+import { Component, registerComponent } from "../../ECS/Component";
 
 export class KeyInputComponent extends Component
 {
@@ -11,6 +9,6 @@ export class KeyInputComponent extends Component
         this.key = undefined;
     }
 }
-ComponentPools["KeyInput"] = new Pool<KeyInputComponent>("KeyInputComponent", 64, () => new KeyInputComponent());
+registerComponent("KeyInputComponent", () => new KeyInputComponent());
 
 //-----------------------------------------------------------------------
