@@ -6,24 +6,23 @@ import { globalConfig } from "../Config/GlobalConfig";
 import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
 import GraphicsInitSystem from "../Graphics/Systems/GraphicsInitSystem";
 import KeyInputSystem from "../Input/Systems/KeyInputSystem";
-import PlayerControlSystem from "../Game/Systems/Core/PlayerControlSystem";
+import PlayerControlSystem from "../Game/Systems/PlayerControlSystem";
 import CameraMatrixSyncSystem from "../Graphics/Systems/CameraMatrixSyncSystem";
 import KinematicsSystem from "../Physics/Systems/KinematicsSystem";
 import TransformMatrixSyncSystem from "../Physics/Systems/TransformMatrixSyncSystem";
 import MeshRenderSystem from "../Graphics/Systems/MeshRenderSystem";
 import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexingSystem";
 import UniformSystem from "../Graphics/Systems/UniformSystem";
-import LightMatrixSyncSystem from "../Graphics/Systems/LightMatrixSyncSystem";
 import CollisionDetectionSystem from "../Physics/Systems/CollisionDetectionSystem";
 import MechanicalForceSystem from "../Physics/Systems/MechanicalForceSystem";
 import ColliderRenderSystem from "../Graphics/Systems/ColliderRenderSystem";
 import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
-import LevelChangeSystem from "../Game/Systems/Core/LevelChangeSystem";
+import LevelChangeSystem from "../Game/Systems/LevelChangeSystem";
 import AnimatedSpriteFramingSystem from "../Graphics/Systems/AnimatedSpriteFramingSystem";
 import TransformChildSyncSystem from "../Physics/Systems/TransformChildSyncSystem";
 import ForceFieldSystem from "../Physics/Systems/ForceFieldSystem";
-import DieSystem from "../Game/Systems/Dynamic/DieSystem";
-import SpawnSystem from "../Game/Systems/Dynamic/SpawnSystem";
+import DieSystem from "../Game/Systems/DieSystem";
+import SpawnSystem from "../Game/Systems/SpawnSystem";
 import ECSCommand from "./ECSCommand";
 
 export default class ECSManager
@@ -59,6 +58,7 @@ export default class ECSManager
         //######################################################################
         // Phase 1 (Physics)
         //######################################################################
+        
         this.systems.push(new CollisionDetectionSystem());
         this.systems.push(new MechanicalForceSystem());
         this.systems.push(new ForceFieldSystem());
@@ -72,8 +72,6 @@ export default class ECSManager
         this.systems.push(new KeyInputSystem());
         this.systems.push(new LevelChangeSystem());
         this.systems.push(new PlayerControlSystem());
-        this.systems.push(new CameraMatrixSyncSystem());
-        this.systems.push(new LightMatrixSyncSystem());
         this.systems.push(new SpawnSystem());
         this.systems.push(new DieSystem());
 
@@ -81,6 +79,7 @@ export default class ECSManager
         // Phase 3 (Graphics)
         //######################################################################
         this.systems.push(new GraphicsInitSystem());
+        this.systems.push(new CameraMatrixSyncSystem());
         this.systems.push(new UniformSystem());
         this.systems.push(new MeshInstanceIndexingSystem());
         this.systems.push(new AnimatedSpriteFramingSystem());
@@ -131,7 +130,7 @@ export default class ECSManager
         return this.entityPool.get(id);
     }
 
-    addEntity(configId: string): Entity
+    addEntity(configId: string, immediate: boolean = false): Entity
     {
         const entity = this.entityPool.rent();
         if (entity.alive)
@@ -146,25 +145,45 @@ export default class ECSManager
             this.initComponent(entity.id, componentType, componentValues);
             entity.componentBitMask.addMask(ComponentTypeBitMasks[componentType]);
         }
-        const command = this.commandPool.rent();
-        command.commandType = "addEntity";
-        command.entityId = entity.id;
-        command.componentType = undefined;
-        this.pendingCommands.push(command);
-        return entity;
-    }
 
-    removeEntity(id: number)
-    {
-        const entity = this.entityPool.get(id);
-        if (entity.alive)
+        if (immediate)
         {
-            entity.alive = false;
+            this.reregisterEntity(entity);
+        }
+        else
+        {
             const command = this.commandPool.rent();
-            command.commandType = "removeEntity";
+            command.commandType = "addEntity";
             command.entityId = entity.id;
             command.componentType = undefined;
             this.pendingCommands.push(command);
+        }
+        return entity;
+    }
+
+    removeEntity(id: number, immediate: boolean = false)
+    {
+        const entity = this.entityPool.get(id);
+        if (immediate)
+        {
+            if (!entity.alive)
+                throw new Error(`Cannot immediately remove an entity that is already dead.`);
+            entity.alive = false;
+            entity.componentBitMask.clear();
+            this.entityPool.return(entity.id);
+            this.reregisterEntity(entity);
+        }
+        else
+        {
+            if (entity.alive)
+            {
+                entity.alive = false;
+                const command = this.commandPool.rent();
+                command.commandType = "removeEntity";
+                command.entityId = entity.id;
+                command.componentType = undefined;
+                this.pendingCommands.push(command);
+            }
         }
     }
 

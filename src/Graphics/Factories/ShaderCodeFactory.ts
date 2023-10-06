@@ -13,8 +13,9 @@ ${(options.texturing == "color") ? "out vec3 v_color;" : ""}
 ${(options.texturing == "texture") ? "out vec2 v_uv;" : ""}
 ${(options.texturing == "texture") ? "out vec2 v_uvScale;" : ""}
 ${(options.texturing == "texture") ? "out vec2 v_uvShift;" : ""}
-${(options.lighting == "diffuse") ? "out vec3 v_ambient;" : ""}
-${(options.lighting == "diffuse") ? "out vec3 v_diffuse;" : ""}
+out vec3 v_worldPos;
+out vec3 v_worldNormal;
+out vec3 v_cameraPos;
 
 void main()
 {
@@ -24,12 +25,10 @@ void main()
     ${(options.texturing == "texture") ? "v_uvShift = uvShift;" : ""}
 
     ${(options.lighting == "diffuse") ? "vec3 worldNormal = (transpose(inverse(worldMat)) * vec4(normal, 1.0)).xyz;" : ""}
+    ${(options.lighting == "diffuse") ? "v_worldNormal = worldNormal;" : ""}
     vec3 worldPos = (worldMat * vec4(position, 1.0)).xyz;
-
-    ${(options.lighting == "diffuse") ? "v_ambient = u_ambLightIntensity * u_ambLightColor;" : ""}
-    ${(options.lighting == "diffuse") ? "vec3 toSpotLight = u_spotLightPosition - worldPos;" : ""}
-    ${(options.lighting == "diffuse") ? "float diffuseFactor = max(0.0, dot(normalize(worldNormal), normalize(toSpotLight)));" : ""}
-    ${(options.lighting == "diffuse") ? "v_diffuse = u_spotLightIntensity * u_spotLightColor * diffuseFactor;" : ""}
+    v_worldPos = worldPos;
+    v_cameraPos = u_cameraPos;
 
     gl_Position = u_cameraViewProj * vec4(worldPos, 1.0);
 }`;
@@ -45,8 +44,10 @@ ${(options.texturing == "color") ? "in vec3 v_color;" : ""}
 ${(options.texturing == "texture") ? "in vec2 v_uv;" : ""}
 ${(options.texturing == "texture") ? "in vec2 v_uvScale;" : ""}
 ${(options.texturing == "texture") ? "in vec2 v_uvShift;" : ""}
-${(options.lighting == "diffuse") ? "in vec3 v_ambient;" : ""}
-${(options.lighting == "diffuse") ? "in vec3 v_diffuse;" : ""}
+in vec3 v_worldPos;
+in vec3 v_worldNormal;
+in vec3 v_cameraPos;
+
 out vec4 FragColor;
 
 void main()
@@ -57,8 +58,18 @@ void main()
     ${(options.texturing == "texture") ? "if (fragColor.a < 0.25)" : ""}
     ${(options.texturing == "texture") ? "    discard;" : ""}
 
+    vec3 toCamera = v_cameraPos - v_worldPos;
+    float toCameraMag = length(toCamera);
+    float fogFactor = clamp((50.0 - (toCameraMag - 7.0)) * 0.02, 0.0, 1.0);
+
+    ${(options.lighting == "diffuse") ? "vec3 toLight = (v_cameraPos + vec3(0.0, 1.0, 0.0)) - v_worldPos;" : ""}
+    ${(options.lighting == "diffuse") ? "float toLightMag = length(toLight);" : ""}
+    ${(options.lighting == "diffuse") ? "float dirDiffuse = max(0.0, dot(normalize(v_worldNormal), toLight / (toLightMag + 0.001)));" : ""}
+    ${(options.lighting == "diffuse") ? "float distDiffuse = max(0.0, 10.0 - toCameraMag) * 0.1;" : ""}
+    ${(options.lighting == "diffuse") ? "float diffuse = 0.8 * dirDiffuse + 0.4 * distDiffuse + 0.3;" : ""}
+
     ${(options.lighting == "unlit") ? "FragColor = fragColor;" : ""}
-    ${(options.lighting == "diffuse") ? "FragColor = vec4((v_ambient + v_diffuse) * fragColor.rgb, 1.0);" : ""}
+    ${(options.lighting == "diffuse") ? "FragColor = vec4(diffuse * fogFactor * fragColor.rgb, 1.0);" : ""}
 }`;
 }
 

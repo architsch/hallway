@@ -1,9 +1,9 @@
-import ECSManager from "../../../ECS/ECSManager";
-import Entity from "../../../ECS/Entity";
-import System from "../../../ECS/System";
-import { CollisionEventComponent, TransformChildComponent, TransformComponent } from "../../../Physics/Models/PhysicsComponents";
+import ECSManager from "../../ECS/ECSManager";
+import Entity from "../../ECS/Entity";
+import System from "../../ECS/System";
+import { CollisionEventComponent, TransformChildComponent, TransformComponent } from "../../Physics/Models/PhysicsComponents";
 import { vec3 } from "gl-matrix";
-import { SpawnAfterDelayComponent, SpawnOnCollisionComponent, SpawnOnIntervalComponent } from "../../Models/DynamicComponents";
+import { SpawnAfterDelayComponent, SpawnOnCollisionComponent, SpawnOnIntervalComponent } from "../Models/DynamicComponents";
 
 export default class SpawnSystem extends System
 {

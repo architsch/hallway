@@ -10,6 +10,7 @@ export default class MeshRenderSystem extends System
 {
     private meshInstanceDataTemp: Float32Array = new Float32Array(64);
     private meshesToRender: Set<Mesh> = new Set<Mesh>();
+    private gl_obj: any = undefined;
 
     protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
@@ -33,6 +34,8 @@ export default class MeshRenderSystem extends System
 
         if (gl == undefined)
             return;
+        if (this.gl_obj == undefined)
+            this.gl_obj = {gl: gl};
 
         gl.enable(gl.DEPTH_TEST);
         gl.depthMask(true);
@@ -44,7 +47,7 @@ export default class MeshRenderSystem extends System
         meshInstanceEntities.forEach((entity: Entity) => {
             const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
 
-            const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl}) as Mesh | null;
+            const mesh = Mesh.get(meshInstanceComponent.meshConfigId, this.gl_obj) as Mesh | null;
             if (mesh != null)
             {
                 if (!this.meshesToRender.has(mesh))
@@ -133,7 +136,7 @@ export default class MeshRenderSystem extends System
             gl = c.gl;
         });
         
-        const mesh = Mesh.get(meshInstanceComponent.meshConfigId, {gl}) as Mesh | null;
+        const mesh = Mesh.get(meshInstanceComponent.meshConfigId, this.gl_obj) as Mesh | null;
         if (mesh != null)
         {
             this.meshInstanceDataTemp.fill(-999);

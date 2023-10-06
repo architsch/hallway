@@ -17,7 +17,7 @@ export default class KinematicsSystem extends System
     protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["KinematicsComponent", ["TransformComponent", "KinematicsComponent"]],
+            ["KinematicsComponent", ["KinematicsComponent"]],
         ];
     }
 
@@ -43,24 +43,15 @@ export default class KinematicsSystem extends System
             // Zero out the force because it's been applied (consumed).
             vec3.set(kinematics.pendingForce, 0, 0, 0);
 
-            let velocityMag = vec3.length(kinematics.velocity);
-            
-            if (velocityMag > 0.05)
-            {
-                // Displace
-                vec3.scale(this.changeInPosition, kinematics.velocity, dt);
-                vec3.add(tr.position, tr.position, this.changeInPosition);
+            // Displace
+            vec3.scale(this.changeInPosition, kinematics.velocity, dt);
+            vec3.add(tr.position, tr.position, this.changeInPosition);
 
-                // Decelerate
-                vec3.scale(this.deceleration, kinematics.velocity, kinematics.decelerationRate * dt);
-                vec3.subtract(kinematics.velocity, kinematics.velocity, this.deceleration);
-                
-                tr.matrixSynced = false;
-            }
-            else // Velocity is negligibly small
-            {
-                vec3.set(kinematics.velocity, 0, 0, 0);
-            }
+            // Decelerate
+            vec3.scale(this.deceleration, kinematics.velocity, kinematics.decelerationRate * dt);
+            vec3.subtract(kinematics.velocity, kinematics.velocity, this.deceleration);
+            
+            tr.matrixSynced = false;
         });
     }
 

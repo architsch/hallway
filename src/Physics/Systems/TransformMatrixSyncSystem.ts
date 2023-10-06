@@ -3,7 +3,7 @@ import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { TransformComponent } from "../Models/PhysicsComponents";
-import { CameraComponent, LightComponent, MeshInstanceComponent } from "../../Graphics/Models/GraphicsComponents";
+import { CameraComponent, MeshInstanceComponent } from "../../Graphics/Models/GraphicsComponents";
 
 export default class TransformMatrixSyncSystem extends System
 {
@@ -44,11 +44,6 @@ export default class TransformMatrixSyncSystem extends System
                 {
                     const cam = ecs.getComponent(entity.id, "CameraComponent") as CameraComponent;
                     cam.viewMatrixSynced = false;
-                }
-                if (ecs.hasComponent(entity.id, "LightComponent"))
-                {
-                    const light = ecs.getComponent(entity.id, "LightComponent") as LightComponent;
-                    light.viewMatrixSynced = false;
                 }
             }
         });

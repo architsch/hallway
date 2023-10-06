@@ -19,49 +19,6 @@ registerComponent("GraphicsComponent", () => new GraphicsComponent());
 
 //-----------------------------------------------------------------------
 
-export class LightComponent extends Component
-{
-    ambLightColor: vec3 = vec3.create();
-    ambLightIntensity: number = undefined;
-    spotLightColor: vec3 = vec3.create();
-    spotLightIntensity: number = undefined;
-
-    falloffStartAngle: number = undefined;
-    falloffEndAngle: number = undefined;
-    maxDist: number = undefined;
-    linearAttenFactor: number = undefined;
-    squareAttenFactor: number = undefined;
-
-    viewMat: mat4 = mat4.create();
-    projMat: mat4 = mat4.create();
-    viewProjMat: mat4 = mat4.create();
-    projMatrixSynced: boolean = undefined;
-    viewMatrixSynced: boolean = undefined;
-
-    applyDefaultValues()
-    {
-        vec3.set(this.ambLightColor, 1, 1, 1);
-        this.ambLightIntensity = 0.2;
-        vec3.set(this.spotLightColor, 1, 1, 1);
-        this.spotLightIntensity = 0.8;
-
-        this.falloffStartAngle = Math.PI * 0.2;
-        this.falloffEndAngle = Math.PI * 0.3;
-        this.maxDist = 100;
-        this.linearAttenFactor = 0;
-        this.squareAttenFactor = 0;
-
-        mat4.identity(this.viewMat);
-        mat4.identity(this.projMat);
-        mat4.identity(this.viewProjMat);
-        this.projMatrixSynced = false;
-        this.viewMatrixSynced = false;
-    }
-}
-registerComponent("LightComponent", () => new LightComponent());
-
-//-----------------------------------------------------------------------
-
 export class CameraComponent extends Component
 {
     fovy: number = undefined;

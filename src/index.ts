@@ -9,10 +9,7 @@ require("./Physics/Models/PhysicsComponents");
 
 const ecs = new ECSManager();
 
-const minFPS = 10;
-const maxFPS = 50;
-const maxGameDeltaTime = 1 / minFPS;
-const minGameDeltaTime = 1 / maxFPS;
+const frameInterval = 0.025;
 
 let appTime = 0;
 let appTimePrev = 0;
@@ -22,14 +19,18 @@ let gameDeltaTime = 0;
 function update(timeInMillis: number)
 {
     appTime = timeInMillis * 0.001;
-    gameDeltaTime = Math.min(gameDeltaTime + (appTime - appTimePrev), maxGameDeltaTime);
+    gameDeltaTime += Math.min(gameDeltaTime + (appTime - appTimePrev), 0.05);
     appTimePrev = appTime;
 
-    if (gameDeltaTime >= minGameDeltaTime)
+    if (gameDeltaTime >= frameInterval)
     {
-        gameTime += gameDeltaTime;
-        ecs.update(gameTime, gameDeltaTime);
-        gameDeltaTime = 0;
+        gameTime += frameInterval;
+        ecs.update(gameTime, frameInterval);
+        gameDeltaTime -= frameInterval;
+    }
+    if (gameDeltaTime >= frameInterval)
+    {
+        gameDeltaTime = gameDeltaTime % frameInterval;
     }
     requestAnimationFrame(update);
 }

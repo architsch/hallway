@@ -70,13 +70,13 @@ void main()
 
             const fragCode =`#version 300 es
 precision highp float;
-uniform vec3 u_cameraPosition;
+uniform vec3 u_cameraPos;
 in vec3 v_position;
 out vec4 FragColor;
 
 void main()
 {
-    float dist = length(v_position - u_cameraPosition);
+    float dist = length(v_position - u_cameraPos);
     float intensity = max(0.0, 1.0 - dist * 0.025);
     float nx = floor(gl_FragCoord.x);
     float ny = floor(gl_FragCoord.y);
@@ -113,8 +113,8 @@ void main()
 
         let uniformLoc = gl.getUniformLocation(this.program, "u_cameraViewProj");
         gl.uniformMatrix4fv(uniformLoc, false, globalConfig.uniformConfigById["u_cameraViewProj"].getCurrentValue(ecs));
-        uniformLoc = gl.getUniformLocation(this.program, "u_cameraPosition");
-        gl.uniform3fv(uniformLoc, globalConfig.uniformConfigById["u_cameraPosition"].getCurrentValue(ecs));
+        uniformLoc = gl.getUniformLocation(this.program, "u_cameraPos");
+        gl.uniform3fv(uniformLoc, globalConfig.uniformConfigById["u_cameraPos"].getCurrentValue(ecs));
 
         const positionLoc = gl.getAttribLocation(this.program, "position");
         gl.enableVertexAttribArray(positionLoc);

@@ -1,98 +1,118 @@
 import { vec2, vec3 } from "gl-matrix";
+import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 import ECSManager from "../../ECS/ECSManager";
+import Random from "../../Util/Math/Random";
+import { LevelPortalComponent } from "../Models/LevelComponents";
 import Entity from "../../ECS/Entity";
 import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
-import { LevelMemberComponent, LevelPortalComponent } from "../Models/LevelComponents";
 import { SpriteComponent } from "../../Graphics/Models/GraphicsComponents";
-import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
-import Random from "../../Util/Math/Random";
 
 const g = globalPropertiesConfig;
 const s = g.spriteAtlasGridCellSize;
 const deg2rad = Math.PI / 180;
 
+const x1 = g.worldBoundMin[0] + 0.5;
+const x2 = g.worldBoundMax[0] - 0.5;
+const y1 = g.worldBoundMin[1] + 0.5;
+const y2 = g.worldBoundMax[1] - 0.5;
+let z1 = g.worldBoundMin[2];
+const z2 = g.worldBoundMax[2];
+
 export default class LevelFactory
 {
-    static addWorldChunk(ecs: ECSManager, levelIndex: number, chunkIndex: number)
+    static populate(ecs: ECSManager, levelIndex: number, levelEntranceZ: number)
     {
-        const chunkZ1 = g.worldChunkSize[2] * chunkIndex;
-        const chunkZ2 = g.worldChunkSize[2] * (chunkIndex+1);
-        const chunkZCenter = 0.5 * (chunkZ1 + chunkZ2);
+        z1 = levelEntranceZ;
+        const zCenter = 0.5 * (g.worldBoundMin[2] + g.worldBoundMax[2]);
         
         // Floor
-        let entity = this.addSpriteEntity(ecs, "floor", 0, 0, chunkZCenter, levelIndex);
-        this.setFloorSpriteDims(ecs, entity, levelIndex);
-        this.setRotation(ecs, entity, -90 * deg2rad, 0, 0);
+        let entity = LevelFactory.addSpriteEntity(ecs, "floor", 0, 0, zCenter);
+        LevelFactory.setFloorSpriteDims(ecs, entity, levelIndex);
+        LevelFactory.setRotation(ecs, entity, -90 * deg2rad, 0, 0);
 
         // Ceiling
-        entity = this.addSpriteEntity(ecs, "floor", 0, g.worldChunkSize[1], chunkZCenter, levelIndex);
-        this.setCeilingSpriteDims(ecs, entity, levelIndex);
-        this.setRotation(ecs, entity, +90 * deg2rad, 0, 0);
+        entity = LevelFactory.addSpriteEntity(ecs, "floor", 0, g.worldBoundSize[1], zCenter);
+        LevelFactory.setCeilingSpriteDims(ecs, entity, levelIndex);
+        LevelFactory.setRotation(ecs, entity, +90 * deg2rad, 0, 0);
         
         // Left Wall
-        entity = this.addSpriteEntity(ecs, "wall", -0.5*g.worldChunkSize[0], 0.5*g.worldChunkSize[1], chunkZCenter, levelIndex);
-        this.setWallSpriteDims(ecs, entity, levelIndex);
-        this.setRotation(ecs, entity, 0, 90 * deg2rad, 0);
+        entity = LevelFactory.addSpriteEntity(ecs, "wall", -0.5*g.worldBoundSize[0], 0.5*g.worldBoundSize[1], zCenter);
+        LevelFactory.setWallSpriteDims(ecs, entity, levelIndex);
+        LevelFactory.setRotation(ecs, entity, 0, 90 * deg2rad, 0);
         
         // Right Wall
-        entity = this.addSpriteEntity(ecs, "wall", 0.5*g.worldChunkSize[0], 0.5*g.worldChunkSize[1], chunkZCenter, levelIndex);
-        this.setWallSpriteDims(ecs, entity, levelIndex);
-        this.setRotation(ecs, entity, 0, -90 * deg2rad, 0);
+        entity = LevelFactory.addSpriteEntity(ecs, "wall", 0.5*g.worldBoundSize[0], 0.5*g.worldBoundSize[1], zCenter);
+        LevelFactory.setWallSpriteDims(ecs, entity, levelIndex);
+        LevelFactory.setRotation(ecs, entity, 0, -90 * deg2rad, 0);
 
-        for (let i = 1; i <= 3; ++i)
+        // Entrance
+        LevelFactory.addBarricadeLine(ecs, z1, levelIndex, [LevelFactory.addColumn], [1], LevelFactory.addNone, Math.floor(0.5 * (x1+x2)));
+
+        const blockSize = 11;
+        for (let z = z1; z + blockSize <= z2; z += blockSize)
         {
-            const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
-            const y = g.worldBoundMin[1] + 5;
-            const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
-            this.addSpriteEntity(ecs, "actor", x, y, z, levelIndex);
-        }
-        for (let i = 1; i <= 1; ++i)
-        {
-            const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
-            const y = g.worldBoundMin[1] + 1.25;
-            const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
-            this.addSpriteEntity(ecs, "shooter", x, y, z, levelIndex);
-        }
-        for (let i = 1; i <= 3; ++i)
-        {
-            const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
-            const y = g.worldBoundMin[1] + 0.5*g.worldChunkSize[1];
-            const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
-            this.addSpriteEntity(ecs, "column", x, y, z, levelIndex);
-        }
-        for (let i = 1; i <= 3; ++i)
-        {
-            const x = Random.randomBetween(g.worldBoundMin[0] + 1.5, g.worldBoundMax[0] - 1.5);
-            const y = g.worldBoundMin[1] + 0.5;
-            const z = Random.randomBetween(chunkZ1 + 3, chunkZ2 - 3);
-            this.addSpriteEntity(ecs, "cube", x, y, z, levelIndex);
+            const zPivot = Random.randomIntBetween(z + 0.3*blockSize, z + 0.7*blockSize);
+            LevelFactory.addBarricadeLine(ecs, zPivot, levelIndex, [LevelFactory.addColumn, LevelFactory.addCube, LevelFactory.addNone], [5, 3, 1], LevelFactory.addNone);
         }
 
-        // Level Portal
-        if (chunkIndex == g.numWorldChunks-1)
+        // Exit
+        LevelFactory.addBarricadeLine(ecs, z2, levelIndex, [LevelFactory.addColumn], [1], LevelFactory.addLevelDoor, Math.floor(0.5 * (x1+x2)));
+    }
+
+    static addBarricadeLine(ecs: ECSManager, z: number, levelIndex: number,
+        randomPlacementActions: Array<(ecs: ECSManager, x: number, z: number, levelIndex: number) => void>,
+        randomPlacementChanceWeights: Array<number>,
+        mainPassagePlacementAction: (ecs: ECSManager, x: number, z: number, levelIndex: number) => void,
+        mainPassageIndex: number = -1)
+    {
+        if (mainPassageIndex < 0)
+            mainPassageIndex = Random.randomIntBetween(x1, x2);
+        for (let x = x1; x <= x2; ++x)
         {
-            const entity = this.addSpriteEntity(ecs, "levelPortal",
-                0.5 * (g.worldBoundMin[0] + g.worldBoundMax[0]), g.worldBoundMin[1] + 1, chunkZ2 - 0.5,
-                levelIndex);
-            const levelPortal = ecs.getComponent(entity.id, "LevelPortalComponent") as LevelPortalComponent;
-            levelPortal.newLevelIndex = levelIndex + 1;
+            if (Math.floor(x) == mainPassageIndex)
+                mainPassagePlacementAction(ecs, x, z, levelIndex);
+            else
+                Random.selectByWeightedChance(randomPlacementActions, randomPlacementChanceWeights)(ecs, x, z, levelIndex);
         }
     }
 
+    static addShooter(ecs: ECSManager, x: number, z: number, levelIndex: number)
+    {
+        const y = g.worldBoundMin[1] + 0.5;
+        LevelFactory.addSpriteEntity(ecs, "shooter", x, y, z);
+    }
+
+    static addCube(ecs: ECSManager, x: number, z: number, levelIndex: number)
+    {
+        const y = g.worldBoundMin[1] + 0.5;
+        LevelFactory.addSpriteEntity(ecs, "cube", x, y, z);
+    }
+
+    static addColumn(ecs: ECSManager, x: number, z: number, levelIndex: number)
+    {
+        const y = g.worldBoundMin[1] + 0.5*g.worldBoundSize[1];
+        LevelFactory.addSpriteEntity(ecs, "column", x, y, z);
+    }
+
+    static addNone(ecs: ECSManager, x: number, z: number, levelIndex: number)
+    {
+    }
+
+    static addLevelDoor(ecs: ECSManager, x: number, z: number, levelIndex: number)
+    {
+        // Level Portal
+        const levelPortalEntity = LevelFactory.addSpriteEntity(ecs, "levelPortal", x, g.worldBoundMin[1] + 1, z);
+        const levelPortal = ecs.getComponent(levelPortalEntity.id, "LevelPortalComponent") as LevelPortalComponent;
+        levelPortal.newLevelIndex = levelIndex + 1;
+    }
+
     static addSpriteEntity(ecs: ECSManager, entityConfigId: string,
-        x: number, y: number, z: number,
-        levelIndex: number): Entity
+        x: number, y: number, z: number): Entity
     {
         const entity = ecs.addEntity(entityConfigId);
         const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
         vec3.set(tr.position, x, y, z);
         tr.matrixSynced = false;
-
-        if (levelIndex >= 0)
-        {
-            const levelMember = ecs.addComponent(entity.id, "LevelMemberComponent") as LevelMemberComponent;
-            levelMember.levelIndex = levelIndex;
-        }
         return entity;
     }
 

@@ -16,26 +16,13 @@ registerComponent("LevelComponent", () => new LevelComponent());
 
 //-----------------------------------------------------------------------
 
-export class LevelMemberComponent extends Component
-{
-    levelIndex: number = undefined;
-
-    applyDefaultValues()
-    {
-        this.levelIndex = -1;
-    }
-}
-registerComponent("LevelMemberComponent", () => new LevelMemberComponent());
-
-//-----------------------------------------------------------------------
-
-export class DontDisplaceOnLevelChangeComponent extends Component
+export class DontRemoveOnLevelChangeComponent extends Component
 {
     applyDefaultValues()
     {
     }
 }
-registerComponent("DontDisplaceOnLevelChangeComponent", () => new DontDisplaceOnLevelChangeComponent());
+registerComponent("DontRemoveOnLevelChangeComponent", () => new DontRemoveOnLevelChangeComponent());
 
 //-----------------------------------------------------------------------
 
@@ -49,15 +36,5 @@ export class LevelPortalComponent extends Component
     }
 }
 registerComponent("LevelPortalComponent", () => new LevelPortalComponent());
-
-//-----------------------------------------------------------------------
-
-export class BackWallComponent extends Component
-{
-    applyDefaultValues()
-    {
-    }
-}
-registerComponent("BackWallComponent", () => new BackWallComponent());
 
 //-----------------------------------------------------------------------

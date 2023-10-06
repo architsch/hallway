@@ -45,10 +45,9 @@ export default class CollisionDetectionSystem extends System
             entityIds.length = 0;
 
         const eventEntities = this.queryEntityGroup("CollisionEventComponent");
-
-        // Make each collision event last only for a single frame.
+        // Make each collision event last only for a single frame frame.
         eventEntities.forEach((entity: Entity) => {
-            ecs.removeEntity(entity.id);
+            ecs.removeEntity(entity.id, true);
         });
 
         const colliderEntities = this.queryEntityGroup("ColliderComponent");
@@ -144,8 +143,8 @@ export default class CollisionDetectionSystem extends System
 
                         if (xOverlap && yOverlap && zOverlap) // These two entities are colliding with each other.
                         {
-                            const eventEntity = ecs.addEntity("empty");
-                            const event = ecs.addComponent(eventEntity.id, "CollisionEventComponent") as CollisionEventComponent;
+                            const eventEntity = ecs.addEntity("collisionEvent", true);
+                            const event = ecs.getComponent(eventEntity.id, "CollisionEventComponent") as CollisionEventComponent;
                             event.entityId1 = myEntity.id;
                             event.entityId2 = otherEntityId;
 

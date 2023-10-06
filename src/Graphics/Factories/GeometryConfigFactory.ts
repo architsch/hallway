@@ -11,9 +11,9 @@ const g = globalPropertiesConfig;
 const verticesDataByGeometryType: {[geometryType: string]: VerticesData} = {
     "quad": GeometryVerticesFactory.quad(1, 1, 1, 1),
     "cube": GeometryVerticesFactory.cuboid(1, 1, 1, 1, 1),
-    "column": GeometryVerticesFactory.cuboid(1, g.worldChunkSize[1], 1, 1, g.worldChunkSize[1]),
-    "floor": GeometryVerticesFactory.quad(g.worldChunkSize[0], g.worldChunkSize[2], g.worldChunkSize[0], g.worldChunkSize[2]),
-    "wall": GeometryVerticesFactory.quad(g.worldChunkSize[2], g.worldChunkSize[1], g.worldChunkSize[2], g.worldChunkSize[1]),
+    "column": GeometryVerticesFactory.cuboid(1, g.worldBoundSize[1], 1, 1, g.worldBoundSize[1]),
+    "floor": GeometryVerticesFactory.quad(g.worldBoundSize[0], g.worldBoundSize[2], g.worldBoundSize[0], g.worldBoundSize[2]),
+    "wall": GeometryVerticesFactory.quad(g.worldBoundSize[2], g.worldBoundSize[1], g.worldBoundSize[2], g.worldBoundSize[1]),
 };
 
 export default class GeometryConfigFactory

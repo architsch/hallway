@@ -1,8 +1,8 @@
-import ECSManager from "../../../ECS/ECSManager";
-import Entity from "../../../ECS/Entity";
-import System from "../../../ECS/System";
-import { CollisionEventComponent } from "../../../Physics/Models/PhysicsComponents";
-import { DieAfterDelayComponent, DieOnCollisionComponent } from "../../Models/DynamicComponents";
+import ECSManager from "../../ECS/ECSManager";
+import Entity from "../../ECS/Entity";
+import System from "../../ECS/System";
+import { CollisionEventComponent } from "../../Physics/Models/PhysicsComponents";
+import { DieAfterDelayComponent, DieOnCollisionComponent } from "../Models/DynamicComponents";
 
 export default class DieSystem extends System
 {

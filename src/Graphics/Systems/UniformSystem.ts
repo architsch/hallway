@@ -3,7 +3,7 @@ import { ComponentTypeBitMasks } from "../../ECS/Component";
 import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
-import { CameraComponent, LightComponent } from "../Models/GraphicsComponents";
+import { CameraComponent } from "../Models/GraphicsComponents";
 import { TransformComponent } from "../../Physics/Models/PhysicsComponents";
 
 export default class UniformSystem extends System
@@ -24,7 +24,7 @@ export default class UniformSystem extends System
             return UniformSystem.fallbackMat4;
         }
     }
-    static cameraPosition(ecs: ECSManager): vec3
+    static cameraPos(ecs: ECSManager): vec3
     {
         const entityId = UniformSystem.singletonGraphicsComponentEntityIds["CameraComponent"];
         const obj = ecs.getComponent(entityId, "CameraComponent");
@@ -32,80 +32,8 @@ export default class UniformSystem extends System
             return (ecs.getComponent(entityId, "TransformComponent") as TransformComponent).position;
         else
         {
-            console.warn("'cameraPosition' uniform not prepared yet.");
+            console.warn("'cameraPos' uniform not prepared yet.");
             return UniformSystem.fallbackVec3;
-        }
-    }
-    static ambLightColor(ecs: ECSManager): vec3
-    {
-        const entityId = UniformSystem.singletonGraphicsComponentEntityIds["LightComponent"];
-        const obj = ecs.getComponent(entityId, "LightComponent");
-        if (obj != undefined)
-            return (obj as LightComponent).ambLightColor;
-        else
-        {
-            console.warn("'ambLightColor' uniform not prepared yet.");
-            return UniformSystem.fallbackVec3;
-        }
-    }
-    static ambLightIntensity(ecs: ECSManager): number
-    {
-        const entityId = UniformSystem.singletonGraphicsComponentEntityIds["LightComponent"];
-        const obj = ecs.getComponent(entityId, "LightComponent");
-        if (obj != undefined)
-            return (obj as LightComponent).ambLightIntensity;
-        else
-        {
-            console.warn("'ambLightIntensity' uniform not prepared yet.");
-            return 0;
-        }
-    }
-    static spotLightPosition(ecs: ECSManager): vec3
-    {
-        const entityId = UniformSystem.singletonGraphicsComponentEntityIds["LightComponent"];
-        const obj = ecs.getComponent(entityId, "LightComponent");
-        if (obj != undefined)
-            return (ecs.getComponent(entityId, "TransformComponent") as TransformComponent).position;
-        else
-        {
-            console.warn("'spotLightPosition' uniform not prepared yet.");
-            return UniformSystem.fallbackVec3;
-        }
-    }
-    static spotLightColor(ecs: ECSManager): vec3
-    {
-        const entityId = UniformSystem.singletonGraphicsComponentEntityIds["LightComponent"];
-        const obj = ecs.getComponent(entityId, "LightComponent");
-        if (obj != undefined)
-            return (obj as LightComponent).spotLightColor;
-        else
-        {
-            console.warn("'spotLightColor' uniform not prepared yet.");
-            return UniformSystem.fallbackVec3;
-        }
-    }
-    static spotLightIntensity(ecs: ECSManager): number
-    {
-        const entityId = UniformSystem.singletonGraphicsComponentEntityIds["LightComponent"];
-        const obj = ecs.getComponent(entityId, "LightComponent");
-        if (obj != undefined)
-            return (obj as LightComponent).spotLightIntensity;
-        else
-        {
-            console.warn("'spotLightIntensity' uniform not prepared yet.");
-            return 0;
-        }
-    }
-    static spotLightViewProjMat(ecs: ECSManager): mat4
-    {
-        const entityId = UniformSystem.singletonGraphicsComponentEntityIds["LightComponent"];
-        const obj = ecs.getComponent(entityId, "LightComponent");
-        if (obj != undefined)
-            return (obj as LightComponent).viewProjMat;
-        else
-        {
-            console.warn("'spotLightViewProjMat' uniform not prepared yet.");
-            return UniformSystem.fallbackMat4;
         }
     }
 
@@ -113,7 +41,6 @@ export default class UniformSystem extends System
     {
         return [
             ["CameraComponent", ["CameraComponent"]],
-            ["LightComponent", ["LightComponent"]],
         ];
     }
 

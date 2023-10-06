@@ -52,10 +52,7 @@ export default class MeshInstanceIndexingSystem extends System
         const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
         let freeInstanceIndices = this.freeInstanceIndicesByMeshConfigId[meshInstanceComponent.meshConfigId];
         if (freeInstanceIndices != undefined)
-        {
             freeInstanceIndices.push(meshInstanceComponent.instanceIndex);
-            meshInstanceComponent.instanceIndex = -1;
-        }
         else
             throw new Error(`List of free instance indices doesn't exist for meshConfigId: "${meshInstanceComponent.meshConfigId}"`);
     }
