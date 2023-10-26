@@ -23,8 +23,8 @@ export const dynamicEntityConfigById: {[id: string]: EntityConfig} = {
             boundingBoxSize: ["vec3", vec3.fromValues(1.75, 2, 0.5)],
         },
     },
-    "shooter": EntityConfigFactory.periodicSpawner({}, 1, [1, 3], 1, 1, [0, 1, -1], "bullet"),
-    "bullet": EntityConfigFactory.bullet({}, 0.5, [8, 3], [0, 4, -5], 0.5, "explosion_bullet"),
-    "explosion_bullet": EntityConfigFactory.explosion({}, 2, [0, 15], 16, "explosionForce_bullet"),
-    "explosionForce_bullet": EntityConfigFactory.explosionForce({}, 100, 4),
+    "shooter_explodeOnHit": EntityConfigFactory.shooter({}, 1, [1, 3], 1, 1, [0, 1, -1], "projectile_explodeOnHit"),
+    "projectile_explodeOnHit": EntityConfigFactory.projectile_explodeOnHit({}, 0.5, [8, 3], [0, 4, -5], 0.5, "explosion_explodeOnHit"),
+    "explosion_explodeOnHit": EntityConfigFactory.explosion({}, 2, [0, 15], 16, "explosionForce_explodeOnHit"),
+    "explosionForce_explodeOnHit": EntityConfigFactory.explosionForce({}, 100, 4),
 };

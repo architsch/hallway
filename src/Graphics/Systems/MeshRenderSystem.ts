@@ -130,11 +130,14 @@ export default class MeshRenderSystem extends System
     {
         const meshInstanceComponent = ecs.getComponent(entity.id, "MeshInstanceComponent") as MeshInstanceComponent;
 
-        let gl: WebGL2RenderingContext;
+        let gl: WebGL2RenderingContext = undefined;
         this.queryEntityGroup("GraphicsComponent").forEach((entity: Entity) => {
             const c = ecs.getComponent(entity.id, "GraphicsComponent") as GraphicsComponent;
             gl = c.gl;
         });
+
+        if (gl == undefined)
+            throw new Error(`GL hasn't been loaded yet.`);
         
         const mesh = Mesh.get(meshInstanceComponent.meshConfigId, this.gl_obj) as Mesh | null;
         if (mesh != null)
@@ -142,7 +145,7 @@ export default class MeshRenderSystem extends System
             this.meshInstanceDataTemp.fill(-999);
             mesh.updateInstanceData(meshInstanceComponent.instanceIndex, this.meshInstanceDataTemp);
         }
-        else
-            throw new Error(`Mesh is null (meshConfigId = ${meshInstanceComponent.meshConfigId})`);
+        //else
+        //    throw new Error(`Mesh is null (meshConfigId = ${meshInstanceComponent.meshConfigId})`);
     }
 }

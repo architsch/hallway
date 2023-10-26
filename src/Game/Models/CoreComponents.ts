@@ -1,4 +1,3 @@
-import { vec2, vec3 } from "gl-matrix";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
 import { Component, registerComponent } from "../../ECS/Component";
 
@@ -11,5 +10,18 @@ export class PlayerComponent extends Component
     }
 }
 registerComponent("PlayerComponent", () => new PlayerComponent());
+
+//-----------------------------------------------------------------------
+
+export class StatsComponent extends Component
+{
+    level: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.level = -1;
+    }
+}
+registerComponent("StatsComponent", () => new StatsComponent());
 
 //-----------------------------------------------------------------------

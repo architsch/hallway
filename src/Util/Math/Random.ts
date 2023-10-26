@@ -2,7 +2,7 @@ export default class Random
 {
     static randomBetween(min: number, max: number): number
     {
-        return min + (max - min) * Math.random();
+        return min + (max - min - 0.000001) * Math.random();
     }
 
     static randomIntBetween(min: number, max: number): number

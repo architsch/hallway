@@ -1,7 +1,6 @@
 import { vec2, vec3 } from "gl-matrix";
 import { EntityConfig } from "../../Config/ConfigTypes";
 import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
-import EntityConfigFactory from "../Factories/EntityConfigFactory";
 
 const deg2rad = Math.PI / 180;
 const g = globalPropertiesConfig;
@@ -10,26 +9,20 @@ const s = g.spriteAtlasGridCellSize;
 export const coreEntityConfigById: {[id: string]: EntityConfig} = {
     "empty": {
     },
-    "collisionEvent": {
-        "CollisionEventComponent": {
+    "stats": {
+        "StatsComponent": {
         },
     },
     "player": {
         "PlayerComponent": {},
         "TransformComponent": {
-            position: ["vec3", vec3.fromValues(
-                0.5 * (g.worldBoundMin[0] + g.worldBoundMax[0]),
-                g.worldBoundMin[1] + 0.5*g.playerBoundingBoxSize[1],
-                g.worldBoundMin[2] + 0.5*g.playerBoundingBoxSize[2])],
-            rotation: ["vec3", vec3.fromValues(0, 180, 0)],
+            position: ["vec3", vec3.fromValues(10, 10, 10)],
+            rotation: ["vec3", vec3.fromValues(-45, 45, 0)],
         },
         "KinematicsComponent": {
-            decelerationRate: ["number", 3],
+            decelerationRate: ["number", 5],
         },
         "RigidbodyComponent": {
-        },
-        "ColliderComponent": {
-            boundingBoxSize: ["vec3", vec3.fromValues(g.playerBoundingBoxSize[0], g.playerBoundingBoxSize[1], g.playerBoundingBoxSize[2])],
         },
         "CameraComponent": {
             fovy: ["number", 45 * deg2rad],
@@ -37,9 +30,7 @@ export const coreEntityConfigById: {[id: string]: EntityConfig} = {
             near: ["number", 0.1],
             far: ["number", 100],
         },
-        "DontRemoveOnLevelChangeComponent": {},
     },
-    "playerWind": EntityConfigFactory.explosionForce({}, 100, 4),
 
     "cube": {
         "TransformComponent": {},
@@ -67,111 +58,5 @@ export const coreEntityConfigById: {[id: string]: EntityConfig} = {
         "TransformComponent": {},
         "MeshInstanceComponent": {meshConfigId: ["string", "floor"]},
         "SpriteComponent": {},
-    },
-    "wall": {
-        "TransformComponent": {},
-        "MeshInstanceComponent": {meshConfigId: ["string", "wall"]},
-        "SpriteComponent": {},
-    },
-    "levelPortal": {
-        "TransformComponent": {},
-        "MeshInstanceComponent": {meshConfigId: ["string", "particle"]},
-        "SpriteComponent": {
-            uvShift: ["vec2", vec2.fromValues(0, 0)],
-        },
-        "LevelPortalComponent": {},
-        "ColliderComponent": {
-            boundingBoxSize: ["vec3", vec3.fromValues(1, 1, 1)],
-        },
-    },
-    "worldBoundFloorCollider": {
-        "TransformComponent": {
-            position: ["vec3", vec3.fromValues(
-                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
-                g.worldBoundMin[1] - 0.5*g.worldBoundColliderThickness,
-                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
-            )],
-        },
-        "RigidbodyComponent": {},
-        "ColliderComponent": {
-            activelyDetectCollisions: ["boolean", false],
-            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + g.worldBoundColliderThickness, g.worldBoundColliderThickness, g.worldBoundSize[2] + g.worldBoundColliderThickness)],
-        },
-        "DontRemoveOnLevelChangeComponent": {},
-    },
-    "worldBoundCeilingCollider": {
-        "TransformComponent": {
-            position: ["vec3", vec3.fromValues(
-                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
-                g.worldBoundMin[1] + g.worldBoundSize[1] + 0.5*g.worldBoundColliderThickness,
-                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
-            )],
-        },
-        "RigidbodyComponent": {},
-        "ColliderComponent": {
-            activelyDetectCollisions: ["boolean", false],
-            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + g.worldBoundColliderThickness, g.worldBoundColliderThickness, g.worldBoundSize[2] + g.worldBoundColliderThickness)],
-        },
-        "DontRemoveOnLevelChangeComponent": {},
-    },
-    "worldBoundLeftWallCollider": {
-        "TransformComponent": {
-            position: ["vec3", vec3.fromValues(
-                g.worldBoundMin[0] - 0.5*g.worldBoundColliderThickness,
-                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
-                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
-            )],
-        },
-        "RigidbodyComponent": {},
-        "ColliderComponent": {
-            activelyDetectCollisions: ["boolean", false],
-            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundColliderThickness, g.worldBoundSize[1] + g.worldBoundColliderThickness, g.worldBoundSize[2] + g.worldBoundColliderThickness)],
-        },
-        "DontRemoveOnLevelChangeComponent": {},
-    },
-    "worldBoundRightWallCollider": {
-        "TransformComponent": {
-            position: ["vec3", vec3.fromValues(
-                g.worldBoundMin[0] + g.worldBoundSize[0] + 0.5*g.worldBoundColliderThickness,
-                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
-                g.worldBoundMin[2] + 0.5*g.worldBoundSize[2]
-            )],
-        },
-        "RigidbodyComponent": {},
-        "ColliderComponent": {
-            activelyDetectCollisions: ["boolean", false],
-            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundColliderThickness, g.worldBoundSize[1] + g.worldBoundColliderThickness, g.worldBoundSize[2] + g.worldBoundColliderThickness)],
-        },
-        "DontRemoveOnLevelChangeComponent": {},
-    },
-    "worldBoundBackWallCollider": {
-        "TransformComponent": {
-            position: ["vec3", vec3.fromValues(
-                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
-                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
-                g.worldBoundMin[2] - 0.5*g.worldBoundColliderThickness
-            )],
-        },
-        "RigidbodyComponent": {},
-        "ColliderComponent": {
-            activelyDetectCollisions: ["boolean", false],
-            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + g.worldBoundColliderThickness, g.worldBoundSize[1] + g.worldBoundColliderThickness, g.worldBoundColliderThickness)],
-        },
-        "DontRemoveOnLevelChangeComponent": {},
-    },
-    "worldBoundFrontWallCollider": {
-        "TransformComponent": {
-            position: ["vec3", vec3.fromValues(
-                g.worldBoundMin[0] + 0.5*g.worldBoundSize[0],
-                g.worldBoundMin[1] + 0.5*g.worldBoundSize[1],
-                g.worldBoundMin[2] + g.worldBoundSize[2] + 0.5*g.worldBoundColliderThickness
-            )],
-        },
-        "RigidbodyComponent": {},
-        "ColliderComponent": {
-            activelyDetectCollisions: ["boolean", false],
-            boundingBoxSize: ["vec3", vec3.fromValues(g.worldBoundSize[0] + g.worldBoundColliderThickness, g.worldBoundSize[1] + g.worldBoundColliderThickness, g.worldBoundColliderThickness)],
-        },
-        "DontRemoveOnLevelChangeComponent": {},
     },
 };

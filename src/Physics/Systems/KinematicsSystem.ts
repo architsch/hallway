@@ -3,6 +3,9 @@ import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { KinematicsComponent, TransformComponent } from "../Models/PhysicsComponents";
+import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
+
+const g = globalPropertiesConfig;
 
 export default class KinematicsSystem extends System
 {
@@ -52,6 +55,16 @@ export default class KinematicsSystem extends System
             vec3.subtract(kinematics.velocity, kinematics.velocity, this.deceleration);
             
             tr.matrixSynced = false;
+
+            const x = tr.position[0];
+            const y = tr.position[1];
+            const z = tr.position[2];
+            if (x < g.worldBoundMin[0] - 2 || x > g.worldBoundMax[0] + 2 ||
+                y < g.worldBoundMin[1] - 2 || y > g.worldBoundMax[1] + 2 ||
+                z < g.worldBoundMin[2] - 2 || z > g.worldBoundMax[2] + 2)
+            {
+                ecs.removeEntity(entity.id);
+            }
         });
     }
 

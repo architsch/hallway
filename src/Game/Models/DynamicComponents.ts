@@ -77,37 +77,66 @@ registerComponent("SpawnOnIntervalComponent", () => new SpawnOnIntervalComponent
 // OnCollision
 //-----------------------------------------------------------------------
 
-export abstract class OnCollisionComponent extends Component
-{
-    myEntityComponentTypeRequired: string = undefined;
-    otherEntityComponentTypeRequired: string = undefined;
-
-    applyDefaultValues()
-    {
-        this.myEntityComponentTypeRequired = undefined;
-        this.otherEntityComponentTypeRequired = undefined;
-    }
-}
-
-export class DieOnCollisionComponent extends OnCollisionComponent
+export class DieOnCollisionWithRigidbodyComponent extends Component
 {
     applyDefaultValues()
     {
-        super.applyDefaultValues();
     }
 }
-registerComponent("DieOnCollisionComponent", () => new DieOnCollisionComponent());
+registerComponent("DieOnCollisionWithRigidbodyComponent", () => new DieOnCollisionWithRigidbodyComponent());
 
-export class SpawnOnCollisionComponent extends OnCollisionComponent
+export class SpawnOnCollisionWithRigidbodyComponent extends Component
 {
     entityToSpawnConfigId: string;
     spawnOffset: vec3 = vec3.create();
 
     applyDefaultValues()
     {
-        super.applyDefaultValues();
         this.entityToSpawnConfigId = undefined;
         vec3.set(this.spawnOffset, 0, 0, 0);
     }
 }
-registerComponent("SpawnOnCollisionComponent", () => new SpawnOnCollisionComponent());
+registerComponent("SpawnOnCollisionWithRigidbodyComponent", () => new SpawnOnCollisionWithRigidbodyComponent());
+
+//-----------------------------------------------------------------------
+// Waypoint
+//-----------------------------------------------------------------------
+
+export class WaypointComponent extends Component
+{
+    nextWaypointEntityIds: [number, number, number, number] = [-1, -1, -1, -1];
+    position: vec3 = vec3.create();
+
+    applyDefaultValues()
+    {
+        this.nextWaypointEntityIds[0] = -1;
+        this.nextWaypointEntityIds[1] = -1;
+        this.nextWaypointEntityIds[2] = -1;
+        this.nextWaypointEntityIds[3] = -1;
+        vec3.set(this.position, 0, 0, 0);
+    }
+}
+registerComponent("WaypointComponent", () => new WaypointComponent());
+
+export class WaypointTraverserComponent extends Component
+{
+    stoppingDist: number = undefined;
+    moveForce: number = undefined;
+    ignoreY: boolean = undefined;
+
+    // State
+    currWaypointEntityId: number = undefined;
+
+    applyDefaultValues()
+    {
+        this.stoppingDist = 0.5;
+        this.moveForce = 5;
+        this.ignoreY = true;
+        this.currWaypointEntityId = -1;
+    }
+}
+registerComponent("WaypointTraverserComponent", () => new WaypointTraverserComponent());
+
+//-----------------------------------------------------------------------
+// Misc
+//-----------------------------------------------------------------------

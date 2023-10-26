@@ -63,14 +63,10 @@ export default class UniformSystem extends System
                 if (entity.componentBitMask.hasAllComponentsInMask(ComponentTypeBitMasks[componentType]))
                 {
                     const entityId = UniformSystem.singletonGraphicsComponentEntityIds[componentType];
-                    if (entityId == undefined)
+                    if (entityId != entity.id)
                     {
                         UniformSystem.singletonGraphicsComponentEntityIds[componentType] = entity.id;
                         console.log(`Singleton graphics component registered :: ${componentType}`);
-                    }
-                    else if (entityId != entity.id)
-                    {
-                        throw new Error(`Duplicate singleton graphics components found (componentType: ${componentType}, entityId1: ${entity.id}, entityId2: ${entityId})`);
                     }
                 }
             }

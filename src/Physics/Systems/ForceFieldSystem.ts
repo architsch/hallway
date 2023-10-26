@@ -21,14 +21,14 @@ export default class ForceFieldSystem extends System
     
     update(ecs: ECSManager, t: number, dt: number)
     {
-        const eventEntities = this.queryEntityGroup("CollisionEventComponent");
-
-        eventEntities.forEach((eventEntity: Entity) => {
-            const event = ecs.getComponent(eventEntity.id, "CollisionEventComponent") as CollisionEventComponent;
-            this.tryApplyConstantForceField(ecs, event.entityId1, event.entityId2);
-            this.tryApplyConstantForceField(ecs, event.entityId2, event.entityId1);
-            this.tryApplyRadialForceField(ecs, event.entityId1, event.entityId2);
-            this.tryApplyRadialForceField(ecs, event.entityId2, event.entityId1);
+        this.queryEntityGroup("CollisionEventComponent").forEach((entity: Entity) => {
+            const event = ecs.getComponent(entity.id, "CollisionEventComponent") as CollisionEventComponent;
+            
+            for (const pair of event.collisionPairs)
+            {
+                this.tryApplyConstantForceField(ecs, entity.id, pair.collidingEntityId);
+                this.tryApplyRadialForceField(ecs, entity.id, pair.collidingEntityId);
+            }
         });
     }
 

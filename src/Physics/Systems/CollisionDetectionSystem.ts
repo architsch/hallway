@@ -3,21 +3,21 @@ import ECSManager from "../../ECS/ECSManager";
 import Entity from "../../ECS/Entity";
 import System from "../../ECS/System";
 import { ColliderComponent, CollisionEventComponent, TransformComponent } from "../Models/PhysicsComponents";
-import { globalConfig } from "../../Config/GlobalConfig";
+import { CollisionPair, CollisionPairPool } from "../Models/CollisionPair";
+import { globalPropertiesConfig } from "../../Config/GlobalPropertiesConfig";
+
+const g = globalPropertiesConfig;
 
 export default class CollisionDetectionSystem extends System
 {
-    private worldBoundMinPadded: vec3 = vec3.create();
-    private worldBoundSizePadded: vec3 = vec3.create();
-    private worldSizeInVoxels: vec3 = vec3.fromValues(7, 3, 25);
     private entityIdsByVoxelCoords: number[][];
     private boundingBoxSizeHalf: vec3 = vec3.create();
 
     protected getCriteria(): [groupId: string, requiredComponentTypes: string[]][]
     {
         return [
-            ["CollisionEventComponent", ["CollisionEventComponent"]],
             ["ColliderComponent", ["TransformComponent", "ColliderComponent"]],
+            ["CollisionEventComponent", ["CollisionEventComponent"]],
         ];
     }
 
@@ -25,17 +25,12 @@ export default class CollisionDetectionSystem extends System
     {
         this.mark = this.mark.bind(this);
         this.detectCollision = this.detectCollision.bind(this);
+        
+        const g = globalPropertiesConfig;
 
-        this.entityIdsByVoxelCoords = new Array<number[]>(this.worldSizeInVoxels[0] * this.worldSizeInVoxels[1] * this.worldSizeInVoxels[2]);
+        this.entityIdsByVoxelCoords = new Array<number[]>(g.worldBoundSizeInVoxels[0] * g.worldBoundSizeInVoxels[1] * g.worldBoundSizeInVoxels[2]);
         for (let i = 0; i < this.entityIdsByVoxelCoords.length; ++i)
             this.entityIdsByVoxelCoords[i] = [];
-
-        const g = globalConfig.globalPropertiesConfig;
-        const padding = 5;
-        const paddingVec = vec3.fromValues(padding, padding, padding);
-        vec3.subtract(this.worldBoundMinPadded, g.worldBoundMin, paddingVec);
-        vec3.add(this.worldBoundSizePadded, g.worldBoundSize, paddingVec);
-        vec3.add(this.worldBoundSizePadded, this.worldBoundSizePadded, paddingVec);
     }
     
     update(ecs: ECSManager, t: number, dt: number)
@@ -44,41 +39,51 @@ export default class CollisionDetectionSystem extends System
         for (const entityIds of this.entityIdsByVoxelCoords)
             entityIds.length = 0;
 
-        const eventEntities = this.queryEntityGroup("CollisionEventComponent");
-        // Make each collision event last only for a single frame frame.
-        eventEntities.forEach((entity: Entity) => {
-            ecs.removeEntity(entity.id, true);
-        });
-
-        const colliderEntities = this.queryEntityGroup("ColliderComponent");
+        if (this.queryEntityGroup("CollisionEventComponent").size > 0)
+            throw new Error(`CollisionEventComponent detected. This shouldn't happen at the beginning of the collision detection stage.`);
 
         // Calculate bounding-box dimensions, and mark their overlapping voxels.
-        colliderEntities.forEach((entity: Entity) => {
+        this.queryEntityGroup("ColliderComponent").forEach((entity: Entity) => {
             const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
             const collider = ecs.getComponent(entity.id, "ColliderComponent") as ColliderComponent;
-            collider.currentCollidingEntityIds.length = 0;
     
             vec3.scale(this.boundingBoxSizeHalf, collider.boundingBoxSize, 0.5);
             vec3.subtract(collider.boundingBoxMin, tr.position, this.boundingBoxSizeHalf);
             vec3.add(collider.boundingBoxMax, tr.position, this.boundingBoxSizeHalf);
     
             vec3.set(collider.boundingBoxVoxelCoordsMin,
-                Math.floor(this.worldSizeInVoxels[0] * (collider.boundingBoxMin[0] - this.worldBoundMinPadded[0]) / this.worldBoundSizePadded[0]),
-                Math.floor(this.worldSizeInVoxels[1] * (collider.boundingBoxMin[1] - this.worldBoundMinPadded[1]) / this.worldBoundSizePadded[1]),
-                Math.floor(this.worldSizeInVoxels[2] * (collider.boundingBoxMin[2] - this.worldBoundMinPadded[2]) / this.worldBoundSizePadded[2])
+                Math.floor(g.worldBoundSizeInVoxels[0] * (collider.boundingBoxMin[0] - g.worldBoundMin[0]) / g.worldBoundSize[0]),
+                Math.floor(g.worldBoundSizeInVoxels[1] * (collider.boundingBoxMin[1] - g.worldBoundMin[1]) / g.worldBoundSize[1]),
+                Math.floor(g.worldBoundSizeInVoxels[2] * (collider.boundingBoxMin[2] - g.worldBoundMin[2]) / g.worldBoundSize[2])
             );
             vec3.set(collider.boundingBoxVoxelCoordsMax,
-                Math.floor(this.worldSizeInVoxels[0] * (collider.boundingBoxMax[0] - this.worldBoundMinPadded[0]) / this.worldBoundSizePadded[0]),
-                Math.floor(this.worldSizeInVoxels[1] * (collider.boundingBoxMax[1] - this.worldBoundMinPadded[1]) / this.worldBoundSizePadded[1]),
-                Math.floor(this.worldSizeInVoxels[2] * (collider.boundingBoxMax[2] - this.worldBoundMinPadded[2]) / this.worldBoundSizePadded[2])
+                Math.floor(g.worldBoundSizeInVoxels[0] * (collider.boundingBoxMax[0] - g.worldBoundMin[0]) / g.worldBoundSize[0]),
+                Math.floor(g.worldBoundSizeInVoxels[1] * (collider.boundingBoxMax[1] - g.worldBoundMin[1]) / g.worldBoundSize[1]),
+                Math.floor(g.worldBoundSizeInVoxels[2] * (collider.boundingBoxMax[2] - g.worldBoundMin[2]) / g.worldBoundSize[2])
             );
-            this.forEachVoxel(ecs, t, dt, entity, this.mark);
+
+            const coordsMin = collider.boundingBoxVoxelCoordsMin;
+            const coordsMax = collider.boundingBoxVoxelCoordsMax;
+
+            if (coordsMin[0] < 0 || coordsMin[1] < 0 || coordsMin[2] < 0 ||
+                coordsMax[0] >= g.worldBoundSizeInVoxels[0] ||
+                coordsMax[1] >= g.worldBoundSizeInVoxels[1] ||
+                coordsMax[2] >= g.worldBoundSizeInVoxels[2])
+            {
+                ecs.removeEntity(entity.id); // Remove any collider which touches the world's bound.
+            }
+            else
+            {
+                this.forEachVoxel(ecs, t, dt, entity, this.mark);
+            }
         });
 
         // Register collision events.
-        colliderEntities.forEach((entity: Entity) => {
+        this.queryEntityGroup("ColliderComponent").forEach((entity: Entity) => {
             this.forEachVoxel(ecs, t, dt, entity, this.detectCollision);
         });
+
+        //console.log(this.queryEntityGroup("CollisionEventComponent").size);
     }
 
     protected onEntityRegistered(ecs: ECSManager, entity: Entity)
@@ -98,11 +103,11 @@ export default class CollisionDetectionSystem extends System
         const coordsMax = collider.boundingBoxVoxelCoordsMax;
 
         const coordsX1 = Math.max(0, coordsMin[0]);
-        const coordsX2 = Math.min(this.worldSizeInVoxels[0]-1, coordsMax[0]);
+        const coordsX2 = Math.min(g.worldBoundSizeInVoxels[0]-1, coordsMax[0]);
         const coordsY1 = Math.max(0, coordsMin[1]);
-        const coordsY2 = Math.min(this.worldSizeInVoxels[1]-1, coordsMax[1]);
+        const coordsY2 = Math.min(g.worldBoundSizeInVoxels[1]-1, coordsMax[1]);
         const coordsZ1 = Math.max(0, coordsMin[2]);
-        const coordsZ2 = Math.min(this.worldSizeInVoxels[2]-1, coordsMax[2]);
+        const coordsZ2 = Math.min(g.worldBoundSizeInVoxels[2]-1, coordsMax[2]);
 
         for (let voxelX = coordsX1; voxelX <= coordsX2; ++voxelX)
         {
@@ -110,7 +115,7 @@ export default class CollisionDetectionSystem extends System
             {
                 for (let voxelZ = coordsZ1; voxelZ <= coordsZ2; ++voxelZ)
                 {
-                    const index = voxelX + this.worldSizeInVoxels[0]*voxelY + this.worldSizeInVoxels[0]*this.worldSizeInVoxels[1]*voxelZ;
+                    const index = voxelX + g.worldBoundSizeInVoxels[0]*voxelY + g.worldBoundSizeInVoxels[0]*g.worldBoundSizeInVoxels[1]*voxelZ;
                     const voxelEntityIds = this.entityIdsByVoxelCoords[index];
                     functionToRun(ecs, t, dt, entity, voxelEntityIds);
                 }
@@ -125,35 +130,66 @@ export default class CollisionDetectionSystem extends System
 
     private detectCollision(ecs: ECSManager, t: number, dt: number, myEntity: Entity, voxelEntityIds: number[])
     {
-        const c1 = ecs.getComponent(myEntity.id, "ColliderComponent") as ColliderComponent;
+        const myCollider = ecs.getComponent(myEntity.id, "ColliderComponent") as ColliderComponent;
 
-        if (c1.activelyDetectCollisions)
+        if (myCollider.detectCollisions)
         {
             for (const otherEntityId of voxelEntityIds)
             {
                 if (otherEntityId != myEntity.id)
                 {
-                    const c2 = ecs.getComponent(otherEntityId, "ColliderComponent") as ColliderComponent;
+                    const otherCollider = ecs.getComponent(otherEntityId, "ColliderComponent") as ColliderComponent;
 
-                    if (c1.currentCollidingEntityIds.indexOf(otherEntityId) < 0)
+                    const xOverlap = myCollider.boundingBoxMin[0] <= otherCollider.boundingBoxMax[0] && myCollider.boundingBoxMax[0] >= otherCollider.boundingBoxMin[0];
+                    const yOverlap = myCollider.boundingBoxMin[1] <= otherCollider.boundingBoxMax[1] && myCollider.boundingBoxMax[1] >= otherCollider.boundingBoxMin[1];
+                    const zOverlap = myCollider.boundingBoxMin[2] <= otherCollider.boundingBoxMax[2] && myCollider.boundingBoxMax[2] >= otherCollider.boundingBoxMin[2];
+
+                    if (xOverlap && yOverlap && zOverlap) // These two entities are colliding with each other.
                     {
-                        const xOverlap = c1.boundingBoxMin[0] <= c2.boundingBoxMax[0] && c1.boundingBoxMax[0] >= c2.boundingBoxMin[0];
-                        const yOverlap = c1.boundingBoxMin[1] <= c2.boundingBoxMax[1] && c1.boundingBoxMax[1] >= c2.boundingBoxMin[1];
-                        const zOverlap = c1.boundingBoxMin[2] <= c2.boundingBoxMax[2] && c1.boundingBoxMax[2] >= c2.boundingBoxMin[2];
-
-                        if (xOverlap && yOverlap && zOverlap) // These two entities are colliding with each other.
+                        let event: CollisionEventComponent;
+                        if (ecs.hasComponent(myEntity.id, "CollisionEventComponent"))
                         {
-                            const eventEntity = ecs.addEntity("collisionEvent", true);
-                            const event = ecs.getComponent(eventEntity.id, "CollisionEventComponent") as CollisionEventComponent;
-                            event.entityId1 = myEntity.id;
-                            event.entityId2 = otherEntityId;
+                            event = ecs.getComponent(myEntity.id, "CollisionEventComponent") as CollisionEventComponent;
+                        }
+                        else
+                        {
+                            event = ecs.addComponent(myEntity.id, "CollisionEventComponent") as CollisionEventComponent;
+                            ecs.processLastPendingAddComponentCommand(); // Add the component immediately.
+                            ecs.removeComponent(myEntity.id, "CollisionEventComponent"); // Make the event last only till the end of this frame.
+                        }
 
-                            this.updateIntersectionStatus(event, c1, c2, 0);
-                            this.updateIntersectionStatus(event, c1, c2, 1);
-                            this.updateIntersectionStatus(event, c1, c2, 2);
+                        let N = event.collisionPairs.length;
+
+                        let alreadyDetected = false;
+                        for (let i = 0; i < N; ++i)
+                        {
+                            if (otherEntityId == event.collisionPairs[i].collidingEntityId)
+                            {
+                                alreadyDetected = true;
+                                break;
+                            }
+                        }
+
+                        if (!alreadyDetected)
+                        {
+                            const newCollisionPair = CollisionPairPool.rent();
+                            newCollisionPair.collidingEntityId = otherEntityId;
+                            this.updateIntersectionStatus(newCollisionPair, myCollider, otherCollider, 0);
+                            this.updateIntersectionStatus(newCollisionPair, myCollider, otherCollider, 1);
+                            this.updateIntersectionStatus(newCollisionPair, myCollider, otherCollider, 2);
+                            event.collisionPairs.push(newCollisionPair);
                             
-                            c2.currentCollidingEntityIds.push(myEntity.id);
-                            c1.currentCollidingEntityIds.push(otherEntityId);
+                            N = event.collisionPairs.length;
+                            if (N > g.maxNumEstimatedCollisionPairsPerEntity)
+                            {
+                                const otherEntityStrs = new Array<string>(N);
+                                for (let i = 0; i < N; ++i)
+                                {
+                                    const id = event.collisionPairs[i].collidingEntityId;
+                                    otherEntityStrs[i] = `${id}:${ecs.getEntity(i).configId}`;
+                                }
+                                console.warn(`Too many simultaneous collision pairs :: ${N} (myEntity = ${myEntity.id}:${ecs.getEntity(myEntity.id).configId}, otherEntities = [${otherEntityStrs.join(", ")}])`);
+                            }
                         }
                     }
                 }
@@ -162,7 +198,7 @@ export default class CollisionDetectionSystem extends System
     }
 
     // (The given two colliders, c1 and c2, must be overlapping)
-    private updateIntersectionStatus(event: CollisionEventComponent, c1: ColliderComponent, c2: ColliderComponent, dimensionIndex: number)
+    private updateIntersectionStatus(collisionPair: CollisionPair, c1: ColliderComponent, c2: ColliderComponent, dimensionIndex: number)
     {
         const c1min = c1.boundingBoxMin[dimensionIndex];
         const c1max = c1.boundingBoxMax[dimensionIndex];
@@ -195,15 +231,12 @@ export default class CollisionDetectionSystem extends System
             intersectionCenter = 0.5 * (c1min + c1max);
         }
 
-        vec3.set(event.intersectionSize,
-            (dimensionIndex == 0) ? intersectionWidth : event.intersectionSize[0],
-            (dimensionIndex == 1) ? intersectionWidth : event.intersectionSize[1],
-            (dimensionIndex == 2) ? intersectionWidth : event.intersectionSize[2]
-        );
-        vec3.set(event.intersectionCenter,
-            (dimensionIndex == 0) ? intersectionCenter : event.intersectionCenter[0],
-            (dimensionIndex == 1) ? intersectionCenter : event.intersectionCenter[1],
-            (dimensionIndex == 2) ? intersectionCenter : event.intersectionCenter[2]
-        );
+        collisionPair.intersectionSizeX = (dimensionIndex == 0) ? intersectionWidth : collisionPair.intersectionSizeX;
+        collisionPair.intersectionSizeY = (dimensionIndex == 1) ? intersectionWidth : collisionPair.intersectionSizeY;
+        collisionPair.intersectionSizeZ = (dimensionIndex == 2) ? intersectionWidth : collisionPair.intersectionSizeZ;
+
+        collisionPair.intersectionCenterX = (dimensionIndex == 0) ? intersectionCenter : collisionPair.intersectionCenterX;
+        collisionPair.intersectionCenterY = (dimensionIndex == 1) ? intersectionCenter : collisionPair.intersectionCenterY;
+        collisionPair.intersectionCenterZ = (dimensionIndex == 2) ? intersectionCenter : collisionPair.intersectionCenterZ;
     }
 }

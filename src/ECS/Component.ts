@@ -30,17 +30,13 @@ export class ComponentBitMask
     }
     addMask(mask: ComponentBitMask)
     {
-        if (this.hasAtLeastOneComponentInMask(mask))
-            throw new Error(`There is at least one component that is already added.`);
-        this.n1 |= mask.n1;
-        this.n2 |= mask.n2;
+        this.n1 = (this.n1 | mask.n1);
+        this.n2 = (this.n2 | mask.n2);
     }
     removeMask(mask: ComponentBitMask)
     {
-        if (!this.hasAllComponentsInMask(mask))
-            throw new Error(`There is at least one component that is already removed.`);
-        this.n1 ^= mask.n1;
-        this.n2 ^= mask.n2;
+        this.n1 = (this.n1 & (~mask.n1));
+        this.n2 = (this.n2 & (~mask.n2));
     }
     hasAllComponentsInMask(mask: ComponentBitMask): boolean
     {
@@ -54,6 +50,7 @@ export class ComponentBitMask
 
 export const ComponentCache: {[componentType: string]: Array<Component>} = {};
 export const ComponentTypeBitMasks: {[componentType: string]: ComponentBitMask} = {};
+export const ComponentInstantiationMethods: {[componentType: string]: () => any} = {};
 
 export function registerComponent<T extends Component>(componentType: string, instantiationMethod: () => T)
 {
@@ -64,4 +61,5 @@ export function registerComponent<T extends Component>(componentType: string, in
 
     ComponentCache[componentType] = cache;
     ComponentTypeBitMasks[componentType] = new ComponentBitMask().registerBit(nextBitIndex++);
+    ComponentInstantiationMethods[componentType] = instantiationMethod;
 }

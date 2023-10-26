@@ -2,7 +2,6 @@ import ECSManager from "./ECS/ECSManager";
 
 require("./Game/Models/CoreComponents");
 require("./Game/Models/DynamicComponents");
-require("./Game/Models/LevelComponents");
 require("./Graphics/Models/GraphicsComponents");
 require("./Input/Models/InputComponents");
 require("./Physics/Models/PhysicsComponents");

@@ -5,4 +5,5 @@ export default interface Entity extends PoolableObject
 {
     componentBitMask: ComponentBitMask;
     alive: boolean;
+    configId: string; // for debugging purposes
 }

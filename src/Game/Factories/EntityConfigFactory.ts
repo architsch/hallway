@@ -8,13 +8,13 @@ const s = g.spriteAtlasGridCellSize;
 
 export default class EntityConfigFactory
 {
-    static periodicSpawner(entityConfig: EntityConfig,
+    static shooter(entityConfig: EntityConfig,
         size: number, spriteCoords: [number, number],
         gravityMultiplier: number,
         spawnInterval: number, spawnOffset: [number, number, number],
         entityToSpawnConfigId: string): EntityConfig
     {
-        this.tangibleObject(entityConfig, size, spriteCoords, [0,0,0], gravityMultiplier, "RigidbodyComponent");
+        this.tangibleObject(entityConfig, size, spriteCoords, [0,0,0], gravityMultiplier);
         this.add(entityConfig, "SpawnOnIntervalComponent", {
             interval: ["number", spawnInterval],
             entityToSpawnConfigId: ["string", entityToSpawnConfigId],
@@ -23,21 +23,16 @@ export default class EntityConfigFactory
         return entityConfig;
     }
 
-    static bullet(entityConfig: EntityConfig,
+    static projectile_explodeOnHit(entityConfig: EntityConfig,
         size: number, spriteCoords: [number, number],
         initialVelocity: [number, number, number], gravityMultiplier: number,
         explosionEntityConfigId: string): EntityConfig
     {
-        this.tangibleObject(entityConfig, size, spriteCoords, initialVelocity, gravityMultiplier, "RigidbodyComponent");
-        this.add(entityConfig, "SpawnOnCollisionComponent", {
-            myEntityComponentTypeRequired: ["string", undefined],
-            otherEntityComponentTypeRequired: ["string", "RigidbodyComponent"],
+        this.tangibleObject(entityConfig, size, spriteCoords, initialVelocity, gravityMultiplier);
+        this.add(entityConfig, "SpawnOnCollisionWithRigidbodyComponent", {
             entityToSpawnConfigId: ["string", explosionEntityConfigId],
         });
-        this.add(entityConfig, "DieOnCollisionComponent", {
-            myEntityComponentTypeRequired: ["string", undefined],
-            otherEntityComponentTypeRequired: ["string", "RigidbodyComponent"],
-        });
+        this.add(entityConfig, "DieOnCollisionWithRigidbodyComponent", {});
         return entityConfig;
     }
 
@@ -77,8 +72,7 @@ export default class EntityConfigFactory
 
     static tangibleObject(entityConfig: EntityConfig,
         size: number, spriteCoords: [number, number],
-        initialVelocity: [number, number, number], gravityMultiplier: number,
-        bodyType: "RigidbodyComponent" | "SoftbodyComponent"): EntityConfig
+        initialVelocity: [number, number, number], gravityMultiplier: number): EntityConfig
     {
         this.add(entityConfig, "TransformComponent", {
             scale: ["vec3", vec3.fromValues(size, size, size)],
@@ -95,7 +89,7 @@ export default class EntityConfigFactory
             gravityMultiplier: ["number", gravityMultiplier],
             velocity: ["vec3", vec3.fromValues(initialVelocity[0], initialVelocity[1], initialVelocity[2])],
         });
-        this.add(entityConfig, bodyType, {});
+        this.add(entityConfig, "RigidbodyComponent", {});
         this.add(entityConfig, "ColliderComponent", {
             boundingBoxSize: ["vec3", vec3.fromValues(size, size, size)],
         });

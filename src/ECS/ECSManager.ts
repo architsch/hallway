@@ -1,6 +1,6 @@
 import Pool from "../Util/Pooling/Pool";
 import Entity from "./Entity";
-import { Component, ComponentBitMask, ComponentCache, ComponentTypeBitMasks } from "./Component";
+import { Component, ComponentBitMask, ComponentCache, ComponentInstantiationMethods, ComponentTypeBitMasks } from "./Component";
 import System from "./System";
 import { globalConfig } from "../Config/GlobalConfig";
 import { mat2, mat3, mat4, vec2, vec3, vec4 } from "gl-matrix";
@@ -14,22 +14,26 @@ import MeshRenderSystem from "../Graphics/Systems/MeshRenderSystem";
 import MeshInstanceIndexingSystem from "../Graphics/Systems/MeshInstanceIndexingSystem";
 import UniformSystem from "../Graphics/Systems/UniformSystem";
 import CollisionDetectionSystem from "../Physics/Systems/CollisionDetectionSystem";
-import MechanicalForceSystem from "../Physics/Systems/MechanicalForceSystem";
+import CollisionForceSystem from "../Physics/Systems/CollisionForceSystem";
 import ColliderRenderSystem from "../Graphics/Systems/ColliderRenderSystem";
 import { globalPropertiesConfig } from "../Config/GlobalPropertiesConfig";
-import LevelChangeSystem from "../Game/Systems/LevelChangeSystem";
+import LevelLoadingSystem from "../Game/Systems/LevelLoadingSystem";
 import AnimatedSpriteFramingSystem from "../Graphics/Systems/AnimatedSpriteFramingSystem";
 import TransformChildSyncSystem from "../Physics/Systems/TransformChildSyncSystem";
 import ForceFieldSystem from "../Physics/Systems/ForceFieldSystem";
 import DieSystem from "../Game/Systems/DieSystem";
 import SpawnSystem from "../Game/Systems/SpawnSystem";
 import ECSCommand from "./ECSCommand";
+import WaypointSystem from "../Game/Systems/WaypointSystem";
 
 export default class ECSManager
 {
     private entityPool: Pool<Entity>;
     private commandPool: Pool<ECSCommand>;
-    private pendingCommands: Array<ECSCommand>;
+    private pendingRemoveEntityCommands: Array<ECSCommand>;
+    private pendingRemoveComponentCommands: Array<ECSCommand>;
+    private pendingAddEntityCommands: Array<ECSCommand>;
+    private pendingAddComponentCommands: Array<ECSCommand>;
     private systems: Array<System>;
 
     constructor()
@@ -43,15 +47,17 @@ export default class ECSManager
                 alive: false,
             } as Entity;
         });
-        this.commandPool = new Pool<ECSCommand>("ECSCommand", g.maxNumEntities, () => {
+        this.commandPool = new Pool<ECSCommand>("ECSCommand", 2 * g.maxNumEntities, () => {
             return {
                 id: undefined,
-                commandType: undefined,
                 entityId: undefined,
                 componentType: undefined,
             } as ECSCommand;
         })
-        this.pendingCommands = new Array<ECSCommand>();
+        this.pendingRemoveEntityCommands = new Array<ECSCommand>();
+        this.pendingRemoveComponentCommands = new Array<ECSCommand>();
+        this.pendingAddEntityCommands = new Array<ECSCommand>();
+        this.pendingAddComponentCommands = new Array<ECSCommand>();
 
         this.systems = [];
 
@@ -60,7 +66,7 @@ export default class ECSManager
         //######################################################################
         
         this.systems.push(new CollisionDetectionSystem());
-        this.systems.push(new MechanicalForceSystem());
+        this.systems.push(new CollisionForceSystem());
         this.systems.push(new ForceFieldSystem());
         this.systems.push(new KinematicsSystem());
         this.systems.push(new TransformChildSyncSystem());
@@ -69,11 +75,12 @@ export default class ECSManager
         //######################################################################
         // Phase 2 (Gameplay)
         //######################################################################
+        this.systems.push(new LevelLoadingSystem());
         this.systems.push(new KeyInputSystem());
-        this.systems.push(new LevelChangeSystem());
         this.systems.push(new PlayerControlSystem());
         this.systems.push(new SpawnSystem());
         this.systems.push(new DieSystem());
+        this.systems.push(new WaypointSystem());
 
         //######################################################################
         // Phase 3 (Graphics)
@@ -93,36 +100,9 @@ export default class ECSManager
 
     update(t: number, dt: number)
     {
-        // Update systems
+        this.processAllPendingCommands();
         for (const system of this.systems)
             system.update(this, t, dt);
-
-        // Process pending commands
-        for (const command of this.pendingCommands)
-        {
-            const entity = this.entityPool.get(command.entityId);
-
-            switch (command.commandType)
-            {
-                case "addEntity":
-                    break;
-                case "removeEntity":
-                    entity.componentBitMask.clear();
-                    this.entityPool.return(entity.id);
-                    break;
-                case "addComponent":
-                    entity.componentBitMask.addMask(ComponentTypeBitMasks[command.componentType]);
-                    break;
-                case "removeComponent":
-                    entity.componentBitMask.removeMask(ComponentTypeBitMasks[command.componentType]);
-                    break;
-                default:
-                    throw new Error(`Unknown command type :: "${command.commandType}"`);
-            }
-            this.reregisterEntity(entity);
-            this.commandPool.return(command.id);
-        }
-        this.pendingCommands.length = 0;
     }
 
     getEntity(id: number): Entity
@@ -130,86 +110,61 @@ export default class ECSManager
         return this.entityPool.get(id);
     }
 
-    addEntity(configId: string, immediate: boolean = false): Entity
+    addEntity(configId: string): Entity
     {
         const entity = this.entityPool.rent();
+        entity.configId = configId; // for debugging purposes
         if (entity.alive)
             throw new Error(`Entity (id = ${entity.id}) is already alive.`);
-        entity.alive = true;
 
         const entityConfig = globalConfig.entityConfigById[configId];
         if (entityConfig == undefined)
             throw new Error(`Entity config not found (id = ${configId})`);
+
         for (const [componentType, componentValues] of Object.entries(entityConfig))
         {
             this.initComponent(entity.id, componentType, componentValues);
             entity.componentBitMask.addMask(ComponentTypeBitMasks[componentType]);
         }
-
-        if (immediate)
-        {
-            this.reregisterEntity(entity);
-        }
-        else
-        {
-            const command = this.commandPool.rent();
-            command.commandType = "addEntity";
-            command.entityId = entity.id;
-            command.componentType = undefined;
-            this.pendingCommands.push(command);
-        }
+        const command = this.commandPool.rent();
+        command.entityId = entity.id;
+        command.componentType = undefined;
+        this.pendingAddEntityCommands.push(command);
         return entity;
     }
 
-    removeEntity(id: number, immediate: boolean = false)
+    removeEntity(id: number)
     {
-        const entity = this.entityPool.get(id);
-        if (immediate)
-        {
-            if (!entity.alive)
-                throw new Error(`Cannot immediately remove an entity that is already dead.`);
-            entity.alive = false;
-            entity.componentBitMask.clear();
-            this.entityPool.return(entity.id);
-            this.reregisterEntity(entity);
-        }
-        else
-        {
-            if (entity.alive)
-            {
-                entity.alive = false;
-                const command = this.commandPool.rent();
-                command.commandType = "removeEntity";
-                command.entityId = entity.id;
-                command.componentType = undefined;
-                this.pendingCommands.push(command);
-            }
-        }
+        const command = this.commandPool.rent();
+        command.entityId = id;
+        command.componentType = undefined;
+        this.pendingRemoveEntityCommands.push(command);
     }
 
     addComponent(entityId: number, componentType: string): Component
     {
         const component = this.initComponent(entityId, componentType);
         const command = this.commandPool.rent();
-        command.commandType = "addComponent";
         command.entityId = entityId;
         command.componentType = componentType;
-        this.pendingCommands.push(command);
+        this.pendingAddComponentCommands.push(command);
         return component;
     }
 
     removeComponent(entityId: number, componentType: string)
     {
         const command = this.commandPool.rent();
-        command.commandType = "removeComponent";
         command.entityId = entityId;
         command.componentType = componentType;
-        this.pendingCommands.push(command);
+        this.pendingRemoveComponentCommands.push(command);
     }
 
     getComponent(entityId: number, componentType: string): Component
     {
-        return ComponentCache[componentType][entityId];
+        const cache = ComponentCache[componentType];
+        while (entityId >= cache.length)
+            cache.push(ComponentInstantiationMethods[componentType]());
+        return cache[entityId];
     }
 
     hasComponent(entityId: number, componentType: string): boolean
@@ -251,5 +206,102 @@ export default class ECSManager
     {
         for (const system of this.systems)
             system.reregisterEntity(this, entity);
+    }
+
+    // Last-command processing methods
+
+    processLastPendingAddEntityCommand()
+    {
+        this.processAddEntityCommand(this.pendingAddEntityCommands.pop());
+    }
+    processLastPendingRemoveEntityCommand()
+    {
+        this.processRemoveEntityCommand(this.pendingRemoveEntityCommands.pop());
+    }
+    processLastPendingAddComponentCommand()
+    {
+        this.processAddComponentCommand(this.pendingAddComponentCommands.pop());
+    }
+    processLastPendingRemoveComponentCommand()
+    {
+        this.processRemoveComponentCommand(this.pendingRemoveComponentCommands.pop());
+    }
+
+    // All-command processing methods
+
+    private processAllPendingCommands()
+    {
+        this.processAllPendingAddEntityCommands();
+        this.processAllPendingAddComponentCommands();
+        this.processAllPendingRemoveComponentCommands();
+        this.processAllPendingRemoveEntityCommands();
+    }
+    private processAllPendingAddEntityCommands()
+    {
+        for (const command of this.pendingAddEntityCommands)
+            this.processAddEntityCommand(command);
+        this.pendingAddEntityCommands.length = 0;
+    }
+    private processAllPendingRemoveEntityCommands()
+    {
+        for (const command of this.pendingRemoveEntityCommands)
+            this.processRemoveEntityCommand(command);
+        this.pendingRemoveEntityCommands.length = 0;
+    }
+    private processAllPendingAddComponentCommands()
+    {
+        for (const command of this.pendingAddComponentCommands)
+            this.processAddComponentCommand(command);
+        this.pendingAddComponentCommands.length = 0;
+    }
+    private processAllPendingRemoveComponentCommands()
+    {
+        for (const command of this.pendingRemoveComponentCommands)
+            this.processRemoveComponentCommand(command);
+        this.pendingRemoveComponentCommands.length = 0;
+    }
+
+    // Individual command processing methods
+
+    private processAddEntityCommand(command: ECSCommand)
+    {
+        const entity = this.entityPool.get(command.entityId);
+        if (entity.alive)
+            throw new Error(`Entity is already alive (entityId = ${command.entityId})`);
+        entity.alive = true;
+        this.reregisterEntity(entity);
+        this.commandPool.return(command.id);
+    }
+    private processRemoveEntityCommand(command: ECSCommand)
+    {
+        const entity = this.entityPool.get(command.entityId);
+        if (!entity.alive)
+        {
+            console.warn(`Entity is already dead (entityId = ${command.entityId})`);
+            return;
+        }
+        entity.alive = false;
+        entity.componentBitMask.clear();
+        this.entityPool.return(entity.id);
+        this.reregisterEntity(entity);
+        this.commandPool.return(command.id);
+    }
+    private processAddComponentCommand(command: ECSCommand)
+    {
+        const entity = this.entityPool.get(command.entityId);
+        if (!entity.alive)
+            throw new Error(`Entity is not alive (entityId = ${command.entityId}, componentType = ${command.componentType})`);
+        entity.componentBitMask.addMask(ComponentTypeBitMasks[command.componentType]);
+        this.reregisterEntity(entity);
+        this.commandPool.return(command.id);
+    }
+    private processRemoveComponentCommand(command: ECSCommand)
+    {
+        const entity = this.entityPool.get(command.entityId);
+        if (!entity.alive)
+            throw new Error(`Entity is not alive (entityId = ${command.entityId}, componentType = ${command.componentType})`);
+        entity.componentBitMask.removeMask(ComponentTypeBitMasks[command.componentType]);
+        this.reregisterEntity(entity);
+        this.commandPool.return(command.id);
     }
 }

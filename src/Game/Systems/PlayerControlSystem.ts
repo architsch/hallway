@@ -26,7 +26,7 @@ export default class PlayerControlSystem extends System
         const playerEntities = this.queryEntityGroup("PlayerComponent");
         const keyInputEntities = this.queryEntityGroup("KeyInputComponent");
 
-        let player: Entity;
+        let player: Entity = undefined;
         let playerKinematics: KinematicsComponent;
         let playerTr: TransformComponent;
 
@@ -41,39 +41,35 @@ export default class PlayerControlSystem extends System
                 throw new Error("Multiple players detected.");
         });
 
-        let forceX = 0;
-        let forceZ = 0;
-
-        keyInputEntities.forEach((entity: Entity) => {
-            const keyInputComponent = ecs.getComponent(entity.id, "KeyInputComponent") as KeyInputComponent;
-            
-            switch (keyInputComponent.key)
-            {
-                case "ArrowUp": forceZ += 1; break;
-                case "ArrowDown": forceZ -= 1; break;
-                case "ArrowLeft": forceX += 1; break;
-                case "ArrowRight": forceX -= 1; break;
-                case " ":
-                    const entity = ecs.addEntity("playerWind");
-                    const tr = ecs.getComponent(entity.id, "TransformComponent") as TransformComponent;
-                    vec3.copy(tr.position, playerTr.position);
-                    tr.matrixSynced = false;
-                    const child = ecs.getComponent(entity.id, "TransformChildComponent") as TransformChildComponent;
-                    child.parentEntityId = player.id;
-                    break;
-            }
-        });
-
-        const forceMag = 20;
-
-        forceX *= forceMag;
-        forceZ *= forceMag;
-        const mag = Math.sqrt(forceX*forceX + forceZ*forceZ);
-
-        if (mag > 0.001)
+        if (player != undefined)
         {
-            vec3.set(this.controlForce, (forceX / mag) * forceMag, 0, (forceZ / mag) * forceMag);
-            vec3.add(playerKinematics.pendingForce, playerKinematics.pendingForce, this.controlForce);
+            let forceX = 0;
+            let forceZ = 0;
+
+            keyInputEntities.forEach((entity: Entity) => {
+                const keyInputComponent = ecs.getComponent(entity.id, "KeyInputComponent") as KeyInputComponent;
+                
+                switch (keyInputComponent.key)
+                {
+                    case "ArrowUp": forceZ += 1; break;
+                    case "ArrowDown": forceZ -= 1; break;
+                    case "ArrowLeft": forceX += 1; break;
+                    case "ArrowRight": forceX -= 1; break;
+                    default: break;
+                }
+            });
+
+            const forceMag = 15;
+
+            forceX *= forceMag;
+            forceZ *= forceMag;
+            const mag = Math.sqrt(forceX*forceX + forceZ*forceZ);
+
+            if (mag > 0.001)
+            {
+                vec3.set(this.controlForce, (forceX / mag) * forceMag, 0, (forceZ / mag) * forceMag);
+                vec3.add(playerKinematics.pendingForce, playerKinematics.pendingForce, this.controlForce);
+            }
         }
     }
 

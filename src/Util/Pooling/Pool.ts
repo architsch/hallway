@@ -23,7 +23,7 @@ export default class Pool<T extends PoolableObject>
             const instance = instantiationMethod();
             instance.id = i;
             this.instances[i] = instance;
-            this.freeIds[i] = i;
+            this.freeIds[i] = maxInstances - 1 - i;
         }
     }
 
